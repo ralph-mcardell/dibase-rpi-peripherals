@@ -1,0 +1,140 @@
+// Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
+/// @file phymem_ptr.h 
+/// @brief Declarations of smart pointer to physical memory types.
+//
+/// @copyright Copyright (c) Dibase Limited 2012
+/// @author Ralph E. McArdell
+
+#ifndef DIBASE_RPI_PERIPHERALS_PHYMEM_PTR_H
+ #define DIBASE_RPI_PERIPHERALS_PHYMEM_PTR_H
+
+ #include <cstdlib>
+
+namespace dibase { namespace rpi {
+  namespace peripherals
+  {
+
+    /// @brief Smart pointer for mapped /dev/mem physical memory device regions
+    ///
+    /// Intended as base class use only. All operations protected.
+    ///
+    /// Only provides:
+    ///   - Constructor that mmaps region of /dev/mem.
+    ///   - Destructor that munmaps region
+    ///   - Untyped (void*) access to start of mapped region
+    class raw_phymem_ptr
+    {
+      void * mem;         ///< pointer to mapped region
+      std::size_t length; ///< length of mapped region
+
+    public:
+      /// @brief Construct from physical address and region
+      ///
+      /// Construct mapped physical memory region from physical memory address
+      /// offset and length of region.
+      ///
+      /// Note: Start of region mapping will be aligned to a page boundary.
+      ///       Mapped start address should be page aligned and be a 
+      ///       page size multiple in length.
+      ///
+      /// @param[in]  phy_addr  Physical address to map, page size multiple
+      ///                       - 'offset' into /dev/mem devies 'file'.
+      /// @param[in]  length    Length of mapped address region. Page size
+      ///                       multiple.
+      /// @exception  std::system_error /dev/mem cannot be opened or the
+      ///             region cannot be mapped.
+      raw_phymem_ptr(off_t phy_addr, size_t length);
+
+      /// @brief Destuctor: unmaps (munmap) mapped physical memory region.
+      ~raw_phymem_ptr();
+      
+      /// @brief Accessor. Untyped access to mapped memory region.
+      /// @return Untyped pointer to start of mapped memory region
+      void * get() 
+      {
+        return mem;
+      }
+     };
+ 
+    /// @brief Typed smart pointer for mapped regions of physical memory
+    ///
+    /// Thin template sub-class of \ref raw_phymem_ptr that casts the untyped void*
+    /// to the mapped region to the type specified by the template parameter T.
+    /// Provides typed get and indexed get into the mapped region as well as operator
+    /// overloads for * (de-reference) -> and [].
+    ///
+    /// Can be used to access memory mapped peripheral control & data areas
+    /// in which case the type for T should probably be qualified as volatile.
+    ///
+    /// @param T   Type of items referenced/pointed to in the mapped memory region.
+    template <typename T>
+    class phymem_ptr : public raw_phymem_ptr
+    {
+    public:
+      /// @brief Construct from physical address and region
+      ///
+      /// Simply passes parameters to the base 
+      /// \ref raw_phymem_ptr::raw_phymem_ptr( off_t phy_addr, size_t length )
+      /// constructor
+      ///
+      /// @param[in]  phy_addr  Physical address to map, page size multiple
+      ///                       - 'offset' into /dev/mem devies 'file'.
+      /// @param[in]  length    Length of mapped address region. Page size
+      ///                       multiple.
+      /// @exception  std::system_error /dev/mem cannot be opened or the
+      ///             region cannot be mapped.
+      phymem_ptr(off_t phy_addr, size_t length) 
+      : raw_phymem_ptr(phy_addr, length)
+      {}
+
+      /// @brief Accessor. Typed access to mapped memory region start.
+      /// @return Typed pointer to start of mapped memory region
+      T* get()
+      {
+        return reinterpret_cast<T*>(raw_phymem_ptr::get());
+      }
+
+      /// @brief Accessor. Typed array access to mapped memory region.
+      ///
+      /// Note: The idx parameter value is _not_ range checked.
+      ///
+      /// @param[in]  idx   Zero based index to the required item
+      ///                   in the mapped region. Items are of type T.
+      /// @return Typed pointer to nth T in mapped memory region (n=idx).
+      T* get(std::size_t idx)
+      {
+        return reinterpret_cast<T*>(raw_phymem_ptr::get())+idx;
+      }
+
+      /// @brief Dereference operator.
+      /// @return Reference to first item of type T in mapped region.
+      T& operator*()
+      {
+        return *get();
+      }
+
+      /// @brief Member access operator.
+      /// @return Pointer to first item of type T in mapped region.
+      T* operator->()
+      {
+        return get();
+      }
+
+      /// @brief Subscript operator.
+      ///
+      /// Note: The idx parameter value is _not_ range checked.
+      ///
+      /// @param[in]  idx   Zero based index to the required item
+      ///                   in the mapped region. Items are of type T.
+      /// @return Reference to nth item of type T in mapped region; n=idx.
+      T& operator[](std::size_t idx) 
+      {
+        return *get(idx);
+      }
+    };
+  }
+}}
+
+#endif // DIBASE_RPI_PERIPHERALS_PHYMEM_PTR_H
+ 
+ 

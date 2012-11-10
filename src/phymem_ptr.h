@@ -14,20 +14,23 @@ namespace dibase { namespace rpi {
   namespace peripherals
   {
 
-    /// @brief Smart pointer for mapped /dev/mem physical memory device regions
+    /// @brief Physical memory smart pointer base class 
     ///
     /// Intended as base class use only. All operations protected.
     ///
+    /// Provides access to physical memory by mapping /dev/mem device regions
+    /// with mmap.
+    ///
     /// Only provides:
-    ///   - Constructor that mmaps region of /dev/mem.
-    ///   - Destructor that munmaps region
+    ///   - Constructor that mmaps a region of /dev/mem.
+    ///   - Destructor that munmaps the mananged region.
     ///   - Untyped (void*) access to start of mapped region
     class raw_phymem_ptr
     {
       void * mem;         ///< pointer to mapped region
       std::size_t length; ///< length of mapped region
 
-    public:
+    protected:
       /// @brief Construct from physical address and region
       ///
       /// Construct mapped physical memory region from physical memory address
@@ -38,14 +41,14 @@ namespace dibase { namespace rpi {
       ///       page size multiple in length.
       ///
       /// @param[in]  phy_addr  Physical address to map, page size multiple
-      ///                       - 'offset' into /dev/mem devies 'file'.
+      ///                       - 'offset' into /dev/mem device 'file'.
       /// @param[in]  length    Length of mapped address region. Page size
       ///                       multiple.
       /// @exception  std::system_error /dev/mem cannot be opened or the
       ///             region cannot be mapped.
       raw_phymem_ptr(off_t phy_addr, size_t length);
 
-      /// @brief Destuctor: unmaps (munmap) mapped physical memory region.
+      /// @brief Destuctor: unmaps using munmap mapped physical memory region.
       ~raw_phymem_ptr();
       
       /// @brief Accessor. Untyped access to mapped memory region.
@@ -54,19 +57,20 @@ namespace dibase { namespace rpi {
       {
         return mem;
       }
-     };
+    };
  
-    /// @brief Typed smart pointer for mapped regions of physical memory
+    /// @brief Typed physical memory smart pointer template class
     ///
-    /// Thin template sub-class of \ref raw_phymem_ptr that casts the untyped void*
-    /// to the mapped region to the type specified by the template parameter T.
-    /// Provides typed get and indexed get into the mapped region as well as operator
-    /// overloads for * (de-reference) -> and [].
+    /// Thin template sub-class of \ref raw_phymem_ptr that casts the untyped
+    /// void* to the mapped region to the type specified by the template
+    /// parameter T. Provides typed get and indexed get into the mapped region
+    /// as well as operator overloads for * (de-reference) -> and [].
     ///
-    /// Can be used to access memory mapped peripheral control & data areas
-    /// in which case the type for T should probably be qualified as volatile.
+    /// A primary use case is to access memory mapped peripheral control and
+    /// data areas. In such cases the type for T should probably be qualified 
+    /// as volatile.
     ///
-    /// @param T   Type of items referenced/pointed to in the mapped memory region.
+    /// @param T Type of items referenced/pointed to in the mapped memory region
     template <typename T>
     class phymem_ptr : public raw_phymem_ptr
     {
@@ -75,10 +79,10 @@ namespace dibase { namespace rpi {
       ///
       /// Simply passes parameters to the base 
       /// \ref raw_phymem_ptr::raw_phymem_ptr( off_t phy_addr, size_t length )
-      /// constructor
+      /// constructor.
       ///
       /// @param[in]  phy_addr  Physical address to map, page size multiple
-      ///                       - 'offset' into /dev/mem devies 'file'.
+      ///                       - 'offset' into /dev/mem device 'file'.
       /// @param[in]  length    Length of mapped address region. Page size
       ///                       multiple.
       /// @exception  std::system_error /dev/mem cannot be opened or the
@@ -98,9 +102,9 @@ namespace dibase { namespace rpi {
       ///
       /// Note: The idx parameter value is _not_ range checked.
       ///
-      /// @param[in]  idx   Zero based index to the required item
-      ///                   in the mapped region. Items are of type T.
-      /// @return Typed pointer to nth T in mapped memory region (n=idx).
+      /// @param[in]  idx   Zero based index to the required item of type T
+      ///                   in the mapped region.
+      /// @return Typed pointer to nth T in the mapped memory region (n=idx).
       T* get(std::size_t idx)
       {
         return reinterpret_cast<T*>(raw_phymem_ptr::get())+idx;
@@ -124,9 +128,9 @@ namespace dibase { namespace rpi {
       ///
       /// Note: The idx parameter value is _not_ range checked.
       ///
-      /// @param[in]  idx   Zero based index to the required item
-      ///                   in the mapped region. Items are of type T.
-      /// @return Reference to nth item of type T in mapped region; n=idx.
+      /// @param[in]  idx   Zero based index to the required item of type T
+      ///                   in the mapped region.
+      /// @return Reference to nth item of type T in the mapped region; n=idx.
       T& operator[](std::size_t idx) 
       {
         return *get(idx);

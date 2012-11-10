@@ -8,9 +8,6 @@
 // Basic GNU compiler options building executable called main:
 // g++ -std=c++0x -Wall -Wextra -pedantic -o main phymem_ptr.cpp
 
-// ##### This is an initial scratch experimental version only.  #####
-// ##### It requires immediate cleaning up and splitting apart. #####
-
 #include "phymem_ptr.h"
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -22,21 +19,21 @@ namespace dibase { namespace rpi {
     static int mem_fd(-1);
  
     raw_phymem_ptr::raw_phymem_ptr( off_t phy_addr, size_t mapped_length )
-    : mem( MAP_FAILED )
+    : mem(MAP_FAILED)
     , length(0)
     {
       char const * DevMemPath = "/dev/mem";
-      if ( mem_fd<0)
-      { // Attempt to open mem device once and save fd in static mem_fd member
-        if ( (mem_fd = open(DevMemPath, O_RDWR|O_SYNC)) < 0 ) 
-        {
-          throw std::system_error
-                ( errno
-                , std::system_category()
-                , "open /dev/mem failed. Did you forgot to use 'sudo ..'? "
-                );
+      if ( mem_fd<0 )
+        { // Attempt to open mem device once and save fd in mem_fd static global
+          if ( (mem_fd = open(DevMemPath, O_RDWR|O_SYNC))<0 ) 
+            {
+              throw std::system_error
+                    ( errno
+                    , std::system_category()
+                    , "open /dev/mem failed. Did you forget to use 'sudo ..'? "
+                    );
+            }
         }
-      }
 
       mem = mmap( NULL
                 , mapped_length
@@ -46,21 +43,22 @@ namespace dibase { namespace rpi {
                 , phy_addr
                 );
       if ( MAP_FAILED == mem )
-      {
-        throw std::system_error( errno
-                               , std::system_category()
-                               , "mmap failed mapping physical memory area. "
-                               );
-      }
+        {
+          throw std::system_error( errno
+                                 , std::system_category()
+                                 , "mmap failed mapping physical memory area. "
+                                 );
+        }
       length = mapped_length;
     }
+
 
     raw_phymem_ptr::~raw_phymem_ptr()
     {
       if ( MAP_FAILED != mem )
-      {
-        munmap( mem, length );
-      }
+        {
+          munmap( mem, length );
+        }
     }
   }
 }}

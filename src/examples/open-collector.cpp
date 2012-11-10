@@ -27,12 +27,12 @@
 #define PAGE_SIZE (4*1024)
 #define BLOCK_SIZE (4*1024)
 
-// These were modified to use the name and interface of the relevant phymem_ptr
-// object
-#define INP_GPIO(g) *(pgpio.get()+((g)/10)) &= ~(7<<(((g)%10)*3))
-#define OUT_GPIO(g) *(pgpio.get()+((g)/10)) |=  (1<<(((g)%10)*3))
-#define GPIO_SET0   *(pgpio.get()+7)  // Set GPIO high bits 0-31
-#define GPIO_CLR0   *(pgpio.get()+10) // Set GPIO low bits 0-31
+// These were modified to use the name and interface
+// of the relevant phymem_ptr object:
+#define INP_GPIO(g) pgpio[(g)/10] &= ~(7<<(((g)%10)*3))
+#define OUT_GPIO(g) pgpio[(g)/10] |=  (1<<(((g)%10)*3))
+#define GPIO_SET0   pgpio[7]  // Set GPIO high bits 0-31
+#define GPIO_CLR0   pgpio[10] // Set GPIO low bits 0-31
 
 using namespace dibase::rpi::peripherals;
 

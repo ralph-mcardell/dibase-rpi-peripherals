@@ -2,11 +2,11 @@
 # Copyright (c) Dibase Limited 2012
 # Author: Ralph E. McArdell
 
-# Build configuration (debug | release):
+# Build configuration (debug | release), default to release:
 BUILD_CONFIG = release
 ROOT_DIR = $(realpath $(CURDIR)/..)
 
-include ../makeinclude.mak
+include $(ROOT_DIR)/makeinclude.mak
 
 # Files and directories
 SRC_FILES = phymem_ptr.cpp
@@ -15,7 +15,7 @@ ifeq ($(BUILD_CONFIG),release)
 else ifeq ($(BUILD_CONFIG),debug)
 	TGT_FILE = $(LIB_DIR)/librpi-periphalsd.a
 endif
-	OBJ_FILES = $(SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
+OBJ_FILES = $(SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
 
 # File delete command
 RM = rm
@@ -24,11 +24,11 @@ RM = rm
 
 all: $(TGT_FILE)
 
-clean:
+tidy:
 	-$(RM) $(BUILD_DIR)/release/*.o
 	-$(RM) $(BUILD_DIR)/debug/*.o
 
-very-clean: clean
+clean: tidy
 	-$(RM) $(LIB_DIR)/*.a
 
 $(TGT_FILE): $(OBJ_FILES)
@@ -36,9 +36,6 @@ $(TGT_FILE): $(OBJ_FILES)
 	$(AR) $(AR_FLAGS) $(TGT_FILE) $(OBJ_FILES)
 
 $(OBJ_DIR)/%.o: %.cpp
-	$(CC) $(COMPILE_FLAGS) -o $@ $<
-
-$(OBJ_DIR)/%d.o: %.cpp
 	$(CC) $(COMPILE_FLAGS) -o $@ $<
 	
 $(OBJ_DIR)/phymem_ptr.o: phymem_ptr.cpp phymem_ptr.h

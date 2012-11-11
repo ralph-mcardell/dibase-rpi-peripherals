@@ -3,7 +3,7 @@
 # Author: Ralph E. McArdell
 #
 # Targets:
-# ---------
+# --------
 # all (default): build all libraries and examples using 
 #                release and debug configurations
 # release: as all but only  builds using release configuarion
@@ -12,7 +12,7 @@
 # check: as test but also executes tests
 # clean: removes all executables, libraries and object files built by make
 # tidy: removes only intermediate files such as object files
-# help: shows this text on console
+# help: shows similar help text on console
 
 ROOT_DIR = $(CURDIR)
 
@@ -21,12 +21,57 @@ BUILD_CONFIG = release
 
 include makeinclude.mak
 
-.PHONY : all debug release
+.PHONY: all dirs debug release test check tidy clean help
 
 all: debug release
 
-debug:
-	$(MAKE) -C ./src BUILD_CONFIG=debug
+# We expect these directories to be present:
+dirs: $(BUILD_DIR)/debug $(BUILD_DIR)/release $(LIB_DIR) $(EXEC_DIR)
 
-release:
-	$(MAKE) -C ./src BUILD_CONFIG=release
+debug: dirs
+	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=debug
+
+release: dirs
+	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=release
+
+test: dirs
+	@echo 'To be done...'
+
+check: dirs
+	@echo 'To be done...'
+
+tidy: dirs
+	$(MAKE) -C $(SRC_DIR) tidy
+
+clean: dirs
+	$(MAKE) -C $(SRC_DIR) clean
+
+help:
+	@echo 'Usage: make [target]'
+	@echo 'Targets:'
+	@echo '  all (default)  Build release and debug targets.'
+	@echo '  release        Build release library and example executables.'
+	@echo '  debug          Build debug library and example executables.'
+	@echo '  test           Build tests.'
+	@echo '  check          Build test and execute tests.'
+	@echo '  clean          Remove final and intermediate targets.'
+	@echo '  tidy           Remove only intermediate targets such as .o files.'
+	@echo '  help           Print this help.'
+
+# The following rules ensure we have the varous end
+# and intermediate target directories available:
+$(EXEC_DIR):
+	mkdir $@
+
+$(LIB_DIR):
+	mkdir $@
+
+$(BUILD_DIR):
+	mkdir $@
+
+$(BUILD_DIR)/debug: $(BUILD_DIR)
+	mkdir $@
+
+$(BUILD_DIR)/release: $(BUILD_DIR)
+	mkdir $@
+	

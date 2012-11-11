@@ -9,11 +9,11 @@ $(error ROOT_DIR, which defines the project root directory path, is not defined)
 endif
 
 ifndef BUILD_CONFIG
-$(error BUILD_CONFIG is not defined, it should have a value of 'release' or 'debug')
+$(error BUILD_CONFIG not defined, its value should be 'release' or 'debug')
 else ifeq ($(BUILD_CONFIG),release)
 else ifeq ($(BUILD_CONFIG),debug)
 else
-$(error BUILD_CONFIG variable should be 'release' or 'debug' not '$(BUILD_CONFIG)' )
+$(error BUILD_CONFIG value should be 'release' or 'debug' not '$(BUILD_CONFIG)')
 endif
 
 SRC_DIR = $(ROOT_DIR)/src

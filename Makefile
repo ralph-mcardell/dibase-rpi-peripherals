@@ -30,9 +30,11 @@ dirs: $(BUILD_DIR)/debug $(BUILD_DIR)/release $(LIB_DIR) $(EXEC_DIR)
 
 debug: dirs
 	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=debug
+	$(MAKE) -C $(SRC_DIR)/examples BUILD_CONFIG=debug
 
 release: dirs
 	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=release
+	$(MAKE) -C $(SRC_DIR)/examples BUILD_CONFIG=release
 
 test: dirs
 	@echo 'To be done...'
@@ -42,9 +44,11 @@ check: dirs
 
 tidy: dirs
 	$(MAKE) -C $(SRC_DIR) tidy
+	$(MAKE) -C $(SRC_DIR)/examples tidy
 
 clean: dirs
 	$(MAKE) -C $(SRC_DIR) clean
+	$(MAKE) -C $(SRC_DIR)/examples clean
 
 help:
 	@echo 'Usage: make [target]'

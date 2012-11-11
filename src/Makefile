@@ -10,32 +10,36 @@ include $(ROOT_DIR)/makeinclude.mak
 
 # Files and directories
 SRC_FILES = phymem_ptr.cpp
-ifeq ($(BUILD_CONFIG),release)
-	TGT_FILE = $(LIB_DIR)/librpi-periphals.a
-else ifeq ($(BUILD_CONFIG),debug)
-	TGT_FILE = $(LIB_DIR)/librpi-periphalsd.a
-endif
+TGT_FILE = $(LIB_DIR)/$(LIB_FILE)
 OBJ_FILES = $(SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
+OBJ_FILENAMES = $(SRC_FILES:%.cpp=%.o)
+DEP_FILES = $(SRC_FILES:%.cpp=%.d)
 
 # File delete command
 RM = rm
 
-.PHONY: all clean very-clean
+.PHONY: all clean tidy
 
-all: $(TGT_FILE)
+all: $(DEP_FILES) $(TGT_FILE)
 
 tidy:
-	-$(RM) $(BUILD_DIR)/release/*.o
-	-$(RM) $(BUILD_DIR)/debug/*.o
+	-$(RM) $(BUILD_DIR)/release/$(OBJ_FILENAMES)
+	-$(RM) $(BUILD_DIR)/debug/$(OBJ_FILENAMES)
 
 clean: tidy
 	-$(RM) $(LIB_DIR)/*.a
+	-$(RM) $(DEP_FILES)
 
 $(TGT_FILE): $(OBJ_FILES)
-	echo $(OBJ_FILES)
 	$(AR) $(AR_FLAGS) $(TGT_FILE) $(OBJ_FILES)
 
 $(OBJ_DIR)/%.o: %.cpp
 	$(CC) $(COMPILE_FLAGS) -o $@ $<
-	
-$(OBJ_DIR)/phymem_ptr.o: phymem_ptr.cpp phymem_ptr.h
+
+%.d: %.cpp
+	@set -e; rm -f $@; \
+	$(CC) -MM $(COMPILE_FLAGS) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
+include $(DEP_FILES)

@@ -13,3 +13,6 @@
 *.lai
 *.la
 *.a
+
+# Built executables
+bin

@@ -36,6 +36,7 @@ LIB_DIR = $(ROOT_DIR)/lib
 BUILD_DIR = $(ROOT_DIR)/build
 OBJ_DIR = $(BUILD_DIR)/$(BUILD_CONFIG)
 EXEC_DIR = $(ROOT_DIR)/bin
+TEST_DIR = $(ROOT_DIR)/test
 DOC_DIR = $(ROOT_DIR)/doc
 EXT_PACKAGES_DIR = $(ROOT_DIR)/thirdparty
 

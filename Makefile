@@ -26,7 +26,7 @@ include makeinclude.mak
 all: debug release
 
 # We expect these directories to be present:
-dirs: $(BUILD_DIR)/debug $(BUILD_DIR)/release $(LIB_DIR) $(EXEC_DIR)
+dirs: $(BUILD_DIR)/debug $(BUILD_DIR)/release $(LIB_DIR) $(EXEC_DIR) $(TEST_DIR)
 
 debug: dirs
 	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=debug
@@ -37,18 +37,20 @@ release: dirs
 	$(MAKE) -C $(SRC_DIR)/examples BUILD_CONFIG=release
 
 test: dirs
-	@echo 'To be done...'
+	$(MAKE) -C $(SRC_DIR)/tests BUILD_CONFIG=debug
 
-check: dirs
+check: dirs test
 	@echo 'To be done...'
 
 tidy: dirs
 	$(MAKE) -C $(SRC_DIR) tidy
 	$(MAKE) -C $(SRC_DIR)/examples tidy
+	$(MAKE) -C $(SRC_DIR)/tests tidy
 
 clean: dirs
 	$(MAKE) -C $(SRC_DIR) clean
 	$(MAKE) -C $(SRC_DIR)/examples clean
+	$(MAKE) -C $(SRC_DIR)/tests clean
 
 help:
 	@echo 'Usage: make [target]'
@@ -65,6 +67,9 @@ help:
 # The following rules ensure we have the varous end
 # and intermediate target directories available:
 $(EXEC_DIR):
+	mkdir $@
+
+$(TEST_DIR):
 	mkdir $@
 
 $(LIB_DIR):

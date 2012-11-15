@@ -23,8 +23,8 @@ RM = rm
 all: $(DEP_FILES) $(TGT_FILE)
 
 tidy:
-	-$(RM) $(BUILD_DIR)/release/$(OBJ_FILENAMES)
-	-$(RM) $(BUILD_DIR)/debug/$(OBJ_FILENAMES)
+	-$(RM) $(OBJ_FILENAMES:%=$(BUILD_DIR)/release/%)
+	-$(RM) $(OBJ_FILENAMES:%=$(BUILD_DIR)/debug/%)
 
 clean: tidy
 	-$(RM) $(LIB_DIR)/*.a

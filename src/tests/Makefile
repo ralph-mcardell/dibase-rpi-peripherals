@@ -9,14 +9,31 @@ ROOT_DIR = $(realpath $(CURDIR)/../..)
 include $(ROOT_DIR)/makeinclude.mak
 
 # Files and directories
-SRC_FILES = phymem_ptr_systemtests.cpp
-DEP_FILES = $(SRC_FILES:%.cpp=%.d)
+COMMON_SRC_FILES = test_main.cpp
+SYSTEST_SRC_FILES = phymem_ptr_systemtests.cpp
+UNITTEST_SRC_FILE = 
+ALL_SRC_FILES = $(COMMON_SRC_FILES) $(SYSTEST_SRC_FILES) $(UNITTEST_SRC_FILE)
 
-# Executable target files have the name of the example source file less the 
-# extension but might includ a build configuration specific suffix.
-# Both lists of paths are required for the clean target:
-TGT_FILES_RELEASE = $(SRC_FILES:%.cpp=$(TEST_DIR)/%$(RELEASE_FILE_SUFFIX))
-TGT_FILES_DEBUG = $(SRC_FILES:%.cpp=$(TEST_DIR)/%$(DEBUG_FILE_SUFFIX))
+COMMON_OBJ_FILES = $(COMMON_SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
+SYSTEST_OBJ_FILES = $(SYSTEST_SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
+UNITTEST_OBJ_FILES = $(UNITTEST_SRC_FILE:%.cpp=$(OBJ_DIR)/%.o)
+
+ALL_OBJ_FILES = $(ALL_SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
+ALL_OBJ_FILENAMES = $(ALL_SRC_FILES:%.cpp=%.o)
+
+DEP_FILES = $(ALL_SRC_FILES:%.cpp=%.d)
+
+SYSTEST_TGT_FILE_RELEASE = $(TEST_DIR)/systemtests-$(LIB_NAME_BASE)$(RELEASE_FILE_SUFFIX)
+UNITTEST_TGT_FILE_RELEASE = $(TEST_DIR)/unittests-$(LIB_NAME_BASE)$(RELEASE_FILE_SUFFIX)
+
+SYSTEST_TGT_FILE_DEBUG = $(TEST_DIR)/systemtests-$(LIB_NAME_BASE)$(DEBUG_FILE_SUFFIX)
+UNITTEST_TGT_FILE_DEBUG = $(TEST_DIR)/unittests-$(LIB_NAME_BASE)$(DEBUG_FILE_SUFFIX)
+
+SYSTEST_TGT_FILE = $(TEST_DIR)/systemtests-$(LIB_NAME)
+UNITTEST_TGT_FILE = $(TEST_DIR)/unittests-$(LIB_NAME)
+
+TGT_FILES_RELEASE = $(SYSTEST_TGT_FILE_RELEASE) $(UNITTEST_TGT_FILE_RELEASE)
+TGT_FILES_DEBUG = $(SYSTEST_TGT_FILE_DEBUG) $(UNITTEST_TGT_FILE_DEBUG)
 
 # But only one list of target paths is used when building:
 ifeq ($(BUILD_CONFIG),release)
@@ -29,17 +46,20 @@ endif
 
 all: $(DEP_FILES) $(TGT_FILES)
 
-# Currently tidy does nothing 'cos gmake nicely removes the
-# intermediate files after building that tidy would have removed.
 tidy: 
+	-$(RM) $(ALL_OBJ_FILENAMES:%=$(BUILD_DIR)/release/%)
+	-$(RM) $(ALL_OBJ_FILENAMES:%=$(BUILD_DIR)/debug/%)
 
 clean: tidy
 	-$(RM) $(TGT_FILES_RELEASE)
 	-$(RM) $(TGT_FILES_DEBUG)
 	-$(RM) $(DEP_FILES)
 
-$(TEST_DIR)/%$(FILE_SUFFIX): $(OBJ_DIR)/%.o $(LIB_DIR)/$(LIB_FILE)
-	$(LD) $(LD_FLAGS) -o $@ $< $(LIB_DIR)/$(LIB_FILE)
+$(SYSTEST_TGT_FILE): $(COMMON_OBJ_FILES) $(SYSTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
+	$(LD) $(LD_FLAGS) -o $@ $(COMMON_OBJ_FILES) $(SYSTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
+
+$(UNITTEST_TGT_FILE): $(COMMON_OBJ_FILES) $(UNITTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
+	$(LD) $(LD_FLAGS) -o $@ $(COMMON_OBJ_FILES) $(UNITTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
 
 $(OBJ_DIR)/%.o: %.cpp
 	$(CC) $(COMPILE_FLAGS) -I./.. -I$(EXT_PACKAGES_DIR)/Catch/single_include -o $@ $<

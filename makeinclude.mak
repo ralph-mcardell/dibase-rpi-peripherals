@@ -26,7 +26,8 @@ endif
 # Name of the static library:
 # LIB_NAME is used with tool -l options.
 # LIB_FILE is the full file name _without path_.
-LIB_NAME = rpi-periphals$(FILE_SUFFIX)
+LIB_NAME_BASE = rpi-periphals
+LIB_NAME = $(LIB_NAME_BASE)$(FILE_SUFFIX)
 LIB_FILE = lib$(LIB_NAME).a
 
 # Directories of interest:

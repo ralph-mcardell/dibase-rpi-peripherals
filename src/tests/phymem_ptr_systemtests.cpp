@@ -19,7 +19,6 @@
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell
 
-#define CATCH_CONFIG_MAIN // want to use catch's built-in main
 #include "catch.hpp"
 
 #include "phymem_ptr.h"

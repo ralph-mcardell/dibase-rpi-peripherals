@@ -29,6 +29,7 @@ tidy:
 clean: tidy
 	-$(RM) $(LIB_DIR)/*.a
 	-$(RM) $(DEP_FILES)
+	-$(RM) *.d.*
 
 $(TGT_FILE): $(OBJ_FILES)
 	$(AR) $(AR_FLAGS) $(TGT_FILE) $(OBJ_FILES)
@@ -38,7 +39,7 @@ $(OBJ_DIR)/%.o: %.cpp
 
 %.d: %.cpp
 	@set -e; rm -f $@; \
-	$(CC) -MM $(COMPILE_FLAGS) $< > $@.$$$$; \
+	$(CC) -MM $(COMPILE_FLAGS) -MT'$$(OBJ_DIR)/$(<:%.cpp=%.o)' $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 

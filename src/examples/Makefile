@@ -37,6 +37,7 @@ clean: tidy
 	-$(RM) $(TGT_FILES_RELEASE)
 	-$(RM) $(TGT_FILES_DEBUG)
 	-$(RM) $(DEP_FILES)
+	-$(RM) *.d.*
 
 $(EXEC_DIR)/%$(FILE_SUFFIX): $(OBJ_DIR)/%.o $(LIB_DIR)/$(LIB_FILE)
 	$(LD) $(LD_FLAGS) -o $@ $< $(LIB_DIR)/$(LIB_FILE)
@@ -49,7 +50,8 @@ $(LIB_DIR)/$(LIB_FILE):
 
 %.d: %.cpp
 	@set -e; rm -f $@; \
-	$(CC) -MM $(COMPILE_FLAGS) -I./.. $< > $@.$$$$; \
+	$(CC) -MM $(COMPILE_FLAGS) -MT'$$(OBJ_DIR)/$(<:%.cpp=%.o)' \
+	-I./.. $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 

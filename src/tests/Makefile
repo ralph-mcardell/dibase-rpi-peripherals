@@ -11,7 +11,7 @@ include $(ROOT_DIR)/makeinclude.mak
 # Files and directories
 COMMON_SRC_FILES = test_main.cpp
 SYSTEST_SRC_FILES = phymem_ptr_systemtests.cpp
-UNITTEST_SRC_FILE = 
+UNITTEST_SRC_FILE = gpio_registers_unittests.cpp
 ALL_SRC_FILES = $(COMMON_SRC_FILES) $(SYSTEST_SRC_FILES) $(UNITTEST_SRC_FILE)
 
 COMMON_OBJ_FILES = $(COMMON_SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
@@ -54,6 +54,7 @@ clean: tidy
 	-$(RM) $(TGT_FILES_RELEASE)
 	-$(RM) $(TGT_FILES_DEBUG)
 	-$(RM) $(DEP_FILES)
+	-$(RM) *.d.*
 
 $(SYSTEST_TGT_FILE): $(COMMON_OBJ_FILES) $(SYSTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
 	$(LD) $(LD_FLAGS) -o $@ $(COMMON_OBJ_FILES) $(SYSTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
@@ -69,7 +70,8 @@ $(LIB_DIR)/$(LIB_FILE):
 
 %.d: %.cpp
 	@set -e; rm -f $@; \
-	$(CC) -MM $(COMPILE_FLAGS) -I./.. -I$(EXT_PACKAGES_DIR)/Catch/single_include $< > $@.$$$$; \
+	$(CC) -MM $(COMPILE_FLAGS) -MT'$$(OBJ_DIR)/$(<:%.cpp=%.o)' \
+	-I./.. -I$(EXT_PACKAGES_DIR)/Catch/single_include $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 

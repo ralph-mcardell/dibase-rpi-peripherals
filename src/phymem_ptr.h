@@ -8,7 +8,7 @@
 #ifndef DIBASE_RPI_PERIPHERALS_PHYMEM_PTR_H
  #define DIBASE_RPI_PERIPHERALS_PHYMEM_PTR_H
 
- #include <cstdlib>
+ #include "peridef.h"
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -46,7 +46,7 @@ namespace dibase { namespace rpi {
       ///                       multiple.
       /// @exception  std::system_error /dev/mem cannot be opened or the
       ///             region cannot be mapped.
-      raw_phymem_ptr(off_t phy_addr, size_t length);
+      raw_phymem_ptr(physical_address_t phy_addr, std::size_t length);
 
       /// @brief Destuctor: unmaps using munmap mapped physical memory region.
       ~raw_phymem_ptr();
@@ -78,7 +78,7 @@ namespace dibase { namespace rpi {
       /// @brief Construct from physical address and region
       ///
       /// Simply passes parameters to the base 
-      /// \ref raw_phymem_ptr::raw_phymem_ptr( off_t phy_addr, size_t length )
+      /// \ref raw_phymem_ptr::raw_phymem_ptr(physical_address_t phy_addr, std::size_t length)
       /// constructor.
       ///
       /// @param[in]  phy_addr  Physical address to map, page size multiple
@@ -87,7 +87,7 @@ namespace dibase { namespace rpi {
       ///                       multiple.
       /// @exception  std::system_error /dev/mem cannot be opened or the
       ///             region cannot be mapped.
-      phymem_ptr(off_t phy_addr, size_t length) 
+      phymem_ptr(physical_address_t phy_addr, std::size_t length) 
       : raw_phymem_ptr(phy_addr, length)
       {}
 

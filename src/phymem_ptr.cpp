@@ -18,7 +18,10 @@ namespace dibase { namespace rpi {
   {
     static int mem_fd(-1);
  
-    raw_phymem_ptr::raw_phymem_ptr( off_t phy_addr, size_t mapped_length )
+    raw_phymem_ptr::raw_phymem_ptr
+    ( physical_address_t phy_addr
+    , std::size_t mapped_length
+    )
     : mem(MAP_FAILED)
     , length(0)
     {

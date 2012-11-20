@@ -19,6 +19,18 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
+  /// @brief Strongly typoed enumeration of GPIO pin function values.
+    enum class gpio_pin_fn : register_t
+    { input   = 0
+    , output  = 1
+    , alt0    = 4
+    , alt1    = 5
+    , alt2    = 6
+    , alt3    = 7
+    , alt4    = 3
+    , alt5    = 2
+    };
+    
   /// @brief Represents layout of GPIO control registers with operations.
   ///
   /// Permits access to BCM2835 GPIO control registers when an instance is
@@ -55,6 +67,26 @@ namespace dibase { namespace rpi {
       register_t gppudclk[2]; ///< GPIO pins pull-up/down enable clock (R/W)
       register_t reserved_do_not_use_b[4];  ///< Reserved, currently unused
       register_t test;        ///< Test Note: Only 4 bits wide (R/W)
+      
+    /// @brief Set a GPIO pin's function.
+    ///
+    /// GPIO pins may be set to be either input or output or one of upto
+    /// five alternate functions. How many and which alternative functions
+    /// are available varies. They are described in the Broadcom BCM2835
+    /// Peripherals datasheet, section 6.2.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin whose function is to be
+    ///                     set (0..53) - not range checked.
+    /// @param[in]  fn      Scoped enumeration of the required function.
+      void set_pin_function( unsigned int pinid, gpio_pin_fn fn ) volatile
+      {
+        unsigned int fn_value( static_cast<register_t>(fn) );
+        gpfsel[pinid/10] &= ~(7<<((pinid%10)*3));
+        gpfsel[pinid/10] |=  fn_value<<((pinid%10)*3);
+      }
     };
   }
 }}

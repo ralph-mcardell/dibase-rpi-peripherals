@@ -21,8 +21,11 @@ using namespace dibase::rpi::peripherals;
 
 typedef uint32_t RegisterType;
 typedef unsigned char Byte;
+RegisterType const MinPinId(0);
+RegisterType const MaxPinId(53);
+RegisterType const NumPinIds(MaxPinId-MinPinId+1);
 
-TEST_CASE( "Unit-tests/gpio_registers/register-offsets", "Register member offsets should match the documented layout")
+TEST_CASE("Unit-tests/gpio_registers/register-offsets", "Register member offsets should match the documented layout")
 {
   enum RegisterOffsets
     { GPFSEL0=0x00, GPFSEL1=0x04, GPFSEL2  =0x08, GPFSEL3  =0x0C, GPFSEL4=0x10
@@ -111,4 +114,57 @@ TEST_CASE( "Unit-tests/gpio_registers/register-offsets", "Register member offset
 
   gpio_regs.test = TEST;
   CHECK( reinterpret_cast<RegisterType&>(reg_base_addr[TEST])==TEST );
+}
+TEST_CASE("Unit-tests/gpio_registers/set_pin_fn", "Setting pin function sets associated 3 bits of gpfsel member")
+{
+// See BCM2835 Peripherals datasheet document, Tables 6-2..6-7
+//  RegisterType const PinFnInput(0);
+  RegisterType const PinFnOutput(1);
+  RegisterType const PinFnAlt0(4);
+  RegisterType const PinFnAlt1(5);
+  RegisterType const PinFnAlt2(6);
+  RegisterType const PinFnAlt3(7);
+  RegisterType const PinFnAlt4(3);
+  RegisterType const PinFnAlt5(2);
+
+  RegisterType const BitsPerFn(3);
+  RegisterType const BitsPerRegister(32);
+  RegisterType const FnsPerReg(BitsPerRegister/BitsPerFn);
+
+  gpio_registers gpio_regs;
+  std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.set_pin_function(pinid, gpio_pin_fn::output);
+      RegisterType const FnRegIdx(pinid/FnsPerReg);
+      CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnOutput<<((pinid%FnsPerReg)*BitsPerFn)));
+
+      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt0);
+      CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt0<<((pinid%FnsPerReg)*BitsPerFn)));
+
+      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt1);
+      CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt1<<((pinid%FnsPerReg)*BitsPerFn)));
+
+      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt2);
+      CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt2<<((pinid%FnsPerReg)*BitsPerFn)));
+
+      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt3);
+      CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt3<<((pinid%FnsPerReg)*BitsPerFn)));
+
+      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt4);
+      CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt4<<((pinid%FnsPerReg)*BitsPerFn)));
+
+      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt5);
+      CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt5<<((pinid%FnsPerReg)*BitsPerFn)));
+
+      gpio_regs.set_pin_function(pinid, gpio_pin_fn::input);
+      CHECK(gpio_regs.gpfsel[FnRegIdx]==0);
+    }
+  CHECK(gpio_regs.gpfsel[0]==0);
+  CHECK(gpio_regs.gpfsel[1]==0);
+  CHECK(gpio_regs.gpfsel[2]==0);
+  CHECK(gpio_regs.gpfsel[3]==0);
+  CHECK(gpio_regs.gpfsel[4]==0);
 }

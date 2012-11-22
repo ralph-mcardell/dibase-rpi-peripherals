@@ -14,10 +14,11 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
-    typedef off_t    physical_address_t;
+    typedef off_t         physical_address_t;
     typedef std::uint32_t register_t;
 
-    physical_address_t const peripheral_base_address(0x20000000);
+    physical_address_t const  peripheral_base_address(0x20000000);
+    std::size_t const         register_block_size(4096);         
   }
 }} 
 #endif // DIBASE_RPI_PERIPHERALS_PERIDEF_H

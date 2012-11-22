@@ -14,6 +14,10 @@
 *.la
 *.a
 
+# Temporary files
+*.tmp
+*.temp
+
 # Built executables
 bin
 test

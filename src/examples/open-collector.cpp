@@ -30,9 +30,9 @@ int main()
 
       for (unsigned p = 0; p < 10; ++p) 
         {
-          pgpio->gpset[0] = 1 << 4;
+          pgpio->set_pin(4);
           sleep(1);
-          pgpio->gpclr[0] = 1 << 4;
+          pgpio->clear_pin(4);
           sleep(1);
         }
     }

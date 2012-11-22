@@ -115,10 +115,11 @@ TEST_CASE("Unit-tests/gpio_registers/register-offsets", "Register member offsets
   gpio_regs.test = TEST;
   CHECK( reinterpret_cast<RegisterType&>(reg_base_addr[TEST])==TEST );
 }
+
 TEST_CASE("Unit-tests/gpio_registers/set_pin_fn", "Setting pin function sets associated 3 bits of gpfsel member")
 {
 // See BCM2835 Peripherals datasheet document, Tables 6-2..6-7
-//  RegisterType const PinFnInput(0);
+//  RegisterType const PinFnInput(0); // Unused
   RegisterType const PinFnOutput(1);
   RegisterType const PinFnAlt0(4);
   RegisterType const PinFnAlt1(5);
@@ -132,7 +133,6 @@ TEST_CASE("Unit-tests/gpio_registers/set_pin_fn", "Setting pin function sets ass
   RegisterType const FnsPerReg(BitsPerRegister/BitsPerFn);
 
   gpio_registers gpio_regs;
-  std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
 // start with all bytes of gpio_regs set to 0:
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
@@ -167,4 +167,36 @@ TEST_CASE("Unit-tests/gpio_registers/set_pin_fn", "Setting pin function sets ass
   CHECK(gpio_regs.gpfsel[2]==0);
   CHECK(gpio_regs.gpfsel[3]==0);
   CHECK(gpio_regs.gpfsel[4]==0);
+}
+
+TEST_CASE("Unit-tests/gpio_registers/set_pin", "Setting pin sets associated gpset member bit high")
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.set_pin(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+      CHECK(gpio_regs.gpset[PinRegIdx]==(1U<<(pinid%PinsPerRegister)));
+    }
+}
+
+TEST_CASE("Unit-tests/gpio_registers/clear_pin", "Clearing pin sets associated gpclr member bit high")
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.clear_pin(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+      CHECK(gpio_regs.gpclr[PinRegIdx]==(1U<<(pinid%PinsPerRegister)));
+    }
 }

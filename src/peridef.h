@@ -10,6 +10,7 @@
 
  #include <sys/types.h>
  #include <cstdint>
+ #include <limits>
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -17,8 +18,9 @@ namespace dibase { namespace rpi {
     typedef off_t         physical_address_t;
     typedef std::uint32_t register_t;
 
-    physical_address_t const  peripheral_base_address(0x20000000);
-    std::size_t const         register_block_size(4096);         
+    std::size_t const register_width(std::numeric_limits<register_t>::digits);
+    std::size_t const register_block_size(4096);        
+    physical_address_t const peripheral_base_address(0x20000000);
   }
 }} 
 #endif // DIBASE_RPI_PERIPHERALS_PERIDEF_H

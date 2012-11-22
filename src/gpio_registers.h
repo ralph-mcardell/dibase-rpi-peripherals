@@ -19,7 +19,7 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
-  /// @brief Strongly typoed enumeration of GPIO pin function values.
+  /// @brief Strongly typed enumeration of GPIO pin function values.
     enum class gpio_pin_fn : register_t
     { input   = 0
     , output  = 1
@@ -30,7 +30,7 @@ namespace dibase { namespace rpi {
     , alt4    = 3
     , alt5    = 2
     };
-    
+
   /// @brief Represents layout of GPIO control registers with operations.
   ///
   /// Permits access to BCM2835 GPIO control registers when an instance is
@@ -67,7 +67,7 @@ namespace dibase { namespace rpi {
       register_t gppudclk[2]; ///< GPIO pins pull-up/down enable clock (R/W)
       register_t reserved_do_not_use_b[4];  ///< Reserved, currently unused
       register_t test;        ///< Test Note: Only 4 bits wide (R/W)
-      
+
     /// @brief Set a GPIO pin's function.
     ///
     /// GPIO pins may be set to be either input or output or one of upto
@@ -83,9 +83,37 @@ namespace dibase { namespace rpi {
     /// @param[in]  fn      Scoped enumeration of the required function.
       void set_pin_function( unsigned int pinid, gpio_pin_fn fn ) volatile
       {
-        unsigned int fn_value( static_cast<register_t>(fn) );
-        gpfsel[pinid/10] &= ~(7<<((pinid%10)*3));
-        gpfsel[pinid/10] |=  fn_value<<((pinid%10)*3);
+        register_t const BitsPerPin(3);  // number of bits used for each pin
+        register_t const PinsPerReg(register_width/BitsPerPin);
+        register_t const MaxFnValue((1U<<BitsPerPin)-1);
+        
+        register_t fn_value( static_cast<register_t>(fn) );
+        gpfsel[pinid/PinsPerReg] &= ~(MaxFnValue<<((pinid%PinsPerReg)*BitsPerPin));
+        gpfsel[pinid/PinsPerReg] |=  fn_value<<((pinid%PinsPerReg)*BitsPerPin);
+      }
+
+    /// @brief Sets the single specified pin to a high (1, true, on) value.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin to set high
+    ///                     (0..53) - not range checked.
+      void set_pin( unsigned int pinid ) volatile
+      {
+        gpset[pinid/register_width] = 1U<<(pinid%register_width);//1 bit per pin
+      }
+
+    /// @brief Clear the single specified pin to a low (0, false, off) value.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin to set low
+    ///                     (0..53) - not range checked.
+      void clear_pin( unsigned int pinid ) volatile
+      {
+        gpclr[pinid/register_width] = 1U<<(pinid%register_width);//1 bit per pin
       }
     };
   }

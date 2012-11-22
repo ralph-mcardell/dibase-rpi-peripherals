@@ -17,35 +17,18 @@
 #include <iostream>     // for std IO stream objects
 #include <unistd.h>     // for sleep
 
-// The following macros were copied from the Gertboard software gb_common.h
-#define BCM2708_PERI_BASE        0x20000000
-#define CLOCK_BASE               (BCM2708_PERI_BASE + 0x101000)
-#define GPIO_BASE                (BCM2708_PERI_BASE + 0x200000)
-#define PWM_BASE                 (BCM2708_PERI_BASE + 0x20C000)
-#define SPI0_BASE                (BCM2708_PERI_BASE + 0x204000)
-#define UART0_BASE               (BCM2708_PERI_BASE + 0x201000)
-#define UART1_BASE               (BCM2708_PERI_BASE + 0x215000)
-
-#define PAGE_SIZE (4*1024)
-#define BLOCK_SIZE (4*1024)
-
 using namespace dibase::rpi::peripherals;
 
 int main()
 {
   try
     {
-      phymem_ptr<volatile unsigned> pclk(CLOCK_BASE, BLOCK_SIZE);
-      phymem_ptr<volatile unsigned> ppwm(PWM_BASE, BLOCK_SIZE);
-      phymem_ptr<volatile unsigned> pspi0(SPI0_BASE, BLOCK_SIZE);
-      phymem_ptr<volatile unsigned> puart0(UART0_BASE, BLOCK_SIZE);
-      phymem_ptr<volatile unsigned> puart1(UART1_BASE, BLOCK_SIZE);
-
-      phymem_ptr<volatile gpio_registers> pgpio(GPIO_BASE, BLOCK_SIZE);
+      phymem_ptr<volatile gpio_registers> 
+                pgpio(gpio_registers::physical_address, register_block_size);
       
       pgpio->set_pin_function(4, gpio_pin_fn::output);
 
-      for (unsigned p = 0; p < 10; p++) 
+      for (unsigned p = 0; p < 10; ++p) 
         {
           pgpio->gpset[0] = 1 << 4;
           sleep(1);

@@ -115,6 +115,19 @@ namespace dibase { namespace rpi {
       {
         gpclr[pinid/register_width] = 1U<<(pinid%register_width);//1 bit per pin
       }
+      
+    /// @brief Return the low/high level of the single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin to get level of
+    ///                     (0..53) - not range checked.
+    /// @return Zero if the pin level is low or a non-zero value if it is high.
+      register_t pin_level( unsigned int pinid ) volatile
+      {
+        return gplev[pinid/register_width] & (1U<<(pinid%register_width));
+      }
     };
   }
 }}

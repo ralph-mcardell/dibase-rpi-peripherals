@@ -200,3 +200,23 @@ TEST_CASE("Unit-tests/gpio_registers/clear_pin", "Clearing pin sets associated g
       CHECK(gpio_regs.gpclr[PinRegIdx]==(1U<<(pinid%PinsPerRegister)));
     }
 }
+
+TEST_CASE("Unit-tests/gpio_registers/pin_level", "Requesting a pin's level returns that pin's level")
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      bool level_low(gpio_regs.pin_level(pinid));
+      CHECK(level_low==false);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+      gpio_regs.gplev[PinRegIdx] |= 1U<<(pinid%PinsPerRegister);
+      bool level_high(gpio_regs.pin_level(pinid));
+      CHECK(level_high==true);
+      CHECK(gpio_regs.pin_level(pinid)==1U<<(pinid%PinsPerRegister));
+    }
+}

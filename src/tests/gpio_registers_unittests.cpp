@@ -25,7 +25,7 @@ RegisterType const MinPinId(0);
 RegisterType const MaxPinId(53);
 RegisterType const NumPinIds(MaxPinId-MinPinId+1);
 
-TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/offsets"
+TEST_CASE( "Unit-tests/one_bit_field_register/offsets"
          , "Registers with one-bit field per pin should have offsets 0 and 4"
          )
 {
@@ -40,7 +40,7 @@ TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/offsets"
   CHECK( reinterpret_cast<RegisterType&>(reg_base_addr[4])==2345678901U );
 }
 
-TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/set_bit"
+TEST_CASE( "Unit-tests/one_bit_field_register/set_bit"
          , "Setting a bit changes the state of just that bit"
          )
 {
@@ -59,7 +59,7 @@ TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/set_bit"
     }
 }
 
-TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/clear_bit"
+TEST_CASE( "Unit-tests/one_bit_field_register/clear_bit"
          , "Clearing a bit changes the state of just that bit"
          )
 {
@@ -78,7 +78,7 @@ TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/clear_bit"
     }
 }
 
-TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/set_just_bit"
+TEST_CASE( "Unit-tests/one_bit_field_register/set_just_bit"
          , "Setting just 1 bit sets only 1 bit in only one register word of a pair"
          )
 {
@@ -94,7 +94,7 @@ TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/set_just_bit"
     }
 }
 
-TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/get_bit"
+TEST_CASE( "Unit-tests/one_bit_field_register/get_bit"
          , "Getting single bit returns 0 or non-zero value with single bit set"
          )
 {
@@ -114,7 +114,23 @@ TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/get_bit"
     }
 }
 
-TEST_CASE("Unit-tests/gpio_registers/register-offsets", "Register member offsets should match the documented layout")
+TEST_CASE( "Unit-tests/one_bit_field_register/clear_all_bits"
+         , "Clearing all bits should result in both registers being zero"
+         )
+{
+  one_bit_field_register r;
+  // initially start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&r, 0xFF, sizeof(r));
+  CHECK( r[0] == ~((RegisterType)0) );
+  CHECK( r[1] == ~((RegisterType)0) );
+  r.clear_all_bits();
+  CHECK( r[0] == 0 );
+  CHECK( r[1] == 0 );
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/register-offsets"
+         , "Register member offsets should match the documented layout"
+         )
 {
   enum RegisterOffsets
     { GPFSEL0=0x00, GPFSEL1=0x04, GPFSEL2  =0x08, GPFSEL3  =0x0C, GPFSEL4=0x10
@@ -205,7 +221,9 @@ TEST_CASE("Unit-tests/gpio_registers/register-offsets", "Register member offsets
   CHECK( reinterpret_cast<RegisterType&>(reg_base_addr[TEST])==TEST );
 }
 
-TEST_CASE("Unit-tests/gpio_registers/set_pin_fn", "Setting pin function sets associated 3 bits of gpfsel member")
+TEST_CASE( "Unit-tests/gpio_registers/set_pin_fn"
+         , "Setting pin function sets associated 3 bits of gpfsel member"
+         )
 {
 // See BCM2835 Peripherals datasheet document, Tables 6-2..6-7
 //  RegisterType const PinFnInput(0); // Unused
@@ -258,7 +276,9 @@ TEST_CASE("Unit-tests/gpio_registers/set_pin_fn", "Setting pin function sets ass
   CHECK(gpio_regs.gpfsel[4]==0);
 }
 
-TEST_CASE("Unit-tests/gpio_registers/set_pin", "Setting pin sets associated gpset member bit high")
+TEST_CASE( "Unit-tests/gpio_registers/set_pin"
+         , "Setting pin sets associated gpset member bit high"
+         )
 {
   RegisterType const BitsPerRegister(32);
   RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
@@ -274,7 +294,9 @@ TEST_CASE("Unit-tests/gpio_registers/set_pin", "Setting pin sets associated gpse
     }
 }
 
-TEST_CASE("Unit-tests/gpio_registers/clear_pin", "Clearing pin sets associated gpclr member bit high")
+TEST_CASE( "Unit-tests/gpio_registers/clear_pin"
+         , "Clearing pin sets associated gpclr member bit high"
+         )
 {
   RegisterType const BitsPerRegister(32);
   RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
@@ -290,7 +312,9 @@ TEST_CASE("Unit-tests/gpio_registers/clear_pin", "Clearing pin sets associated g
     }
 }
 
-TEST_CASE("Unit-tests/gpio_registers/pin_level", "Requesting a pin's level returns that pin's level")
+TEST_CASE( "Unit-tests/gpio_registers/pin_level"
+         , "Requesting a pin's level returns that pin's level"
+         )
 {
   RegisterType const BitsPerRegister(32);
   RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
@@ -307,5 +331,273 @@ TEST_CASE("Unit-tests/gpio_registers/pin_level", "Requesting a pin's level retur
       bool level_high(gpio_regs.pin_level(pinid));
       CHECK(level_high==true);
       CHECK(gpio_regs.pin_level(pinid)==1U<<(pinid%PinsPerRegister));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_event"
+         , "Requesting a pin's event status returns that pin's event status"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      bool no_event(gpio_regs.pin_event(pinid));
+      CHECK(no_event==false);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+      gpio_regs.gpeds[PinRegIdx] |= 1U<<(pinid%PinsPerRegister);
+      bool event_waiting(gpio_regs.pin_event(pinid));
+      CHECK(event_waiting==true);
+      CHECK(gpio_regs.pin_event(pinid)==1U<<(pinid%PinsPerRegister));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/clear_pin_event"
+         , "Clearing a pin's event sets associated gpeds member bit high"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.clear_pin_event(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+      CHECK(gpio_regs.gpeds[PinRegIdx]==(1U<<(pinid%PinsPerRegister)));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_rising_edge_detect_enable"
+         , "Enabling rising edge detect for pin sets appropiate bit in gpren"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_rising_edge_detect_enable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gpren[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_rising_edge_detect_disable"
+         , "Disabling rising edge detect for pin clears appropiate bit in gpren"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_rising_edge_detect_disable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gpren[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_falling_edge_detect_enable"
+         , "Enabling falling edge detect for pin sets appropiate bit in gpfen"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_falling_edge_detect_enable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gpfen[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_falling_edge_detect_disable"
+         , "Disabling falling edge detect for pin clears appropiate bit in gpfen"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_falling_edge_detect_disable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gpfen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_high_detect_enable"
+         , "Enabling high detect for pin sets appropiate bit in gphen"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_high_detect_enable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gphen[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_high_detect_disable"
+         , "Disabling high detect for pin clears appropiate bit in gphen"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_high_detect_disable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gphen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_low_detect_enable"
+         , "Enabling low detect for pin sets appropiate bit in gplen"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_low_detect_enable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gplen[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_low_detect_disable"
+         , "Disabling low detect for pin clears appropiate bit in gplen"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_low_detect_disable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gplen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_async_rising_edge_detect_enable"
+         , "Enabling async rising edge detect for pin sets assoc. bit in gparen"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_async_rising_edge_detect_enable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gparen[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_async_rising_edge_detect_disable"
+         , "Disabling async rising edge detect for pin clears assoc. bit in gparen"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_async_rising_edge_detect_disable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gparen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_async_falling_edge_detect_enable"
+         , "Enabling async falling edge detect for pin sets assoc. bit in gpafen"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_async_falling_edge_detect_enable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gpafen[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/pin_async_falling_edge_detect_disable"
+         , "Disabling async falling edge detect for pin clears assoc. bit in gpafen"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.pin_async_falling_edge_detect_disable(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+    // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
+      CHECK(gpio_regs.gpafen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
     }
 }

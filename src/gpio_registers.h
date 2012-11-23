@@ -125,6 +125,21 @@ namespace dibase { namespace rpi {
       {
          return reg[bitnumber/register_width] & (1U<<(bitnumber%register_width));
       }
+    
+    /// @brief Clear all bits in both register words to zero.
+    ///
+    /// It may be useful if composing register values off to one side in main
+    /// memory to clear a one_bit_field_register instance before starting. This
+    /// is not done by default - i.e. on construction - as it may not always be
+    /// needed.
+    ///
+    /// Note: this is a volatile function as access will possibly be through a
+    /// pointer to volatile data.
+      void clear_all_bits() volatile
+      {
+        reg[0] = 0;
+        reg[1] = 0;
+      }
     };
 
   /// @brief Represents layout of GPIO control registers with operations.
@@ -145,19 +160,19 @@ namespace dibase { namespace rpi {
       register_t reserved_do_not_use_2;     ///< Reserved, currently unused
       one_bit_field_register gplev;    ///< GPIO pins input level (R)
       register_t reserved_do_not_use_3;     ///< Reserved, currently unused
-      register_t gpeds[2];    ///< GPIO pins event detect status (R/W)
+      one_bit_field_register gpeds;    ///< GPIO pins event detect status (R/W)
       register_t reserved_do_not_use_4;     ///< Reserved, currently unused
-      register_t gpren[2];    ///< GPIO pins rising edge detect enable (R/W)
+      one_bit_field_register gpren;    ///< GPIO pins rising edge detect enable (R/W)
       register_t reserved_do_not_use_5;     ///< Reserved, currently unused
-      register_t gpfen[2];    ///< GPIO pins falling edge detect enable (R/W)
+      one_bit_field_register gpfen;    ///< GPIO pins falling edge detect enable (R/W)
       register_t reserved_do_not_use_6;     ///< Reserved, currently unused
-      register_t gphen[2];    ///< GPIO pins high detect enable (R/W)
+      one_bit_field_register gphen;    ///< GPIO pins high detect enable (R/W)
       register_t reserved_do_not_use_7;     ///< Reserved, currently unused
-      register_t gplen[2];    ///< GPIO pins low detect enable (R/W)
+      one_bit_field_register gplen;    ///< GPIO pins low detect enable (R/W)
       register_t reserved_do_not_use_8;     ///< Reserved, currently unused
-      register_t gparen[2];   ///< GPIO pins async. rising edge detect (R/W)
+      one_bit_field_register gparen;   ///< GPIO pins async. rising edge detect (R/W)
       register_t reserved_do_not_use_9;     ///< Reserved, currently unused
-      register_t gpafen[2];   ///< GPIO pins async. falling edge detect (R/W)
+      one_bit_field_register gpafen;   ///< GPIO pins async. falling edge detect (R/W)
       register_t reserved_do_not_use_a;     ///< Reserved, currently unused
       register_t gppud;       ///< GPIO pins pull-up/down enable (R/W)
       register_t gppudclk[2]; ///< GPIO pins pull-up/down enable clock (R/W)
@@ -211,7 +226,7 @@ namespace dibase { namespace rpi {
       {
         gpclr.set_just_bit( pinid );
       }
-      
+
     /// @brief Return the low/high level of the single specified pin.
     ///
     /// Note: this is a volatile function as access will probably be through a
@@ -223,6 +238,176 @@ namespace dibase { namespace rpi {
       register_t pin_level( unsigned int pinid ) volatile
       {
         return gplev.get_bit(pinid);
+      }
+
+    /// @brief Return the event detection status of the single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin to get event status of
+    ///                     (0..53) - not range checked.
+    /// @return Zero if no event detected for the pin or a non-zero value if
+    ///         an event was detected for the pin.
+      register_t pin_event( unsigned int pinid ) volatile
+      {
+        return gpeds.get_bit(pinid);
+      }
+
+    /// @brief Clear a single specified pin's event notification.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin whose event notification
+    ///                     to clear. (0..53) - not range checked.
+      void clear_pin_event( unsigned int pinid ) volatile
+      {
+        gpeds.set_just_bit( pinid );
+      }
+
+    /// @brief Enable rising edge events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin for which rising edge
+    ///                     events will be detected. (0..53) - not range checked
+      void pin_rising_edge_detect_enable( unsigned int pinid ) volatile
+      {
+        gpren.set_bit( pinid );
+      }
+
+    /// @brief Disable rising edge events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin for which rising edge
+    ///                     events won't be detected. (0..53), not range checked
+      void pin_rising_edge_detect_disable( unsigned int pinid ) volatile
+      {
+        gpren.clear_bit( pinid );
+      }
+
+    /// @brief Enable falling edge events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin for which falling edge
+    ///                     events will be detected. (0..53) - not range checked
+      void pin_falling_edge_detect_enable( unsigned int pinid ) volatile
+      {
+        gpfen.set_bit( pinid );
+      }
+
+    /// @brief Disable falling edge events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin for which falling edge
+    ///                     events won't be detected. (0..53), not range checked
+      void pin_falling_edge_detect_disable( unsigned int pinid ) volatile
+      {
+        gpfen.clear_bit( pinid );
+      }
+
+    /// @brief Enable high detect events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin for which high detect 
+    ///                     events will be detected. (0..53) - not range checked
+      void pin_high_detect_enable( unsigned int pinid ) volatile
+      {
+        gphen.set_bit( pinid );
+      }
+
+    /// @brief Disable high detect events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin for which high detect
+    ///                     events won't be detected. (0..53), not range checked
+      void pin_high_detect_disable( unsigned int pinid ) volatile
+      {
+        gphen.clear_bit( pinid );
+      }
+
+    /// @brief Enable low detect events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin for which low detect 
+    ///                     events will be detected. (0..53) - not range checked
+      void pin_low_detect_enable( unsigned int pinid ) volatile
+      {
+        gplen.set_bit( pinid );
+      }
+
+    /// @brief Disable low detect events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin for which low detect
+    ///                     events won't be detected. (0..53), not range checked
+      void pin_low_detect_disable( unsigned int pinid ) volatile
+      {
+        gplen.clear_bit( pinid );
+      }
+
+    /// @brief Enable async rising edge events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid Id number of the GPIO pin for which async rising edge
+    ///                   events will be detected. (0..53) - not range checked
+      void pin_async_rising_edge_detect_enable( unsigned int pinid ) volatile
+      {
+        gparen.set_bit( pinid );
+      }
+
+    /// @brief Disable async rising edge events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid Id number of the GPIO pin for which async rising edge
+    ///                   events won't be detected. (0..53), not range checked
+      void pin_async_rising_edge_detect_disable( unsigned int pinid ) volatile
+      {
+        gparen.clear_bit( pinid );
+      }
+
+    /// @brief Enable async falling edge events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid Id number of the GPIO pin for which async falling edge
+    ///                   events will be detected. (0..53) - not range checked
+      void pin_async_falling_edge_detect_enable( unsigned int pinid ) volatile
+      {
+        gpafen.set_bit( pinid );
+      }
+
+    /// @brief Disable async falling edge events for a single specified pin.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid Id number of the GPIO pin for which async falling edge
+    ///                   events won't be detected. (0..53), not range checked
+      void pin_async_falling_edge_detect_disable( unsigned int pinid ) volatile
+      {
+        gpafen.clear_bit( pinid );
       }
     };
   }

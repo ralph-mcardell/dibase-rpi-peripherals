@@ -25,6 +25,95 @@ RegisterType const MinPinId(0);
 RegisterType const MaxPinId(53);
 RegisterType const NumPinIds(MaxPinId-MinPinId+1);
 
+TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/offsets"
+         , "Registers with one-bit field per pin should have offsets 0 and 4"
+         )
+{
+  one_bit_field_register r;
+  // initially start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&r, 0xFF, sizeof(r));
+  Byte * reg_base_addr(reinterpret_cast<Byte *>(&r));
+
+  r[0] = 1234567890U;
+  r[1] = 2345678901U;
+  CHECK( reinterpret_cast<RegisterType&>(reg_base_addr[0])==1234567890U );
+  CHECK( reinterpret_cast<RegisterType&>(reg_base_addr[4])==2345678901U );
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/set_bit"
+         , "Setting a bit changes the state of just that bit"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  one_bit_field_register r;
+  // initially start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&r, 0, sizeof(r));
+  for (RegisterType bitnumber=MinPinId; bitnumber<=MaxPinId; ++bitnumber)
+    {
+      r.set_bit(bitnumber);
+      RegisterType const BitRegIdx(bitnumber/BitsPerRegister);
+    // All bits upto and including the just set bit should be set
+    // This is 2**(bitposition+1) - 1. i.e. if bitposition were 2 then
+    // bits 0,1,2 (==7) would be set which is 2**3 - 1.
+      CHECK(r[BitRegIdx]==(1U<<(bitnumber%BitsPerRegister+1))-1);
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/clear_bit"
+         , "Clearing a bit changes the state of just that bit"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  one_bit_field_register r;
+  // initially start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&r, 0xFF, sizeof(r));
+  for (RegisterType bitnumber=MinPinId; bitnumber<=MaxPinId; ++bitnumber)
+    {
+      r.clear_bit(bitnumber);
+      RegisterType const BitRegIdx(bitnumber/BitsPerRegister);
+    // All bits upto and including the just set bit should be cleared
+    // This is ~(2**(bitposition+1) - 1). i.e. if bitposition were 2 then
+    // bits 0,1,2 would be clear which is ~(2**3 - 1).
+      CHECK(r[BitRegIdx]==~((1U<<(bitnumber%BitsPerRegister+1))-1));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/set_just_bit"
+         , "Setting just 1 bit sets only 1 bit in only one register word of a pair"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  one_bit_field_register r;
+  // initially start with all bytes of gpio_regs set to 0:
+  std::memset(&r, 0, sizeof(r));
+  for (RegisterType bitnumber=MinPinId; bitnumber<=MaxPinId; ++bitnumber)
+    {
+      r.set_just_bit(bitnumber);
+      RegisterType const BitRegIdx(bitnumber/BitsPerRegister);
+      CHECK(r[BitRegIdx]==1U<<(bitnumber%BitsPerRegister));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/one_bit_field_register/get_bit"
+         , "Getting single bit returns 0 or non-zero value with single bit set"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  one_bit_field_register r;
+  // initially start with all bytes of gpio_regs set to 0:
+  std::memset(&r, 0, sizeof(r));
+  for (RegisterType bitnumber=MinPinId; bitnumber<=MaxPinId; ++bitnumber)
+    {
+      bool level_low(r.get_bit(bitnumber));
+      CHECK(level_low==false);
+      RegisterType const BitRegIdx(bitnumber/BitsPerRegister);
+      r[BitRegIdx] |= 1U<<(bitnumber%BitsPerRegister);
+      bool level_high(r.get_bit(bitnumber));
+      CHECK(level_high==true);
+      CHECK(r.get_bit(bitnumber)==1U<<(bitnumber%BitsPerRegister));
+    }
+}
+
 TEST_CASE("Unit-tests/gpio_registers/register-offsets", "Register member offsets should match the documented layout")
 {
   enum RegisterOffsets

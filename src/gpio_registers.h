@@ -31,6 +31,102 @@ namespace dibase { namespace rpi {
     , alt5    = 2
     };
 
+  /// @brief Type representing register pairs for 1 bit per pin field groups
+  ///
+  /// There are 54 GPIO pins and many control registers have 1 bit per GPIO pin
+  /// and thus come in pairs (e.g. GPSET0, GPSET1 and GPCLR0, GPCLR1) with the
+  /// single bit fields for GPIO pins 0..31 in GPxxx0 and those for pins 32..53
+  /// in the lower bits of GPxxx1. The one_bit_field_register type presents a
+  /// united interface for such register pairs andprovides commonly use
+  /// functions that are required to perform various control functions of the
+  /// various registers.
+  ///
+    class one_bit_field_register
+    {
+      register_t reg[2];
+    
+    public:
+    /// @brief Subscript operator. Allows direct access to register pair array
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  index   Index of register in pair (0..1, not range checked).
+    /// @return reference to the 32-bit register indicated by index. Undefined
+    ///         if index not 0 or 1.
+      register_t volatile & operator[](std::size_t index) volatile
+      {
+        return reg[index];
+      }
+      
+    /// @brief Set a single bit to 1, leaving other bits as they were.
+    ///
+    /// Bits are in the range 0...63, but for GPIO pins only 0...53 should be
+    /// used.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  bitnumber Bit number in the register pair looked at as a
+    ///                       single value (0..63, not range checked).
+      void set_bit( unsigned int bitnumber ) volatile
+      {
+        reg[bitnumber/register_width] |= 1U<<(bitnumber%register_width);
+      }
+
+    /// @brief Clear a single bit to 0, leaving other bits as they were.
+    ///
+    /// Bits are in the range 0...63, but for GPIO pins only 0...53 should be
+    /// used.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  bitnumber Bit number in the register pair looked at as a
+    ///                       single value (0..63, not range checked).
+      void clear_bit( unsigned int bitnumber ) volatile
+      {
+        reg[bitnumber/register_width] &= ~(1U<<(bitnumber%register_width));
+      }
+
+    /// @brief Set a single bit to 1, with other bits in the same word set to 0
+    ///
+    /// Overwrites the one word of the pair containing the single bit field for
+    /// the passed bit number with a value having just the requested bit set to
+    /// 1. The other word is left untouched. This is useful for registers such
+    /// as GPSET0,1 and GPCLR0,1 where a zero bit means no change and only one
+    /// word would need to be written to to change a single pin's state.
+    ///
+    /// Bits are in the range 0...63, but for GPIO pins only 0...53 should be
+    /// used.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  bitnumber Bit number in the register pair looked at as a
+    ///                       single value (0..63, not range checked).
+      void set_just_bit( unsigned int bitnumber ) volatile
+      {
+        reg[bitnumber/register_width] = 1U<<(bitnumber%register_width);
+      }
+      
+    /// @brief Returns single bit's state.
+    ///
+    /// Bits are in the range 0...63, but for GPIO pins only 0...53 should be
+    /// used.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  bitnumber Bit number in the register pair looked at as a
+    ///                       single value (0..63, not range checked).
+    /// @return Zero if the bit is 0 or a non-zero value if it is 1.
+      register_t get_bit( unsigned int bitnumber ) volatile
+      {
+         return reg[bitnumber/register_width] & (1U<<(bitnumber%register_width));
+      }
+    };
+
   /// @brief Represents layout of GPIO control registers with operations.
   ///
   /// Permits access to BCM2835 GPIO control registers when an instance is
@@ -43,11 +139,11 @@ namespace dibase { namespace rpi {
 
       register_t gpfsel[6];   ///< GPIO pins function select (R/W)
       register_t reserved_do_not_use_0;     ///< Reserved, currently unused
-      register_t gpset[2];    ///< GPIO pins output set high (W)
+      one_bit_field_register gpset;    ///< GPIO pins output set high (W)
       register_t reserved_do_not_use_1;     ///< Reserved, currently unused
-      register_t gpclr[2];    ///< GPIO pins output clear low (W)
+      one_bit_field_register gpclr;    ///< GPIO pins output clear low (W)
       register_t reserved_do_not_use_2;     ///< Reserved, currently unused
-      register_t gplev[2];    ///< GPIO pins input level (R)
+      one_bit_field_register gplev;    ///< GPIO pins input level (R)
       register_t reserved_do_not_use_3;     ///< Reserved, currently unused
       register_t gpeds[2];    ///< GPIO pins event detect status (R/W)
       register_t reserved_do_not_use_4;     ///< Reserved, currently unused
@@ -101,7 +197,7 @@ namespace dibase { namespace rpi {
     ///                     (0..53) - not range checked.
       void set_pin( unsigned int pinid ) volatile
       {
-        gpset[pinid/register_width] = 1U<<(pinid%register_width);//1 bit per pin
+        gpset.set_just_bit( pinid );
       }
 
     /// @brief Clear the single specified pin to a low (0, false, off) value.
@@ -113,7 +209,7 @@ namespace dibase { namespace rpi {
     ///                     (0..53) - not range checked.
       void clear_pin( unsigned int pinid ) volatile
       {
-        gpclr[pinid/register_width] = 1U<<(pinid%register_width);//1 bit per pin
+        gpclr.set_just_bit( pinid );
       }
       
     /// @brief Return the low/high level of the single specified pin.
@@ -126,7 +222,7 @@ namespace dibase { namespace rpi {
     /// @return Zero if the pin level is low or a non-zero value if it is high.
       register_t pin_level( unsigned int pinid ) volatile
       {
-        return gplev[pinid/register_width] & (1U<<(pinid%register_width));
+        return gplev.get_bit(pinid);
       }
     };
   }

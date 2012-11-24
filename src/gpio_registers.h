@@ -2,7 +2,7 @@
 /// @file gpio_registers.h 
 /// @brief Low-level GPIO control registers type definition.
 ///
-/// Refer to the Broadcom BCM2835 Peripherals Datasheet PDF file for details:
+/// Refer to the Broadcom BCM2835 ARM Peripherals Datasheet PDF file for details:
 ///
 /// http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
 ///
@@ -29,6 +29,13 @@ namespace dibase { namespace rpi {
     , alt3    = 7
     , alt4    = 3
     , alt5    = 2
+    };
+
+  /// @brief Strongly typed enumeration of GPIO pull up/down control values.
+    enum class gpio_pud_mode : register_t
+    { off                       = 0
+    , enable_pull_down_control  = 1
+    , enable_pull_up_control    = 2
     };
 
   /// @brief Type representing register pairs for 1 bit per pin field groups
@@ -174,8 +181,8 @@ namespace dibase { namespace rpi {
       register_t reserved_do_not_use_9;     ///< Reserved, currently unused
       one_bit_field_register gpafen;   ///< GPIO pins async. falling edge detect (R/W)
       register_t reserved_do_not_use_a;     ///< Reserved, currently unused
-      register_t gppud;       ///< GPIO pins pull-up/down enable (R/W)
-      register_t gppudclk[2]; ///< GPIO pins pull-up/down enable clock (R/W)
+      gpio_pud_mode gppud;       ///< GPIO pins pull-up/down enable (R/W)
+      one_bit_field_register gppudclk; ///< GPIO pins pull-up/down enable clock (R/W)
       register_t reserved_do_not_use_b[4];  ///< Reserved, currently unused
       register_t test;        ///< Test Note: Only 4 bits wide (R/W)
 
@@ -408,6 +415,56 @@ namespace dibase { namespace rpi {
       void pin_async_falling_edge_detect_disable( unsigned int pinid ) volatile
       {
         gpafen.clear_bit( pinid );
+      }
+
+    /// @brief Set the pull up/down actualisation control mode.
+    ///
+    /// set_pull_up_down_mode has to be used in conjuction with
+    /// assert_pin_pull_up_down_clock and remove_all_pin_pull_up_down_clocks.
+    /// See the BCM2835 ARM Peripherals datasheet section 6.1, GPPUD and
+    /// GPPUDCLKn descriptions for details. The latter in particular specifies
+    /// the underlying sequence that needs to be used.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  mode  the mode to set gppud to.
+      void set_pull_up_down_mode( gpio_pud_mode mode ) volatile
+      {
+        gppud = mode;
+      }
+
+    /// @brief Assert a single pin's pull up/down clock.
+    ///
+    /// assert_pin_pull_up_down_clock has to be used in conjuction with
+    /// set_pull_up_down_mode and remove_all_pin_pull_up_down_clocks. See the
+    /// BCM2835 ARM Peripherals datasheet section 6.1, GPPUD and GPPUDCLKn
+    /// descriptions for details. The latter in particular specifies the
+    /// underlying sequence that needs to be used.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+    ///
+    /// @param[in]  pinid   Id number of the GPIO pin to assert pull up/down
+    ///                     clock for. (0..53) - not range checked.
+      void assert_pin_pull_up_down_clock( unsigned int pinid ) volatile
+      {
+        gppudclk.set_just_bit( pinid );
+      }
+
+    /// @brief Remove all pin's pull up/down clock assertions.
+    ///
+    /// remove_all_pin_pull_up_down_clocks has to be used in conjuction with
+    /// set_pull_up_down_mode and assert_pin_pull_up_down_clock. See the
+    /// BCM2835 ARM Peripherals datasheet section 6.1, GPPUD and GPPUDCLKn
+    /// descriptions for details. The latter in particular specifies the
+    /// underlying sequence that needs to be used.
+    ///
+    /// Note: this is a volatile function as access will probably be through a
+    /// pointer to volatile data.
+      void remove_all_pin_pull_up_down_clocks() volatile
+      {
+        gppudclk.clear_all_bits();
       }
     };
   }

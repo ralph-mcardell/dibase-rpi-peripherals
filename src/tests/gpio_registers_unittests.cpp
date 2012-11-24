@@ -209,7 +209,7 @@ TEST_CASE( "Unit-tests/gpio_registers/register-offsets"
   gpio_regs.gpafen[1] = GPAFEN1;
   CHECK( reinterpret_cast<RegisterType&>(reg_base_addr[GPAFEN1])==GPAFEN1 );
 
-  gpio_regs.gppud = GPPUD;
+  gpio_regs.gppud = static_cast<gpio_pud_mode>(GPPUD);
   CHECK( reinterpret_cast<RegisterType&>(reg_base_addr[GPPUD])==GPPUD );
 
   gpio_regs.gppudclk[0] = GPPUDCLK0;
@@ -600,4 +600,49 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_async_falling_edge_detect_disable"
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gpafen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
     }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/set_pull_up_down_mode"
+         , "Setting pull up/down mode sets the correct value in gppud"
+         )
+{
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
+  gpio_regs.set_pull_up_down_mode( gpio_pud_mode::enable_pull_down_control );
+  CHECK(static_cast<RegisterType>(gpio_regs.gppud)==1);
+  gpio_regs.set_pull_up_down_mode( gpio_pud_mode::enable_pull_up_control );
+  CHECK(static_cast<RegisterType>(gpio_regs.gppud)==2);
+  gpio_regs.set_pull_up_down_mode( gpio_pud_mode::off );
+  CHECK(static_cast<RegisterType>(gpio_regs.gppud)==0);
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/assert_pin_pull_up_down_clock"
+         , "Asserting pin's pull up/down clock sets the correct bit in gppudclk"
+         )
+{
+  RegisterType const BitsPerRegister(32);
+  RegisterType const PinsPerRegister(BitsPerRegister); // 1 bit per pin
+
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0:
+  std::memset(&gpio_regs, 0, sizeof(gpio_regs));
+  for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
+    {
+      gpio_regs.assert_pin_pull_up_down_clock(pinid);
+      RegisterType const PinRegIdx(pinid/PinsPerRegister);
+      CHECK(gpio_regs.gppudclk[PinRegIdx]==1U<<(pinid%PinsPerRegister));
+    }
+}
+
+TEST_CASE( "Unit-tests/gpio_registers/remove_all_pin_pull_up_down_clocks"
+         , "Removing all pin's pull up/down clocks clears both gppudclk registers"
+         )
+{
+  gpio_registers gpio_regs;
+// start with all bytes of gpio_regs set to 0xFF:
+  std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
+  gpio_regs.remove_all_pin_pull_up_down_clocks();
+  CHECK(gpio_regs.gppudclk[0]==0);
+  CHECK(gpio_regs.gppudclk[1]==0);
 }

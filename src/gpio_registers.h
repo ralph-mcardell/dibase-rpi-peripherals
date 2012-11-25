@@ -39,9 +39,9 @@ namespace dibase { namespace rpi {
   /// @brief Strongly typed enumeration of GPIO pull up/down control values.
   ///
   /// When setting up pull up/down for GPIO pins, pins can be set to have pull
-  /// up, pull down or neither (off). The off values is also used when
+  /// up, pull down or neither (off). The off value is also used when
   /// completing the pull up/down setup sequence. See section 6.1 GPPUD and
-  /// GPPUDCLKn section of the
+  /// GPPUDCLKn sections of the
   /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
   /// Broadcom BCM2835 ARM Peripherals Datasheet</a>.
     enum class gpio_pud_mode : register_t

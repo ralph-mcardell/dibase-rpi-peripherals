@@ -2,11 +2,10 @@
 /// @file gpio_registers.h 
 /// @brief Low-level GPIO control registers type definition.
 ///
-/// Refer to the Broadcom BCM2835 ARM Peripherals Datasheet PDF file for details:
-///
-/// http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
-///
-/// Chapter 6 General Purpose I/O (GPIO) 
+/// Refer to the
+/// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+/// Broadcom BCM2835 ARM Peripherals Datasheet</a> Chapter 6 General Purpose
+/// I/O (GPIO) for details.
 ///
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell
@@ -20,6 +19,12 @@ namespace dibase { namespace rpi {
   namespace peripherals
   {
   /// @brief Strongly typed enumeration of GPIO pin function values.
+  /// 
+  /// Each GPIO pin can be set for use as an input pin, an output pin or one of
+  /// up to six alternative functions. Which pins support which alternative
+  /// functions is detailed in section 6.2 of the 
+  /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+  /// Broadcom BCM2835 ARM Peripherals Datasheet</a>.
     enum class gpio_pin_fn : register_t
     { input   = 0
     , output  = 1
@@ -32,6 +37,13 @@ namespace dibase { namespace rpi {
     };
 
   /// @brief Strongly typed enumeration of GPIO pull up/down control values.
+  ///
+  /// When setting up pull up/down for GPIO pins, pins can be set to have pull
+  /// up, pull down or neither (off). The off values is also used when
+  /// completing the pull up/down setup sequence. See section 6.1 GPPUD and
+  /// GPPUDCLKn section of the
+  /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+  /// Broadcom BCM2835 ARM Peripherals Datasheet</a>.
     enum class gpio_pud_mode : register_t
     { off                       = 0
     , enable_pull_down_control  = 1
@@ -44,7 +56,7 @@ namespace dibase { namespace rpi {
   /// and thus come in pairs (e.g. GPSET0, GPSET1 and GPCLR0, GPCLR1) with the
   /// single bit fields for GPIO pins 0..31 in GPxxx0 and those for pins 32..53
   /// in the lower bits of GPxxx1. The one_bit_field_register type presents a
-  /// united interface for such register pairs andprovides commonly use
+  /// united interface for such register pairs and provides commonly use
   /// functions that are required to perform various control functions of the
   /// various registers.
   ///
@@ -152,10 +164,15 @@ namespace dibase { namespace rpi {
   /// @brief Represents layout of GPIO control registers with operations.
   ///
   /// Permits access to BCM2835 GPIO control registers when an instance is
-  /// mapped to the correct physical memory location
+  /// mapped to the correct physical memory location.
+  ///
+  /// See the
+  /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+  /// Broadcom BCM2835 ARM Peripherals Datasheet</a> chapter 6 for details
   ///
     struct gpio_registers
     {
+    /// @brief Physical address of start of BCM2835 GPIO control registers
       static const physical_address_t physical_address
                                           = peripheral_base_address + 0x200000;
 
@@ -420,8 +437,10 @@ namespace dibase { namespace rpi {
     /// @brief Set the pull up/down actualisation control mode.
     ///
     /// set_pull_up_down_mode has to be used in conjuction with
-    /// assert_pin_pull_up_down_clock and remove_all_pin_pull_up_down_clocks.
-    /// See the BCM2835 ARM Peripherals datasheet section 6.1, GPPUD and
+    /// \ref assert_pin_pull_up_down_clock and
+    /// \ref remove_all_pin_pull_up_down_clocks. See the
+    /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+    /// Broadcom BCM2835 ARM Peripherals Datasheet</a> section 6.1, GPPUD and
     /// GPPUDCLKn descriptions for details. The latter in particular specifies
     /// the underlying sequence that needs to be used.
     ///
@@ -437,10 +456,12 @@ namespace dibase { namespace rpi {
     /// @brief Assert a single pin's pull up/down clock.
     ///
     /// assert_pin_pull_up_down_clock has to be used in conjuction with
-    /// set_pull_up_down_mode and remove_all_pin_pull_up_down_clocks. See the
-    /// BCM2835 ARM Peripherals datasheet section 6.1, GPPUD and GPPUDCLKn
-    /// descriptions for details. The latter in particular specifies the
-    /// underlying sequence that needs to be used.
+    /// \ref set_pull_up_down_mode and \ref remove_all_pin_pull_up_down_clocks.
+    /// See the
+    /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+    /// Broadcom BCM2835 ARM Peripherals Datasheet</a> section 6.1, GPPUD and
+    /// GPPUDCLKn descriptions for details. The latter in particular specifies
+    /// the underlying sequence that needs to be used.
     ///
     /// Note: this is a volatile function as access will probably be through a
     /// pointer to volatile data.
@@ -455,10 +476,12 @@ namespace dibase { namespace rpi {
     /// @brief Remove all pin's pull up/down clock assertions.
     ///
     /// remove_all_pin_pull_up_down_clocks has to be used in conjuction with
-    /// set_pull_up_down_mode and assert_pin_pull_up_down_clock. See the
-    /// BCM2835 ARM Peripherals datasheet section 6.1, GPPUD and GPPUDCLKn
-    /// descriptions for details. The latter in particular specifies the
-    /// underlying sequence that needs to be used.
+    /// \ref set_pull_up_down_mode and \ref assert_pin_pull_up_down_clock.
+    /// See the
+    /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+    /// Broadcom BCM2835 ARM Peripherals Datasheet</a> section 6.1, GPPUD and
+    /// GPPUDCLKn descriptions for details. The latter in particular specifies
+    /// the underlying sequence that needs to be used.
     ///
     /// Note: this is a volatile function as access will probably be through a
     /// pointer to volatile data.

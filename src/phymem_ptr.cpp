@@ -1,12 +1,9 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file phymem_ptr.cpp
 /// @brief Implementation of physical memory smart pointer via /dev/mem & mmap.
-//
+///
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell
-//
-// Basic GNU compiler options building executable called main:
-// g++ -std=c++0x -Wall -Wextra -pedantic -o main phymem_ptr.cpp
 
 #include "phymem_ptr.h"
 #include <sys/mman.h>

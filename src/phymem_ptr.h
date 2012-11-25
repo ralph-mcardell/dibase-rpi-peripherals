@@ -1,7 +1,7 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file phymem_ptr.h 
 /// @brief Declarations of smart pointer to physical memory types.
-//
+///
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell
 
@@ -44,7 +44,7 @@ namespace dibase { namespace rpi {
       ///                       - 'offset' into /dev/mem device 'file'.
       /// @param[in]  length    Length of mapped address region. Page size
       ///                       multiple.
-      /// @exception  std::system_error /dev/mem cannot be opened or the
+      /// @exception  std::system_error if /dev/mem cannot be opened or the
       ///             region cannot be mapped.
       raw_phymem_ptr(physical_address_t phy_addr, std::size_t length);
 
@@ -59,9 +59,9 @@ namespace dibase { namespace rpi {
       }
     };
  
-    /// @brief Typed physical memory smart pointer template class
+    /// @brief Typed physical memory smart pointer class template
     ///
-    /// Thin template sub-class of \ref raw_phymem_ptr that casts the untyped
+    /// Thin sub-class template of \ref raw_phymem_ptr that casts the untyped
     /// void* to the mapped region to the type specified by the template
     /// parameter T. Provides typed get and indexed get into the mapped region
     /// as well as operator overloads for * (de-reference) -> and [].
@@ -85,7 +85,7 @@ namespace dibase { namespace rpi {
       ///                       - 'offset' into /dev/mem device 'file'.
       /// @param[in]  length    Length of mapped address region. Page size
       ///                       multiple.
-      /// @exception  std::system_error /dev/mem cannot be opened or the
+      /// @exception  std::system_error if /dev/mem cannot be opened or the
       ///             region cannot be mapped.
       phymem_ptr(physical_address_t phy_addr, std::size_t length) 
       : raw_phymem_ptr(phy_addr, length)

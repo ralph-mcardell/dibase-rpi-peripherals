@@ -38,16 +38,16 @@ namespace dibase { namespace rpi {
     /// @brief Explicitly construct a pin_id from an integer value.
     ///
     /// The integer value must be in the range [min_id..max_id]. Values outside
-    /// this range cause a std::out_of_range exception to be thrown.
+    /// this range cause a std::invalid_argument exception to be thrown.
     ///
     /// @param[in]  v   Integer value of pin id number to represent.
-    /// @exception std::out_of_range raised if v > max_id or v < min_id
+    /// @exception std::invalid_argument raised if v > max_id or v < min_id
       explicit pin_id( pin_id_int_t v )
       : value( v )
       {
         if ( v > max_id ) // v < min_id not needed with v unsigned and min_id=0
           {
-            throw std::out_of_range("pin_id::pin_id: Invalid GPIO pin id value");
+            throw std::invalid_argument("pin_id::pin_id: Invalid GPIO pin id value");
           }
       }
 

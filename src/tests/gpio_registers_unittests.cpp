@@ -244,29 +244,29 @@ TEST_CASE( "Unit-tests/gpio_registers/set_pin_fn"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.set_pin_function(pinid, gpio_pin_fn::output);
+      gpio_regs.set_pin_function(pin_id(pinid), gpio_pin_fn::output);
       RegisterType const FnRegIdx(pinid/FnsPerReg);
       CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnOutput<<((pinid%FnsPerReg)*BitsPerFn)));
 
-      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt0);
+      gpio_regs.set_pin_function(pin_id(pinid), gpio_pin_fn::alt0);
       CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt0<<((pinid%FnsPerReg)*BitsPerFn)));
 
-      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt1);
+      gpio_regs.set_pin_function(pin_id(pinid), gpio_pin_fn::alt1);
       CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt1<<((pinid%FnsPerReg)*BitsPerFn)));
 
-      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt2);
+      gpio_regs.set_pin_function(pin_id(pinid), gpio_pin_fn::alt2);
       CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt2<<((pinid%FnsPerReg)*BitsPerFn)));
 
-      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt3);
+      gpio_regs.set_pin_function(pin_id(pinid), gpio_pin_fn::alt3);
       CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt3<<((pinid%FnsPerReg)*BitsPerFn)));
 
-      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt4);
+      gpio_regs.set_pin_function(pin_id(pinid), gpio_pin_fn::alt4);
       CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt4<<((pinid%FnsPerReg)*BitsPerFn)));
 
-      gpio_regs.set_pin_function(pinid, gpio_pin_fn::alt5);
+      gpio_regs.set_pin_function(pin_id(pinid), gpio_pin_fn::alt5);
       CHECK(gpio_regs.gpfsel[FnRegIdx]==(PinFnAlt5<<((pinid%FnsPerReg)*BitsPerFn)));
 
-      gpio_regs.set_pin_function(pinid, gpio_pin_fn::input);
+      gpio_regs.set_pin_function(pin_id(pinid), gpio_pin_fn::input);
       CHECK(gpio_regs.gpfsel[FnRegIdx]==0);
     }
   CHECK(gpio_regs.gpfsel[0]==0);
@@ -288,7 +288,7 @@ TEST_CASE( "Unit-tests/gpio_registers/set_pin"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.set_pin(pinid);
+      gpio_regs.set_pin(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
       CHECK(gpio_regs.gpset[PinRegIdx]==(1U<<(pinid%PinsPerRegister)));
     }
@@ -306,7 +306,7 @@ TEST_CASE( "Unit-tests/gpio_registers/clear_pin"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.clear_pin(pinid);
+      gpio_regs.clear_pin(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
       CHECK(gpio_regs.gpclr[PinRegIdx]==(1U<<(pinid%PinsPerRegister)));
     }
@@ -324,13 +324,13 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_level"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      bool level_low(gpio_regs.pin_level(pinid));
+      bool level_low(gpio_regs.pin_level(pin_id(pinid)));
       CHECK(level_low==false);
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
       gpio_regs.gplev[PinRegIdx] |= 1U<<(pinid%PinsPerRegister);
-      bool level_high(gpio_regs.pin_level(pinid));
+      bool level_high(gpio_regs.pin_level(pin_id(pinid)));
       CHECK(level_high==true);
-      CHECK(gpio_regs.pin_level(pinid)==1U<<(pinid%PinsPerRegister));
+      CHECK(gpio_regs.pin_level(pin_id(pinid))==1U<<(pinid%PinsPerRegister));
     }
 }
 
@@ -346,13 +346,13 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_event"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      bool no_event(gpio_regs.pin_event(pinid));
+      bool no_event(gpio_regs.pin_event(pin_id(pinid)));
       CHECK(no_event==false);
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
       gpio_regs.gpeds[PinRegIdx] |= 1U<<(pinid%PinsPerRegister);
-      bool event_waiting(gpio_regs.pin_event(pinid));
+      bool event_waiting(gpio_regs.pin_event(pin_id(pinid)));
       CHECK(event_waiting==true);
-      CHECK(gpio_regs.pin_event(pinid)==1U<<(pinid%PinsPerRegister));
+      CHECK(gpio_regs.pin_event(pin_id(pinid))==1U<<(pinid%PinsPerRegister));
     }
 }
 
@@ -368,7 +368,7 @@ TEST_CASE( "Unit-tests/gpio_registers/clear_pin_event"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.clear_pin_event(pinid);
+      gpio_regs.clear_pin_event(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
       CHECK(gpio_regs.gpeds[PinRegIdx]==(1U<<(pinid%PinsPerRegister)));
     }
@@ -386,7 +386,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_rising_edge_detect_enable"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_rising_edge_detect_enable(pinid);
+      gpio_regs.pin_rising_edge_detect_enable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gpren[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
@@ -405,7 +405,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_rising_edge_detect_disable"
   std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_rising_edge_detect_disable(pinid);
+      gpio_regs.pin_rising_edge_detect_disable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gpren[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
@@ -424,7 +424,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_falling_edge_detect_enable"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_falling_edge_detect_enable(pinid);
+      gpio_regs.pin_falling_edge_detect_enable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gpfen[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
@@ -443,7 +443,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_falling_edge_detect_disable"
   std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_falling_edge_detect_disable(pinid);
+      gpio_regs.pin_falling_edge_detect_disable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gpfen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
@@ -462,7 +462,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_high_detect_enable"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_high_detect_enable(pinid);
+      gpio_regs.pin_high_detect_enable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gphen[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
@@ -481,7 +481,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_high_detect_disable"
   std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_high_detect_disable(pinid);
+      gpio_regs.pin_high_detect_disable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gphen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
@@ -500,7 +500,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_low_detect_enable"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_low_detect_enable(pinid);
+      gpio_regs.pin_low_detect_enable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gplen[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
@@ -519,7 +519,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_low_detect_disable"
   std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_low_detect_disable(pinid);
+      gpio_regs.pin_low_detect_disable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gplen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
@@ -538,7 +538,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_async_rising_edge_detect_enable"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_async_rising_edge_detect_enable(pinid);
+      gpio_regs.pin_async_rising_edge_detect_enable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gparen[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
@@ -557,7 +557,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_async_rising_edge_detect_disable"
   std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_async_rising_edge_detect_disable(pinid);
+      gpio_regs.pin_async_rising_edge_detect_disable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gparen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
@@ -576,7 +576,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_async_falling_edge_detect_enable"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_async_falling_edge_detect_enable(pinid);
+      gpio_regs.pin_async_falling_edge_detect_enable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gpafen[PinRegIdx]==(1U<<(pinid%PinsPerRegister+1))-1);
@@ -595,7 +595,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_async_falling_edge_detect_disable"
   std::memset(&gpio_regs, 0xFF, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.pin_async_falling_edge_detect_disable(pinid);
+      gpio_regs.pin_async_falling_edge_detect_disable(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
     // See comments in TEST_CASE "Unit-tests/one_bit_field_register/set_bit"
       CHECK(gpio_regs.gpafen[PinRegIdx]==~((1U<<(pinid%PinsPerRegister+1))-1));
@@ -629,7 +629,7 @@ TEST_CASE( "Unit-tests/gpio_registers/assert_pin_pull_up_down_clock"
   std::memset(&gpio_regs, 0, sizeof(gpio_regs));
   for (RegisterType pinid=MinPinId; pinid<=MaxPinId; ++pinid)
     {
-      gpio_regs.assert_pin_pull_up_down_clock(pinid);
+      gpio_regs.assert_pin_pull_up_down_clock(pin_id(pinid));
       RegisterType const PinRegIdx(pinid/PinsPerRegister);
       CHECK(gpio_regs.gppudclk[PinRegIdx]==1U<<(pinid%PinsPerRegister));
     }

@@ -26,13 +26,14 @@ int main()
       phymem_ptr<volatile gpio_registers> 
                 pgpio(gpio_registers::physical_address, register_block_size);
       
-      pgpio->set_pin_function(4, gpio_pin_fn::output);
+      pin_id gpio4{4};
+      pgpio->set_pin_function(gpio4, gpio_pin_fn::output);
 
       for (unsigned p = 0; p < 10; ++p) 
         {
-          pgpio->set_pin(4);
+          pgpio->set_pin(gpio4);
           sleep(1);
-          pgpio->clear_pin(4);
+          pgpio->clear_pin(gpio4);
           sleep(1);
         }
     }

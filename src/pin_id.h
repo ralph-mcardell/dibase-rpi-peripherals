@@ -47,7 +47,7 @@ namespace dibase { namespace rpi {
       {
         if ( v > max_id ) // v < min_id not needed with v unsigned and min_id=0
           {
-            throw std::invalid_argument("pin_id::pin_id: Invalid GPIO pin id value");
+            throw std::invalid_argument("pin_id::pin_id: Invalid GPIO pin number");
           }
       }
 
@@ -61,6 +61,36 @@ namespace dibase { namespace rpi {
     private:
       pin_id_int_t  value;  ///< Wrapped integer value of the pin id.
     };
+    
+  /// @brief Return a pin_id with a value produced via a mapping array
+  ///
+  /// The returned pin_id's integer value is that given by the index key into
+  /// a map array of integers viz:
+  ///
+  /// returned pin_id = pin_id( map[key] )
+  ///
+  /// @param[in]  key     Mapping key value
+  /// @param[in]  map     Mapping array of pin_id integer values. If an array
+  ///                     slot does not map to a valid pin_id use an invalid
+  ///                     pin_id value to force a pin_id creation failure.
+  /// @param[in] map_size Number of pin_id integer values in map.
+  /// @return a pin_id created using the mapped value for the key:
+  ///         pin_id(map[key])
+  /// @exception  std::invalid_argument raised if key >= map_size or map[key]
+  ///             is not a valid pin_id value.
+    inline
+    pin_id mapped_pin_id
+    ( pin_id_int_t key
+    , pin_id_int_t const * map
+    , std::size_t map_size
+    )
+    {
+      if ( key >= map_size )
+        {
+          throw std::invalid_argument("mapped_pin_id: Invalid GPIO pin number");
+        }
+      return pin_id(map[key]);
+    }
   }
 }}
 #endif // DIBASE_RPI_PERIPHERALS_PIN_ID_H

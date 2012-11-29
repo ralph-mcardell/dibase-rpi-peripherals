@@ -52,3 +52,35 @@ TEST_CASE( "Unit_tests/pin_id/pin_id_in_exprn_with_volatile_data"
   CHECK( (volatile_value = pin_id(1))==1 );
   CHECK( (volatile_value |= 1U<<(pin_id(1)%32))==3 );
 }
+
+TEST_CASE( "Unit_tests/pin_id/mapped_pin_id_returns_pin_id_via_mapping"
+         , "mapped_pin_id creates a pin_id viz: pin_id(map[N])"
+         )
+{
+  pin_id_int_t map[] = {20,21,22,23,24,24};
+  std::size_t map_size{sizeof(map)/sizeof(pin_id_int_t)};
+  for ( std::size_t id=0; id!=map_size; ++id )
+    {
+      CHECK( mapped_pin_id(id, map, map_size)==map[id] );
+    }
+}
+
+TEST_CASE( "Unit_tests/pin_id/bad_mapped_pin_id_key_throws"
+         , "Passing mapped_pin_id an invalid key throws std::invalid_argument"
+         )
+{
+  pin_id_int_t map[] = {20,21,22,23,24,24};
+  std::size_t map_size{sizeof(map)/sizeof(pin_id_int_t)};
+  REQUIRE_THROWS_AS(mapped_pin_id(map_size, map, map_size), std::invalid_argument);
+  REQUIRE_THROWS_AS(mapped_pin_id(-1, map, map_size), std::invalid_argument);
+}
+
+TEST_CASE( "Unit_tests/pin_id/bad_mapped_pin_id_value_throws"
+         , "mapped_pin_id mapping results in bad pin id throws std::invalid_argument"
+         )
+{
+  pin_id_int_t map[] = {max_gpio_number+1,min_gpio_number-1};
+  std::size_t map_size{sizeof(map)/sizeof(pin_id_int_t)};
+  REQUIRE_THROWS_AS(mapped_pin_id(0, map, map_size), std::invalid_argument);
+  REQUIRE_THROWS_AS(mapped_pin_id(1, map, map_size), std::invalid_argument);
+}

@@ -91,6 +91,27 @@ namespace dibase { namespace rpi {
         }
       return pin_id(map[key]);
     }
-  }
-}}
+
+  /// @brief Number of pins on Raspberry Pi P1 connector
+    std::size_t const p1_pin_count{26};
+
+  /// @brief Number of versions of Raspberry Pi P1 connector pin connections
+    std::size_t const p1_versions{2};
+
+  /// @brief Number of slotes for Raspberry Pi P1 connector pin_id map.
+  ///
+  /// As connector pins count from 1 and C/C++ arrays indexes count from 0 the
+  /// map includes an extra slot for the non-existent pin 0.
+    std::size_t const p1_map_size{p1_pin_count+1};
+
+    /// @brief Mapping arrays for each version of Raspberry Pi P1 connector pins
+  ///
+  /// Each Raspberry Pi P1 connector version has its own vector mapping P1
+  /// pin numbers to BCM2835 GPIO pin numbers (that is, pin_id values). One
+  /// extra slot is required for the non-existent pin 0, which resolves to an
+  /// invalid GPIO pin id value.
+    extern pin_id_int_t p1_gpio_pin_map[p1_versions][p1_map_size];
+
+  } // namespace peripherals closed
+}} // namespaces rpi and dibase closed
 #endif // DIBASE_RPI_PERIPHERALS_PIN_ID_H

@@ -84,3 +84,51 @@ TEST_CASE( "Unit_tests/pin_id/bad_mapped_pin_id_value_throws"
   REQUIRE_THROWS_AS(mapped_pin_id(0, map, map_size), std::invalid_argument);
   REQUIRE_THROWS_AS(mapped_pin_id(1, map, map_size), std::invalid_argument);
 }
+
+// from Raspberry Pi V1 schematic...
+pin_id_int_t p1_gpio_pins[] 
+                        = { 3, 5, 7, 8,10,11,12,13,15,16,18,19,21,22,23,24,26 };
+pin_id_int_t p1_v1_gpio_chip_ids[]
+                        = { 0, 1, 4,14,15,17,18,21,22,23,24,10, 9,25,11, 8, 7 };
+std::size_t const number_of_p1_gpio_pins{17};
+
+TEST_CASE( "Unit_tests/pin_id/P1_V1_pins_map_as_expected"
+         , "P1 version 1 connector pins map to expected pin_id values"
+         )
+{
+  REQUIRE((sizeof(p1_gpio_pins)/sizeof(pin_id_int_t))==number_of_p1_gpio_pins);
+  for (std::size_t pin_idx=0; pin_idx!=number_of_p1_gpio_pins;++pin_idx)
+    {
+      CHECK(mapped_pin_id(p1_gpio_pins[pin_idx], p1_gpio_pin_map[0], p1_map_size)==p1_v1_gpio_chip_ids[pin_idx]);
+    }
+}
+
+// from Raspberry Pi V2 schematic...
+pin_id_int_t p1_v2_gpio_chip_ids[]
+                        = { 2, 3, 4,14,15,17,18,27,22,23,24,10, 9,25,11, 8, 7 };
+
+TEST_CASE( "Unit_tests/pin_id/P1_V2_pins_map_as_expected"
+         , "P1 version 2 connector pins map to expected pin_id values"
+         )
+{
+  REQUIRE((sizeof(p1_gpio_pins)/sizeof(pin_id_int_t))==number_of_p1_gpio_pins);
+  for (std::size_t pin_idx=0; pin_idx!=number_of_p1_gpio_pins;++pin_idx)
+    {
+      CHECK(mapped_pin_id(p1_gpio_pins[pin_idx], p1_gpio_pin_map[1], p1_map_size)==p1_v2_gpio_chip_ids[pin_idx]);
+    }
+}
+
+// from Raspberry Pi V1 schematic...
+pin_id_int_t p1_non_gpio_pins[] = { 0, 1, 2, 4, 6, 9, 14, 17, 20, 25 };
+std::size_t const number_of_p1_non_gpio_pins{10};
+TEST_CASE( "Unit_tests/pin_id/P1_V1_V2_non_gpio_pins_throw"
+         , "Non-GPIO P1 version 1 & 2 connector pins throw std::invalid_argument"
+         )
+{
+  REQUIRE((sizeof(p1_non_gpio_pins)/sizeof(pin_id_int_t))==number_of_p1_non_gpio_pins);
+  for (std::size_t pin_idx=0; pin_idx!=number_of_p1_non_gpio_pins;++pin_idx)
+    {
+      REQUIRE_THROWS_AS(mapped_pin_id(p1_non_gpio_pins[pin_idx], p1_gpio_pin_map[0], p1_map_size), std::invalid_argument);
+      REQUIRE_THROWS_AS(mapped_pin_id(p1_non_gpio_pins[pin_idx], p1_gpio_pin_map[1], p1_map_size), std::invalid_argument);
+    }
+}

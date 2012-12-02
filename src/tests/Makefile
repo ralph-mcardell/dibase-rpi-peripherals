@@ -11,7 +11,7 @@ include $(ROOT_DIR)/makeinclude.mak
 # Files and directories
 COMMON_SRC_FILES = test_main.cpp
 SYSTEST_SRC_FILES = phymem_ptr_systemtests.cpp
-UNITTEST_SRC_FILE = gpio_registers_unittests.cpp pin_id_unittests.cpp
+UNITTEST_SRC_FILE = gpio_registers_unittests.cpp pin_id_unittests.cpp rpi_info_unittests.cpp
 ALL_SRC_FILES = $(COMMON_SRC_FILES) $(SYSTEST_SRC_FILES) $(UNITTEST_SRC_FILE)
 
 COMMON_OBJ_FILES = $(COMMON_SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)

@@ -53,158 +53,6 @@ TEST_CASE( "Unit_tests/pin_id/pin_id_in_exprn_with_volatile_data"
   CHECK( (volatile_value |= 1U<<(pin_id(1)%32))==3 );
 }
 
-TEST_CASE( "Unit_tests/pin_id/mapped_pin_id_returns_pin_id_via_mapping"
-         , "mapped_pin_id creates a pin_id viz: pin_id(map[N])"
-         )
-{
-  pin_id_int_t map[] = {20,21,22,23,24,24};
-  std::size_t const map_size{sizeof(map)/sizeof(pin_id_int_t)};
-
-  for ( std::size_t id=0; id!=map_size; ++id )
-    {
-      CHECK( mapped_pin_id<map_size>(id, map)==map[id] );
-    }
-}
-
-TEST_CASE( "Unit_tests/pin_id/bad_mapped_pin_id_key_throws"
-         , "Passing mapped_pin_id an invalid key throws std::invalid_argument"
-         )
-{
-  pin_id_int_t map[] = {20,21,22,23,24,24};
-  std::size_t const map_size{sizeof(map)/sizeof(pin_id_int_t)};
-  typedef mapped_pin_id<map_size>  bad_mapped_pin_id_t;
-  REQUIRE_THROWS_AS(bad_mapped_pin_id_t(map_size, map), std::invalid_argument);
-  REQUIRE_THROWS_AS(bad_mapped_pin_id_t(-1, map), std::invalid_argument);
-}
-
-TEST_CASE( "Unit_tests/pin_id/bad_mapped_pin_id_value_throws"
-         , "mapped_pin_id mapping results in bad pin id throws std::invalid_argument"
-         )
-{
-  pin_id_int_t map[] = {max_gpio_number+1,min_gpio_number-1};
-  std::size_t const map_size{sizeof(map)/sizeof(pin_id_int_t)};
-  typedef mapped_pin_id<map_size>  bad_mapped_pin_id_t;
-  REQUIRE_THROWS_AS(bad_mapped_pin_id_t(0, map), std::invalid_argument);
-  REQUIRE_THROWS_AS(bad_mapped_pin_id_t(1, map), std::invalid_argument);
-}
-
-// from Raspberry Pi V1 schematic...
-pin_id_int_t p1_gpio_pins[] 
-                        = { 3, 5, 7, 8,10,11,12,13,15,16,18,19,21,22,23,24,26 };
-pin_id_int_t p1_v1_gpio_chip_ids[]
-                        = { 0, 1, 4,14,15,17,18,21,22,23,24,10, 9,25,11, 8, 7 };
-std::size_t const number_of_p1_gpio_pins{17};
-
-typedef mapped_pin_id<p1_map_size> p1_mapped_pin_id;
-
-TEST_CASE( "Unit_tests/pin_id/P1_V1_pins_map_as_expected"
-         , "P1 version 1 connector pins map to expected pin_id values"
-         )
-{
-  REQUIRE((sizeof(p1_gpio_pins)/sizeof(pin_id_int_t))==number_of_p1_gpio_pins);
-  for (std::size_t pin_idx=0; pin_idx!=number_of_p1_gpio_pins;++pin_idx)
-    {
-      CHECK( p1_mapped_pin_id(p1_gpio_pins[pin_idx], p1_gpio_pin_map[0])
-                                            ==p1_v1_gpio_chip_ids[pin_idx] );
-    }
-}
-
-// from Raspberry Pi V2 schematic...
-pin_id_int_t p1_v2_gpio_chip_ids[]
-                        = { 2, 3, 4,14,15,17,18,27,22,23,24,10, 9,25,11, 8, 7 };
-
-TEST_CASE( "Unit_tests/pin_id/P1_V2_pins_map_as_expected"
-         , "P1 version 2 connector pins map to expected pin_id values"
-         )
-{
-  REQUIRE((sizeof(p1_gpio_pins)/sizeof(pin_id_int_t))==number_of_p1_gpio_pins);
-  for (std::size_t pin_idx=0; pin_idx!=number_of_p1_gpio_pins;++pin_idx)
-    {
-      CHECK( p1_mapped_pin_id(p1_gpio_pins[pin_idx], p1_gpio_pin_map[1])
-                                            ==p1_v2_gpio_chip_ids[pin_idx] );
-    }
-}
-
-// from Raspberry Pi V1 schematic...
-// Note: includes extra non-GPIO pin slot for phantom pin 0
-pin_id_int_t p1_non_gpio_pins[] = { 0, 1, 2, 4, 6, 9, 14, 17, 20, 25 };
-std::size_t const number_of_p1_non_gpio_pins{10};
-TEST_CASE( "Unit_tests/pin_id/P1_V1_V2_non_gpio_pins_throw"
-         , "Non-GPIO P1 version 1 & 2 connector pins throw std::invalid_argument"
-         )
-{
-  REQUIRE((sizeof(p1_non_gpio_pins)/sizeof(pin_id_int_t))==number_of_p1_non_gpio_pins);
-  for (std::size_t pin_idx=0; pin_idx!=number_of_p1_non_gpio_pins;++pin_idx)
-    {
-      REQUIRE_THROWS_AS(p1_mapped_pin_id(p1_non_gpio_pins[pin_idx], p1_gpio_pin_map[0]), std::invalid_argument);
-      REQUIRE_THROWS_AS(p1_mapped_pin_id(p1_non_gpio_pins[pin_idx], p1_gpio_pin_map[1]), std::invalid_argument);
-    }
-}
-
-TEST_CASE( "Unit_tests/pin_id/P1_V1_V2_map_size_pin_count"
-         , "Sum of GPIO and non-GPIO P1 pins should equal map size, pin count+1"
-         )
-{
-  CHECK((number_of_p1_gpio_pins+number_of_p1_non_gpio_pins)==p1_map_size);
-  CHECK((number_of_p1_gpio_pins+number_of_p1_non_gpio_pins-1)==p1_pin_count);
-}
-
-// from Raspberry Pi V2 schematic...
-pin_id_int_t p5_gpio_pins[]         = {  3,  4,  5,  6 };
-pin_id_int_t p5_v2_gpio_chip_ids[]  = { 28, 29, 30, 31 };
-std::size_t const number_of_p5_gpio_pins{4};
-
-typedef mapped_pin_id<p5_map_size> p5_mapped_pin_id;
-
-TEST_CASE( "Unit_tests/pin_id/P5_V2_pins_map_as_expected"
-         , "P5 version 2 connector pins map to expected pin_id values"
-         )
-{
-  REQUIRE((sizeof(p5_gpio_pins)/sizeof(pin_id_int_t))==number_of_p5_gpio_pins);
-  for (std::size_t pin_idx=0; pin_idx!=number_of_p5_gpio_pins;++pin_idx)
-    {
-      CHECK( p5_mapped_pin_id(p5_gpio_pins[pin_idx], p5_gpio_pin_map[1])
-                                            ==p5_v2_gpio_chip_ids[pin_idx] );
-    }
-}
-
-// from Raspberry Pi V2 schematic...
-// Note: includes extra non-GPIO pin slot for phantom pin 0
-pin_id_int_t p5_v2_non_gpio_pins[] = { 0, 1, 2, 7, 8 };
-std::size_t const number_of_p5_v2_non_gpio_pins{5};
-TEST_CASE( "Unit_tests/pin_id/P5_V2_non_gpio_pins_throw"
-         , "Non-GPIO P5 version 2 connector pins throw std::invalid_argument"
-         )
-{
-  REQUIRE((sizeof(p5_v2_non_gpio_pins)/sizeof(pin_id_int_t))==number_of_p5_v2_non_gpio_pins);
-  for (std::size_t pin_idx=0; pin_idx!=number_of_p5_v2_non_gpio_pins;++pin_idx)
-    {
-      REQUIRE_THROWS_AS(p5_mapped_pin_id(p5_v2_non_gpio_pins[pin_idx], p5_gpio_pin_map[1]), std::invalid_argument);
-    }
-}
-
-// Version 1 boards have no P5 support so all pins effectively non-GPIO
-// Note: includes extra non-GPIO pin slot for phantom pin 0
-std::size_t const number_of_p5_v1_non_gpio_pins{9};
-TEST_CASE( "Unit_tests/pin_id/P5_V1_non_gpio_pins_throw"
-         , "All v.1 non-existent P5 connector pins throw std::invalid_argument"
-         )
-{
-  for (std::size_t pin_idx=0; pin_idx!=number_of_p5_v1_non_gpio_pins;++pin_idx)
-    {
-      REQUIRE_THROWS_AS(p5_mapped_pin_id(pin_idx, p5_gpio_pin_map[0]), std::invalid_argument);
-    }
-}
-
-TEST_CASE( "Unit_tests/pin_id/P5_V1_V2_map_size_pin_count"
-         , "Sum of GPIO and non-GPIO P5 pins should equal map size, pin count+1"
-         )
-{
-  CHECK((number_of_p5_gpio_pins+number_of_p5_v2_non_gpio_pins)==p5_map_size);
-  CHECK((number_of_p5_gpio_pins+number_of_p5_v2_non_gpio_pins-1)==p5_pin_count);
-  CHECK(number_of_p5_v1_non_gpio_pins==p5_map_size);
-}
-
 // Additional test scafolding to allow mocking Raspberry Pi version information
 #include "rpi_info.h"
 #include "rpi_init.h"
@@ -251,6 +99,99 @@ struct test_rpi_version_init
 private:
   internal::rpi_init * const original_pointer;
 };
+
+TEST_CASE( "Unit_tests/pin_id/rpi_version_mapped_pin_id_returns_pin_id_via_mapping"
+         , "rpi_version_mapped_pin_id creates a pin_id viz: pin_id(map[N])"
+         )
+{
+  test_rpi_version_init setup;
+  test_rpi_initialiser.test_rpi_board_version=1;
+  pin_id_int_t map[] = {20,21,22,23,24,24};
+  std::size_t const map_size{sizeof(map)/sizeof(pin_id_int_t)};
+
+  for ( std::size_t id=0; id!=map_size; ++id )
+    {
+      CHECK( (rpi_version_mapped_pin_id<map_size,1>(id, &map))==map[id] );
+    }
+}
+
+TEST_CASE( "Unit_tests/pin_id/bad_mapped_pin_id_key_throws"
+         , "Passing rpi_version_mapped_pin_id an invalid key throws std::invalid_argument"
+         )
+{
+  test_rpi_version_init setup;
+  test_rpi_initialiser.test_rpi_board_version=1;
+  pin_id_int_t map[] = {20,21,22,23,24,24};
+  std::size_t const map_size{sizeof(map)/sizeof(pin_id_int_t)};
+  typedef rpi_version_mapped_pin_id<map_size,1>  bad_mapped_pin_id_t;
+  REQUIRE_THROWS_AS(bad_mapped_pin_id_t(map_size, &map), std::invalid_argument);
+  REQUIRE_THROWS_AS(bad_mapped_pin_id_t(-1, &map), std::invalid_argument);
+}
+
+TEST_CASE( "Unit_tests/pin_id/bad_mapped_pin_id_value_throws"
+         , "rpi_version_mapped_pin_id mapping results in bad pin id throws std::invalid_argument"
+         )
+{
+  test_rpi_version_init setup;
+  test_rpi_initialiser.test_rpi_board_version=1;
+  pin_id_int_t map[] = {max_gpio_number+1,min_gpio_number-1};
+  std::size_t const map_size{sizeof(map)/sizeof(pin_id_int_t)};
+  typedef rpi_version_mapped_pin_id<map_size,1>  bad_mapped_pin_id_t;
+  REQUIRE_THROWS_AS(bad_mapped_pin_id_t(0, &map), std::invalid_argument);
+  REQUIRE_THROWS_AS(bad_mapped_pin_id_t(1, &map), std::invalid_argument);
+}
+
+// Raspberry Pi P1 and P5 connector pin data:
+
+// from Raspberry Pi V1 schematic...
+pin_id_int_t p1_gpio_pins[] 
+                        = { 3, 5, 7, 8,10,11,12,13,15,16,18,19,21,22,23,24,26 };
+pin_id_int_t p1_v1_gpio_chip_ids[]
+                        = { 0, 1, 4,14,15,17,18,21,22,23,24,10, 9,25,11, 8, 7 };
+std::size_t const number_of_p1_gpio_pins{17};
+
+// from Raspberry Pi V2 schematic...
+pin_id_int_t p1_v2_gpio_chip_ids[]
+                        = { 2, 3, 4,14,15,17,18,27,22,23,24,10, 9,25,11, 8, 7 };
+
+// from Raspberry Pi V1 schematic...
+// Note: includes extra non-GPIO pin slot for phantom pin 0
+pin_id_int_t p1_non_gpio_pins[] = { 0, 1, 2, 4, 6, 9, 14, 17, 20, 25 };
+std::size_t const number_of_p1_non_gpio_pins{10};
+TEST_CASE( "Unit_tests/pin_id/P1_V1_V2_map_size_pin_count"
+         , "Sum of GPIO and non-GPIO P1 pins should equal map size, pin count+1"
+         )
+{
+  REQUIRE((sizeof(p1_gpio_pins)/sizeof(pin_id_int_t))==number_of_p1_gpio_pins);
+  REQUIRE((sizeof(p1_non_gpio_pins)/sizeof(pin_id_int_t))==number_of_p1_non_gpio_pins);
+  CHECK((number_of_p1_gpio_pins+number_of_p1_non_gpio_pins)==p1_map_size);
+  CHECK((number_of_p1_gpio_pins+number_of_p1_non_gpio_pins-1)==p1_pin_count);
+}
+// from Raspberry Pi V2 schematic...
+pin_id_int_t p5_gpio_pins[]         = {  3,  4,  5,  6 };
+pin_id_int_t p5_v2_gpio_chip_ids[]  = { 28, 29, 30, 31 };
+std::size_t const number_of_p5_gpio_pins{4};
+
+// from Raspberry Pi V2 schematic...
+// Note: includes extra non-GPIO pin slot for phantom pin 0
+pin_id_int_t p5_v2_non_gpio_pins[] = { 0, 1, 2, 7, 8 };
+std::size_t const number_of_p5_v2_non_gpio_pins{5};
+
+// Version 1 boards have no P5 support so all pins effectively non-GPIO
+// Note: includes extra non-GPIO pin slot for phantom pin 0
+std::size_t const number_of_p5_v1_non_gpio_pins{9};
+
+TEST_CASE( "Unit_tests/pin_id/P5_V1_V2_map_size_pin_count"
+         , "Sum of GPIO and non-GPIO P5 pins should equal map size, pin count+1"
+         )
+{
+  REQUIRE((sizeof(p5_gpio_pins)/sizeof(pin_id_int_t))==number_of_p5_gpio_pins);
+  REQUIRE((sizeof(p5_v2_non_gpio_pins)/sizeof(pin_id_int_t))==number_of_p5_v2_non_gpio_pins);
+  CHECK((number_of_p5_gpio_pins+number_of_p5_v2_non_gpio_pins)==p5_map_size);
+  CHECK((number_of_p5_gpio_pins+number_of_p5_v2_non_gpio_pins-1)==p5_pin_count);
+  CHECK(number_of_p5_v1_non_gpio_pins==p5_map_size);
+}
+
 
 typedef rpi_version_mapped_pin_id<p1_map_size,pinout_versions>
                                                       tst_version_mapped_pin_id;

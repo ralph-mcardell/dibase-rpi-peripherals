@@ -64,62 +64,38 @@ namespace dibase { namespace rpi {
     private:
       pin_id_int_t  value;  ///< Wrapped integer value of the pin id.
     };
-    
-  /// @brief Subclass of pin_id that initialises value using a key into a map
-  /// mapped_pin_id is an intermediate type not intended for use in client code.
-  /// @param MAP_KEY_SIZE   Number of pin keys in a mapping vector as these
-  ///                       will be constant for each connector's pin mapping.
-    template <std::size_t MAP_KEY_SIZE>
-    struct mapped_pin_id : public pin_id
-    {
-    /// @brief Create mapped_pin_id from key and mapping array
-    ///
-    /// The base pin_id is intialised by the value of a map array item at a key
-    /// index viz: pin_id( map[key] )
-    ///
-    /// @param[in]  key     Mapping key value
-    /// @param[in]  map     Mapping array of pin_id integer values. If an array
-    ///                     slot does not map to a valid pin_id use an invalid
-    ///                     pin_id value to force a pin_id creation failure.
-    /// @return a pin_id created using the mapped value for the key:
-    ///         pin_id(map[key])
-    /// @exception  std::invalid_argument raised if key >= map_size or map[key]
-    ///             is not a valid pin_id value.
-      mapped_pin_id
-      ( pin_id_int_t key
-      , pin_id_int_t const * map
-      )
-      : pin_id(key>=MAP_KEY_SIZE ? -1 : map[key])
-      {}
-    };
 
-  /// @brief Subclass of mapped_pin_id that notes Raspberry Pi board version
+  /// @brief pin_id subtype. Lookup id in a map by Pi version and pin keys
+  ///
   /// rpi_version_mapped_pin_id is an intermediate type template not intended
   /// for use in client code.
+  ///
+  /// Uses a pin number key and a map to lookup an associated BCM2835 GPIO pin
+  /// id. The map contains connector pin / GPIO pin entries for each supported
+  /// Raspberry Pi version, and the correct set choosen for the Raspberry Pi
+  /// in use.
+  ///
   /// @param MAP_KEY_SIZE     Number of pin keys in a mapping vector.
-  ///                         Needed for 2D [version][pin key] array type
-  ///                         decls. Constant for each connector's pin mapping.
+  ///                         Constant for each connector's pin mapping.
   /// @param MAP_VERSION_SIZE Number of board versions' mapping vectors.
   ///                         Constant for all connectors' pin mappings.
     template <std::size_t MAP_KEY_SIZE, std::size_t MAP_VERSION_SIZE>
-    struct rpi_version_mapped_pin_id : public mapped_pin_id<MAP_KEY_SIZE>
+    struct rpi_version_mapped_pin_id : public pin_id
     {
-      typedef mapped_pin_id<MAP_KEY_SIZE> super;  ///< Super class type alias
-
     /// @brief Create rpi_version_mapped_pin_id from key and mapping array
     ///
-    /// The base pin_id is intialised by the value in a map vector in a 2D array
-    /// selected based on the Raspberry Pi board version item at a key
-    /// index viz: pin_id( map[rpi_board_version_index][key] )
+    /// The base pin_id is intialised by the value for the associated pin key
+    /// in a map vector. The vector may be one of several in a 2D array and is
+    /// selected based on the Raspberry Pi board version. The operation is like
+    /// so: pin_id( map[rpi_board_version_index][key] )
     /// The Raspberry Pi board version index value is obtained from the 
     /// rpi_info.index_version() member function.
     ///
-    /// @param[in]  key             Mapping key value
-    /// @param[in]  map             Mapping array of pin_id integer values, one
-    ///                             mapping vector for each supported Raspberry
-    ///                             Pi board version. If an array  slot does
-    ///                             not map to a valid pin_id use an invalid
-    ///                             pin_id value to force a failure.
+    /// @param[in]  key Mapping key value
+    /// @param[in]  map Mapping array of pin_id integer values, one mapping
+    ///                 vector for each supported Raspberry Pi board version.
+    ///                 If an array  slot does not map to a valid pin_id use
+    ///                 an invalid pin_id value to force a failure.
     /// @return a pin_id created using the mapped value for the key:
     ///         pin_id(map[key])
     /// @exception  std::invalid_argument raised if reported board version >=
@@ -127,12 +103,23 @@ namespace dibase { namespace rpi {
     ///             valid pin_id value.
       rpi_version_mapped_pin_id
       ( pin_id_int_t key
-      , pin_id_int_t const map[][MAP_KEY_SIZE]
+      , pin_id_int_t const map[MAP_VERSION_SIZE][MAP_KEY_SIZE]
       )
-      : super( rpi_info().index_version()>=MAP_VERSION_SIZE ? -1 : key
-             , map[rpi_info().index_version()]
-             )
+      : pin_id( do_lookup(rpi_info().index_version(), key, map) )
       {}
+
+      private:
+        pin_id_int_t do_lookup
+        ( std::size_t rpi_version_key
+        , std::size_t pin_key
+        , pin_id_int_t const map[MAP_VERSION_SIZE][MAP_KEY_SIZE]
+        )
+        {
+          return rpi_version_key>=MAP_VERSION_SIZE || pin_key>=MAP_KEY_SIZE
+                  ? -1 // return invalid pin id for bad map index values
+                  : map[rpi_version_key][pin_key]
+                  ;
+        }
     };
 
   /// @brief Number of versions of Raspberry Pi connectors pin out supported

@@ -204,7 +204,32 @@ namespace dibase { namespace rpi {
       : super( pin_number, p5_gpio_pin_map )
       {}
     };
+/*      
+    // Pre-created GPIO pin objects named for Raspberry Pi GPIO P1 and P5
+    // connector pin names, but less numeric suffixes except for general GPIO
+    // pins so as to avoid naming changes over board versions.
+      p1_pin const sda{3};        ///< Raspberry Pi SDA0|1 pin, versioned, pull up
+      p1_pin const scl{5};        ///< Raspberry Pi SCL0|1 pin, versioned, pull up
+      p1_pin const txd{8};        ///< Raspberry Pi TXD0 pin
+      p1_pin const rxd{10};       ///< Raspberry Pi RXD0 pin
+      p1_pin const spi_mosi{19};  ///< Raspberry Pi SPI_MOSI pin
+      p1_pin const spi_miso{21};  ///< Raspberry Pi SPI_MISO pin
+      p1_pin const spi_sclk{23};  ///< Raspberry Pi SPI_SCLK pin
+      p1_pin const spi_ce0_n{24}; ///< Raspberry Pi SPI_CE0_N pin
+      p1_pin const spi_ce1_n{26}; ///< Raspberry Pi SPI_CE1_N pin
+      p1_pin const gpio_gclk{7};  ///< Raspberry Pi GPIO_GCLK pin
+      p1_pin const gpio_gen0{11}; ///< Raspberry Pi GPIO_GEN0 pin
+      p1_pin const gpio_gen1{12}; ///< Raspberry Pi GPIO_GEN1 pin
+      p1_pin const gpio_gen2{13}; ///< Raspberry Pi GPIO_GEN2 pin, versioned
+      p1_pin const gpio_gen3{15}; ///< Raspberry Pi GPIO_GEN3 pin
+      p1_pin const gpio_gen4{16}; ///< Raspberry Pi GPIO_GEN4 pin
+      p1_pin const gpio_gen5{18}; ///< Raspberry Pi GPIO_GEN5 pin
+      p1_pin const gpio_gen6{22}; ///< Raspberry Pi GPIO_GEN6 pin
+      p5_pin const gpio_gen7{3};  ///< Raspberry Pi GPIO_GEN7 pin versioned V2 only
+      p5_pin const gpio_gen8{4};  ///< Raspberry Pi GPIO_GEN8 pin versioned V2 only
+      p5_pin const gpio_gen9{5};  ///< Raspberry Pi GPIO_GEN9 pin versioned V2 only
+      p5_pin const gpio_gen10{6}; ///< Raspberry Pi GPIO_GEN10 pin versioned V2 only
+*/
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed
 #endif // DIBASE_RPI_PERIPHERALS_PIN_ID_H
-

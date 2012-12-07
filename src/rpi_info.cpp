@@ -81,18 +81,18 @@
         return version;
       }
 
-      std::size_t rpi_init::init_major_version()
+      static std::size_t one_time_init_major_version()
       {
         std::size_t version{0};
         char const * cpu_info_path = "/proc/cpuinfo";
         char const board_version_label[] = "Revision";
         char const * eof_label = "###";
         std::size_t const board_version_size{sizeof(board_version_label)};
-        FILE * info_file = fopen(cpu_info_path, "r");
         bool not_done{true};
         char buffer[board_version_size];
         std::size_t const board_version_length{board_version_size-1};
         char const * label{nullptr};
+        FILE * info_file = fopen(cpu_info_path, "r");
         do
           {
             label = get_label(info_file, buffer, board_version_length, eof_label);
@@ -111,6 +111,10 @@
               }
           }
         while (not_done);
+        if ( info_file )
+          {
+            fclose( info_file );
+          }
 
         if (version>0&&version<=3) return 1;
         else if (version>3&&version<=6) return 2;
@@ -121,7 +125,13 @@
                                     );
           }
       }
-    }
+
+      std::size_t rpi_init::init_major_version()
+      {
+        static std::size_t major_version(one_time_init_major_version());
+        return major_version;
+      }
+    } // Closing namespace internal
     
     rpi_info::rpi_info()
     : major_version_value(internal::rpi_initialiser->init_major_version())

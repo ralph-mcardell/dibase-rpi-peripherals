@@ -201,12 +201,15 @@ namespace dibase { namespace rpi {
     /// @return a pin_id representing the value of the PIN template argument
     /// @exception  std::invalid_argument raised if PIN template parameter
     ///             value is out of range.
-      operator pin_id() const
-      {
-        static pin_id pinid{PIN};
-        return pinid;
-      }
+      operator pin_id() const;
     };
+
+    template <pin_id_int_t PIN>    
+    static_pin_id<PIN>::operator pin_id() const
+    {
+      static pin_id pinid{PIN};
+      return pinid;
+    }
 
   /// @brief Static Raspberry Pi P1 connector pin representation.
   /// Template class that takes a static P1 connector pin number as a template
@@ -228,12 +231,15 @@ namespace dibase { namespace rpi {
     ///             value is out of range or represents a pin with a non-GPIO
     ///             function or the Raspberry Pi board has an unsupported
     ///             version number.
-      operator pin_id() const
-      {
-        static p1_pin pinid{PIN};
-        return pinid;
-      }
+      operator pin_id() const;
     };
+
+    template <pin_id_int_t PIN>    
+    static_p1_pin<PIN>::operator pin_id() const
+    {
+      static p1_pin pinid{PIN};
+      return pinid;
+    }
 
   /// @brief Static Raspberry Pi P5 connector pin representation.
   /// Template class that takes a static P5 connector pin number as a template
@@ -255,12 +261,15 @@ namespace dibase { namespace rpi {
     ///             value is out of range, represents a pin with a non-GPIO
     ///             function or the Raspberry Pi board has an unsupported
     ///             version number or does not support P5.
-      operator pin_id() const
-      {
-        static p5_pin pinid{PIN};
-        return pinid;
-      }
+      operator pin_id() const;
     };
+
+    template <pin_id_int_t PIN>
+    static_p5_pin<PIN>::operator pin_id() const
+    {
+      static p5_pin pinid{PIN};
+      return pinid;
+    }
 
   // Pre-created GPIO pin objects named for Raspberry Pi GPIO P1 and P5
   // connector pin names, but less numeric suffixes except for general GPIO

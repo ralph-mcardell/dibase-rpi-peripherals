@@ -5,8 +5,6 @@
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell
 //
-// Basic GNU compiler options building executable called ocol:
-// g++ -std=c++0x -Wall -Wextra -pedantic -I.. -L../../lib -o ocol open-collector.cpp -lrpi-periphals 
 
 // ##### Ongoing version. Will be updated when more facilities avaialble #####
 
@@ -26,14 +24,13 @@ int main()
       phymem_ptr<volatile gpio_registers> 
                 pgpio(gpio_registers::physical_address, register_block_size);
       
-      pin_id gpio4{4};
-      pgpio->set_pin_function(gpio4, gpio_pin_fn::output);
+      pgpio->set_pin_function(gpio_gclk, gpio_pin_fn::output);
 
       for (unsigned p = 0; p < 10; ++p) 
         {
-          pgpio->set_pin(gpio4);
+          pgpio->set_pin(gpio_gclk);
           sleep(1);
-          pgpio->clear_pin(gpio4);
+          pgpio->clear_pin(gpio_gclk);
           sleep(1);
         }
     }

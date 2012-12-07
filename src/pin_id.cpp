@@ -23,5 +23,28 @@ namespace dibase { namespace rpi {
       { {noio,noio,noio,noio,noio,noio,noio,noio,noio}
       , {noio,noio,noio,  28,  29,  30,  31,noio,noio}
       };
+
+    static pin_id_int_t do_lookup
+    ( std::size_t pin
+    , std::size_t version
+    , pin_id_int_t const * map
+    , pin_id_int_t n_pins
+    , std::size_t n_versions
+    )
+    {
+      return version>=n_versions || pin>=n_pins
+              ? -1 // return invalid pin id for bad map index values
+              : map[version*n_pins+pin]
+              ;
+    }
+
+    rpi_version_mapped_pin_id::rpi_version_mapped_pin_id
+    ( pin_id_int_t pin
+    , pin_id_int_t const * map
+    , pin_id_int_t n_pins
+    , std::size_t n_versions
+    )
+    : pin_id(do_lookup(pin, rpi_info().index_version(), map, n_pins, n_versions))
+    {}
   }
 }}

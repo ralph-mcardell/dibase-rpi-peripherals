@@ -67,59 +67,42 @@ namespace dibase { namespace rpi {
 
   /// @brief pin_id subtype. Lookup id in a map by Pi version and pin keys
   ///
-  /// rpi_version_mapped_pin_id is an intermediate type template not intended
-  /// for use in client code.
+  /// rpi_version_mapped_pin_id is an intermediate type not intended for use in
+  /// client code.
   ///
   /// Uses a pin number key and a map to lookup an associated BCM2835 GPIO pin
-  /// id. The map contains connector pin / GPIO pin entries for each supported
-  /// Raspberry Pi version, and the correct set choosen for the Raspberry Pi
-  /// in use.
-  ///
-  /// @param MAP_KEY_SIZE     Number of pin keys in a mapping vector.
-  ///                         Constant for each connector's pin mapping.
-  /// @param MAP_VERSION_SIZE Number of board versions' mapping vectors.
-  ///                         Constant for all connectors' pin mappings.
-    template <std::size_t MAP_KEY_SIZE, std::size_t MAP_VERSION_SIZE>
-    struct rpi_version_mapped_pin_id : public pin_id
+  /// id. The map contains entries mapping connector pins to GPIO pins for
+  /// each supported Raspberry Pi version, and the correct set choosen for
+  /// the Raspberry Pi in use.
+    class rpi_version_mapped_pin_id : public pin_id
     {
-    /// @brief Create rpi_version_mapped_pin_id from key and mapping array
+    protected:
+    /// @brief Create rpi_version_mapped_pin_id from keys and mapping array
+    ///
+    /// Constructor for sub-class use.
     ///
     /// The base pin_id is intialised by the value for the associated pin key
     /// in a map vector. The vector may be one of several in a 2D array and is
-    /// selected based on the Raspberry Pi board version. The operation is like
-    /// so: pin_id( map[rpi_board_version_index][key] )
+    /// selected based on the Raspberry Pi board version. The lookup is like
+    /// so: pin_id( map[rpi_board_version_index][connector_pin_number] )
     /// The Raspberry Pi board version index value is obtained from the 
     /// rpi_info.index_version() member function.
     ///
-    /// @param[in]  key Mapping key value
-    /// @param[in]  map Mapping array of pin_id integer values, one mapping
-    ///                 vector for each supported Raspberry Pi board version.
-    ///                 If an array  slot does not map to a valid pin_id use
-    ///                 an invalid pin_id value to force a failure.
-    /// @return a pin_id created using the mapped value for the key:
-    ///         pin_id(map[key])
+    /// @param[in]  pin Mapping Raspberry Pi connector pin key value
+    /// @param[in]  map Pointer to satrt of 2D mapping array of pin_id integer
+    ///                 values having one mapping vector for each supported
+    ///                 Raspberry Pi board version. If an array slot does not
+    ///                 map to a valid pin_id use an invalid pin_id value is
+    ///                 used to force failure.
     /// @exception  std::invalid_argument raised if reported board version >=
-    ///             MAP_VERSION_SIZE, key >= MAP_KEY_SIZE or map[key] is not a
+    ///             n_versions, pin >= n_pins or map[version][pin] is not a
     ///             valid pin_id value.
       rpi_version_mapped_pin_id
-      ( pin_id_int_t key
-      , pin_id_int_t const map[MAP_VERSION_SIZE][MAP_KEY_SIZE]
-      )
-      : pin_id( do_lookup(rpi_info().index_version(), key, map) )
-      {}
-
-      private:
-        pin_id_int_t do_lookup
-        ( std::size_t rpi_version_key
-        , std::size_t pin_key
-        , pin_id_int_t const map[MAP_VERSION_SIZE][MAP_KEY_SIZE]
-        )
-        {
-          return rpi_version_key>=MAP_VERSION_SIZE || pin_key>=MAP_KEY_SIZE
-                  ? -1 // return invalid pin id for bad map index values
-                  : map[rpi_version_key][pin_key]
-                  ;
-        }
+      ( pin_id_int_t pin
+      , pin_id_int_t const * map
+      , pin_id_int_t n_pins
+      , std::size_t n_versions
+      );
     };
 
   /// @brief Number of versions of Raspberry Pi connectors pin out supported
@@ -149,22 +132,22 @@ namespace dibase { namespace rpi {
   /// integer having the value of the underlying BCM2835 GPIO pin id value or,
   /// for invalid, non-GPIO pin numbers or unsupported board versions throws
   /// and exception.
-    struct p1_pin : rpi_version_mapped_pin_id<p1_map_size, pinout_versions>
+    struct p1_pin : rpi_version_mapped_pin_id
     {
     /// @brief Super class type alias
-      typedef rpi_version_mapped_pin_id<p1_map_size, pinout_versions> super;
+      typedef rpi_version_mapped_pin_id super;
 
     /// @brief Construct from a P1 connector pin_number
     /// @param[in] pin_number   P1 GPIO pin number (1..26)
     /// @exception std::invalid_argument raised if pin_number out of range or
-    ///             represents a pin with a non-GPIO function or the Raspberry Pi
-    ///             board has an unsupported version number.
+    ///             represents a pin with a non-GPIO function or the Raspberry
+    ///             Pi board has an unsupported version number.
       p1_pin( pin_id_int_t pin_number )
-      : super( pin_number, p1_gpio_pin_map )
+      : super(pin_number, &(p1_gpio_pin_map[0][0]), p1_map_size, pinout_versions)
       {}
     };
 
-  /// @brief Number of pins on Raspberry Pi P5 connector (V2 baords onwards)
+  /// @brief Number of pins on Raspberry Pi P5 connector (V2 boards onwards)
     std::size_t const p5_pin_count{8};
 
   /// @brief Number of slotes for Raspberry Pi P5 connector pin_id map.
@@ -189,10 +172,10 @@ namespace dibase { namespace rpi {
   /// integer having the value of the underlying BCM2835 GPIO pin id value or,
   /// for invalid, non-GPIO pin numbers or unsupported board versions throws
   /// and exception.
-    struct p5_pin : rpi_version_mapped_pin_id<p5_map_size, pinout_versions>
+    struct p5_pin : rpi_version_mapped_pin_id
     {
     /// @brief Super class type alias
-      typedef rpi_version_mapped_pin_id<p5_map_size, pinout_versions> super;
+      typedef rpi_version_mapped_pin_id super;
 
     /// @brief Construct from a P5 connector pin_number
     /// @param[in] pin_number   P5 GPIO pin number (1..8, 3..6 valid GPIO pins)
@@ -201,35 +184,102 @@ namespace dibase { namespace rpi {
     ///             Pi board has an unsupported version number or does not
     ///             support P5.
       p5_pin( pin_id_int_t pin_number )
-      : super( pin_number, p5_gpio_pin_map )
+      : super(pin_number, &(p5_gpio_pin_map[0][0]), p5_map_size, pinout_versions)
       {}
     };
-/*      
+
+  /// @brief Static Raspberry Pi BCM2835 pin representation.
+  /// Template class that takes a static BCM2835 SoC GPIO pin id number as a
+  /// template parameter and applies it only when first used as a pin_id. 
+  /// This defers the work of creating the pin_id until first use.
+    template <pin_id_int_t PIN>
+    struct static_pin_id
+    {
+    /// @brief Convert a static_pin_id to a pin_id
+    /// @return a pin_id,
+    /// @exception std::invalid_argument raised if pin_number out of range.
+      operator pin_id() const
+      {
+        static pin_id pinid{PIN};
+        return pinid;
+      }
+    };
+
+  /// @brief Static Raspberry Pi P1 connector pin representation.
+  /// Template class that takes a static P1 pin number as a template parameter
+  /// and applies it only when first used as a pin_id to lookup and create a
+  /// pin_id, or fail. This defers the work of looking up connector->SoC GPIO
+  /// id numbering and only has to happen if an object of the type is used and
+  /// prevents pins that are only valid in certain board versions from throwing
+  /// if used at the point of creation (e.g. pre-main dynamic static
+  /// initialisation for global instances).
+    template <pin_id_int_t PIN>
+    struct static_p1_pin
+    {
+    /// @brief Convert a static_p1_pin to a pin_id
+    /// @return a pin_id, specifically a p1_pin
+    /// @exception std::invalid_argument raised if pin_number out of range or
+    ///             represents a pin with a non-GPIO function or the Raspberry
+    ///             Pi board has an unsupported version number.
+      operator pin_id() const
+      {
+        static p1_pin pinid{PIN};
+        return pinid;
+      }
+    };
+
+  /// @brief Static Raspberry Pi P5 connector pin representation.
+  /// Template class that takes a static P5 pin number as a template parameter
+  /// and applies it only when first used as a pin_id to lookup and create a
+  /// pin_id, or fail. This defers the work of looking up connector->SoC GPIO
+  /// id numbering and only has to happen if an object of the type is used and
+  /// prevents pins that are only valid in certain board versions from throwing
+  /// if used at the point of creation (e.g. pre-main dynamic static
+  /// initialisation for global instances).
+    template <pin_id_int_t PIN>
+    struct static_p5_pin
+    {
+    /// @brief Convert a static_p5_pin to a pin_id
+    /// @return a pin_id, specifically a p5_pin
+    /// @exception std::invalid_argument raised if pin_number out of range or
+    ///             represents a pin with a non-GPIO function or the Raspberry
+    ///             Pi board has an unsupported version number or does not
+    ///             support P5.
+      operator pin_id() const
+      {
+        static p5_pin pinid{PIN};
+        return pinid;
+      }
+    };
+
     // Pre-created GPIO pin objects named for Raspberry Pi GPIO P1 and P5
     // connector pin names, but less numeric suffixes except for general GPIO
-    // pins so as to avoid naming changes over board versions.
-      p1_pin const sda{3};        ///< Raspberry Pi SDA0|1 pin, versioned, pull up
-      p1_pin const scl{5};        ///< Raspberry Pi SCL0|1 pin, versioned, pull up
-      p1_pin const txd{8};        ///< Raspberry Pi TXD0 pin
-      p1_pin const rxd{10};       ///< Raspberry Pi RXD0 pin
-      p1_pin const spi_mosi{19};  ///< Raspberry Pi SPI_MOSI pin
-      p1_pin const spi_miso{21};  ///< Raspberry Pi SPI_MISO pin
-      p1_pin const spi_sclk{23};  ///< Raspberry Pi SPI_SCLK pin
-      p1_pin const spi_ce0_n{24}; ///< Raspberry Pi SPI_CE0_N pin
-      p1_pin const spi_ce1_n{26}; ///< Raspberry Pi SPI_CE1_N pin
-      p1_pin const gpio_gclk{7};  ///< Raspberry Pi GPIO_GCLK pin
-      p1_pin const gpio_gen0{11}; ///< Raspberry Pi GPIO_GEN0 pin
-      p1_pin const gpio_gen1{12}; ///< Raspberry Pi GPIO_GEN1 pin
-      p1_pin const gpio_gen2{13}; ///< Raspberry Pi GPIO_GEN2 pin, versioned
-      p1_pin const gpio_gen3{15}; ///< Raspberry Pi GPIO_GEN3 pin
-      p1_pin const gpio_gen4{16}; ///< Raspberry Pi GPIO_GEN4 pin
-      p1_pin const gpio_gen5{18}; ///< Raspberry Pi GPIO_GEN5 pin
-      p1_pin const gpio_gen6{22}; ///< Raspberry Pi GPIO_GEN6 pin
-      p5_pin const gpio_gen7{3};  ///< Raspberry Pi GPIO_GEN7 pin versioned V2 only
-      p5_pin const gpio_gen8{4};  ///< Raspberry Pi GPIO_GEN8 pin versioned V2 only
-      p5_pin const gpio_gen9{5};  ///< Raspberry Pi GPIO_GEN9 pin versioned V2 only
-      p5_pin const gpio_gen10{6}; ///< Raspberry Pi GPIO_GEN10 pin versioned V2 only
-*/
+    // pins so as to avoid naming Shanges over board versions.
+    // Note: For P1 pins that have not changed their P1 pin+>BCM2835 GPIO pin id
+    // mapping static_pid_id values are used that use the BCM2835 GPIO pin id
+    // values directly as this should prevent dragging in the version check and
+    // pin mapping machinery unnecessarily.
+      static_p1_pin<3>  const sda;       ///< Raspberry Pi SDA0|1 pin, versioned, pull up
+      static_p1_pin<5>  const scl;       ///< Raspberry Pi SCL0|1 pin, versioned, pull up
+      static_pin_id<14> const txd;       ///< Raspberry Pi TXD0 pin
+      static_pin_id<15> const rxd;       ///< Raspberry Pi RXD0 pin
+      static_pin_id<10> const spi_mosi;  ///< Raspberry Pi SPI_MOSI pin
+      static_pin_id<9>  const spi_miso;  ///< Raspberry Pi SPI_MISO pin
+      static_pin_id<11> const spi_sclk;  ///< Raspberry Pi SPI_SCLK pin
+      static_pin_id<8>  const spi_ce0_n; ///< Raspberry Pi SPI_CE0_N pin
+      static_pin_id<7>  const spi_ce1_n; ///< Raspberry Pi SPI_CE1_N pin
+      static_pin_id<4>  const gpio_gclk; ///< Raspberry Pi GPIO_GCLK pin
+      static_pin_id<17> const gpio_gen0; ///< Raspberry Pi GPIO_GEN0 pin
+      static_pin_id<18> const gpio_gen1; ///< Raspberry Pi GPIO_GEN1 pin
+      static_p1_pin<13> const gpio_gen2; ///< Raspberry Pi GPIO_GEN2 pin, versioned
+      static_pin_id<22> const gpio_gen3; ///< Raspberry Pi GPIO_GEN3 pin
+      static_pin_id<23> const gpio_gen4; ///< Raspberry Pi GPIO_GEN4 pin
+      static_pin_id<24> const gpio_gen5; ///< Raspberry Pi GPIO_GEN5 pin
+      static_pin_id<25> const gpio_gen6; ///< Raspberry Pi GPIO_GEN6 pin
+      static_p5_pin<3>  const gpio_gen7; ///< Raspberry Pi GPIO_GEN7 pin versioned V2 only
+      static_p5_pin<4>  const gpio_gen8; ///< Raspberry Pi GPIO_GEN8 pin versioned V2 only
+      static_p5_pin<5>  const gpio_gen9; ///< Raspberry Pi GPIO_GEN9 pin versioned V2 only
+      static_p5_pin<6>  const gpio_gen10;///< Raspberry Pi GPIO_GEN10 pin versioned V2 onlyS
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed
 #endif // DIBASE_RPI_PERIPHERALS_PIN_ID_H

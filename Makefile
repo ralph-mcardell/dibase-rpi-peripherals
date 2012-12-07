@@ -23,6 +23,8 @@ include makeinclude.mak
 
 .PHONY: all dirs debug release test check tidy clean help
 
+export COMPILE_OPTS
+
 all: debug release
 
 # We expect these directories to be present:
@@ -31,7 +33,6 @@ dirs: $(BUILD_DIR)/debug $(BUILD_DIR)/release $(LIB_DIR) $(EXEC_DIR) $(TEST_DIR)
 debug: dirs
 	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=debug
 	$(MAKE) -C $(SRC_DIR)/examples BUILD_CONFIG=debug
-
 release: dirs
 	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=release
 	$(MAKE) -C $(SRC_DIR)/examples BUILD_CONFIG=release

@@ -63,8 +63,10 @@ CPP_FLAGS = -I. -I$(INC_DIR)
 
 # C++ compiler flags
 CXX_FLAGS_COMMON = -std=c++0x -Wall -Wextra -pedantic -c
-CXX_DEBUG_FLAGS = -O0 -g
-CXX_RELEASE_FLAGS = -O2
+# Set additional compiler options on command line to override empty COMPILE_OPTS
+COMPILE_OPTS=
+CXX_DEBUG_FLAGS = -O0 -g $(COMPILE_OPTS)
+CXX_RELEASE_FLAGS = -O2 $(COMPILE_OPTS)
 
 # Full compile flags
 ifeq ($(BUILD_CONFIG),release)
@@ -77,4 +79,15 @@ endif
 AR_FLAGS = -crs
 
 # Linker flags
-LD_FLAGS = -L $(LIB_DIR)
+LD_FLAGS_COMMON = -L $(LIB_DIR)
+# Override the currently empty flag lists variables below to modify
+# link behaviour - e.g. adding -s to strip symbols
+LD_DEBUG_FLAGS =
+LD_RELEASE_FLAGS =
+
+# Full link flags
+ifeq ($(BUILD_CONFIG),release)
+	LD_FLAGS = $(LD_FLAGS_COMMON) $(LD_RELEASE_FLAGS)
+else ifeq ($(BUILD_CONFIG),debug)
+	LD_FLAGS = $(LD_FLAGS_COMMON) $(LD_DEBUG_FLAGS)
+endif

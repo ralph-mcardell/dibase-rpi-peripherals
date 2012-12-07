@@ -6,6 +6,7 @@
 /// @author Ralph E. McArdell
 
 #include "pin_id.h"
+#include "rpi_info.h"
 
 namespace dibase { namespace rpi {
   namespace peripherals

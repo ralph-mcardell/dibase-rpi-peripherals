@@ -29,7 +29,7 @@
       {
         return major_version_value;
       }
- 
+
     /// @brief Returns 0 based integer major version of Raspberry Pi board
     ///
     /// @return rpi_info::major_version() - 1 so that the value may be easily

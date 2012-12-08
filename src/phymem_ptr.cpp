@@ -13,8 +13,8 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
-    static int mem_fd(-1);
- 
+    static int mem_fd{-1};
+
     raw_phymem_ptr::raw_phymem_ptr
     ( physical_address_t phy_addr
     , std::size_t mapped_length
@@ -22,7 +22,7 @@ namespace dibase { namespace rpi {
     : mem(MAP_FAILED)
     , length(0)
     {
-      char const * DevMemPath = "/dev/mem";
+      char const * DevMemPath{"/dev/mem"};
       if ( mem_fd<0 )
         { // Attempt to open mem device once and save fd in mem_fd static global
           if ( (mem_fd = open(DevMemPath, O_RDWR|O_SYNC))<0 ) 
@@ -51,7 +51,6 @@ namespace dibase { namespace rpi {
         }
       length = mapped_length;
     }
-
 
     raw_phymem_ptr::~raw_phymem_ptr()
     {

@@ -13,7 +13,6 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
-
     /// @brief Physical memory smart pointer base class 
     ///
     /// Intended as base class use only. All operations protected.
@@ -58,7 +57,7 @@ namespace dibase { namespace rpi {
         return mem;
       }
     };
- 
+
     /// @brief Typed physical memory smart pointer class template
     ///
     /// Thin sub-class template of \ref raw_phymem_ptr that casts the untyped
@@ -140,5 +139,3 @@ namespace dibase { namespace rpi {
 }}
 
 #endif // DIBASE_RPI_PERIPHERALS_PHYMEM_PTR_H
- 
- 

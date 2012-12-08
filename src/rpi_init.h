@@ -9,7 +9,7 @@
 
 #ifndef DIBASE_RPI_RPI_INTERNAL_INIT_H
  #define DIBASE_RPI_RPI_INTERNAL_INIT_H
- 
+
  #include <cstdlib>
 
  namespace dibase { namespace rpi {

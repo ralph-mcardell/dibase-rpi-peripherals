@@ -115,7 +115,7 @@ namespace dibase { namespace rpi {
   /// As connector pins count from 1 and C/C++ array indexes count from 0 the
   /// map includes an extra slot for the non-existent pin 0.
     std::size_t const p1_map_size{p1_pin_count+1};
-    
+
   /// @brief Array mapping Raspberry Pi P1 connector pins to BCM2835 GPIO pins
   ///
   /// Each Raspberry Pi P1 connector version has its own vector mapping P1

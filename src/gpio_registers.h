@@ -57,14 +57,13 @@ namespace dibase { namespace rpi {
   /// and thus come in pairs (e.g. GPSET0, GPSET1 and GPCLR0, GPCLR1) with the
   /// single bit fields for GPIO pins 0..31 in GPxxx0 and those for pins 32..53
   /// in the lower bits of GPxxx1. The one_bit_field_register type presents a
-  /// united interface for such register pairs and provides commonly use
+  /// united interface for such register pairs and provides commonly used
   /// functions that are required to perform various control functions of the
   /// various registers.
-  ///
     class one_bit_field_register
     {
       register_t reg[2];
-    
+
     public:
     /// @brief Subscript operator. Allows direct access to register pair array
     ///
@@ -78,7 +77,7 @@ namespace dibase { namespace rpi {
       {
         return reg[index];
       }
-      
+
     /// @brief Set a single bit to 1, leaving other bits as they were.
     ///
     /// Bits are in the range 0...63, but for GPIO pins only 0...53 should be
@@ -129,7 +128,7 @@ namespace dibase { namespace rpi {
       {
         reg[bitnumber/register_width] = 1U<<(bitnumber%register_width);
       }
-      
+
     /// @brief Returns single bit's state.
     ///
     /// Bits are in the range 0...63, but for GPIO pins only 0...53 should be
@@ -145,7 +144,7 @@ namespace dibase { namespace rpi {
       {
          return reg[bitnumber/register_width] & (1U<<(bitnumber%register_width));
       }
-    
+
     /// @brief Clear all bits in both register words to zero.
     ///
     /// It may be useful if composing register values off to one side in main
@@ -177,36 +176,36 @@ namespace dibase { namespace rpi {
       static const physical_address_t physical_address
                                           = peripheral_base_address + 0x200000;
 
-      register_t gpfsel[6];   ///< GPIO pins function select (R/W)
+      register_t gpfsel[6];         ///< GPIO pins function select (R/W)
       register_t reserved_do_not_use_0;     ///< Reserved, currently unused
-      one_bit_field_register gpset;    ///< GPIO pins output set high (W)
+      one_bit_field_register gpset; ///< GPIO pins output set high (W)
       register_t reserved_do_not_use_1;     ///< Reserved, currently unused
-      one_bit_field_register gpclr;    ///< GPIO pins output clear low (W)
+      one_bit_field_register gpclr; ///< GPIO pins output clear low (W)
       register_t reserved_do_not_use_2;     ///< Reserved, currently unused
-      one_bit_field_register gplev;    ///< GPIO pins input level (R)
+      one_bit_field_register gplev; ///< GPIO pins input level (R)
       register_t reserved_do_not_use_3;     ///< Reserved, currently unused
-      one_bit_field_register gpeds;    ///< GPIO pins event detect status (R/W)
+      one_bit_field_register gpeds; ///< GPIO pins event detect status (R/W)
       register_t reserved_do_not_use_4;     ///< Reserved, currently unused
-      one_bit_field_register gpren;    ///< GPIO pins rising edge detect enable (R/W)
+      one_bit_field_register gpren; ///< GPIO pins rising edge detect enable (R/W)
       register_t reserved_do_not_use_5;     ///< Reserved, currently unused
-      one_bit_field_register gpfen;    ///< GPIO pins falling edge detect enable (R/W)
+      one_bit_field_register gpfen; ///< GPIO pins falling edge detect enable (R/W)
       register_t reserved_do_not_use_6;     ///< Reserved, currently unused
-      one_bit_field_register gphen;    ///< GPIO pins high detect enable (R/W)
+      one_bit_field_register gphen; ///< GPIO pins high detect enable (R/W)
       register_t reserved_do_not_use_7;     ///< Reserved, currently unused
-      one_bit_field_register gplen;    ///< GPIO pins low detect enable (R/W)
+      one_bit_field_register gplen; ///< GPIO pins low detect enable (R/W)
       register_t reserved_do_not_use_8;     ///< Reserved, currently unused
-      one_bit_field_register gparen;   ///< GPIO pins async. rising edge detect (R/W)
+      one_bit_field_register gparen;///< GPIO pins async. rising edge detect (R/W)
       register_t reserved_do_not_use_9;     ///< Reserved, currently unused
-      one_bit_field_register gpafen;   ///< GPIO pins async. falling edge detect (R/W)
+      one_bit_field_register gpafen;///< GPIO pins async. falling edge detect (R/W)
       register_t reserved_do_not_use_a;     ///< Reserved, currently unused
-      gpio_pud_mode gppud;       ///< GPIO pins pull-up/down enable (R/W)
+      gpio_pud_mode gppud;          ///< GPIO pins pull-up/down enable (R/W)
       one_bit_field_register gppudclk; ///< GPIO pins pull-up/down enable clock (R/W)
       register_t reserved_do_not_use_b[4];  ///< Reserved, currently unused
-      register_t test;        ///< Test Note: Only 4 bits wide (R/W)
+      register_t test;              ///< Test Note: Only 4 bits wide (R/W)
 
     /// @brief Set a GPIO pin's function.
     ///
-    /// GPIO pins may be set to be either input or output or one of upto
+    /// GPIO pins may be set to be either input or output or one of up to
     /// five alternate functions. How many and which alternative functions
     /// are available varies. They are described in the Broadcom BCM2835
     /// Peripherals datasheet, section 6.2.
@@ -219,11 +218,11 @@ namespace dibase { namespace rpi {
     /// @param[in]  fn      Scoped enumeration of the required function.
       void set_pin_function( pin_id pinid, gpio_pin_fn fn ) volatile
       {
-        register_t const BitsPerPin(3);  // number of bits used for each pin
-        register_t const PinsPerReg(register_width/BitsPerPin);
-        register_t const MaxFnValue((1U<<BitsPerPin)-1);
+        register_t const BitsPerPin{3};  // number of bits used for each pin
+        register_t const PinsPerReg{register_width/BitsPerPin};
+        register_t const MaxFnValue{(1U<<BitsPerPin)-1};
         
-        register_t fn_value( static_cast<register_t>(fn) );
+        register_t fn_value{ static_cast<register_t>(fn) };
         gpfsel[pinid/PinsPerReg] &= ~(MaxFnValue<<((pinid%PinsPerReg)*BitsPerPin));
         gpfsel[pinid/PinsPerReg] |=  fn_value<<((pinid%PinsPerReg)*BitsPerPin);
       }

@@ -87,19 +87,22 @@ namespace dibase { namespace rpi {
     /// The Raspberry Pi board version index value is obtained from the 
     /// rpi_info.index_version() member function.
     ///
-    /// @param[in]  pin Raspberry Pi connector pin number key value
-    /// @param[in]  map Pointer to satrt of 2D mapping array of pin_id integer
-    ///                 values having one mapping vector for each supported
-    ///                 Raspberry Pi board version. If an array slot does not
-    ///                 map to a valid pin_id use an invalid pin_id value which
-    ///                 will force pin_id construction failure.
+    /// @param[in]  pin         Raspberry Pi connector pin number key value
+    /// @param[in]  map         Pointer to satrt of 2D mapping array of pin_id
+    ///                         integer values having one mapping vector for
+    ///                         each supported Raspberry Pi board version. If an
+    ///                         array slot does not map to a valid pin_id use an
+    ///                         invalid pin_id value which will force pin_id
+    ///                         construction failure
+    /// @param[in]  n_pins      Number of connector pin elements in a map vector
+    /// @param[in]  n_versions  Number of board version vectors in the map
     /// @exception  std::invalid_argument raised if reported board version >=
     ///             n_versions, pin >= n_pins or map[version][pin] is not a
     ///             valid pin_id value.
       rpi_version_mapped_pin_id
       ( pin_id_int_t pin
       , pin_id_int_t const * map
-      , pin_id_int_t n_pins
+      , std::size_t n_pins
       , std::size_t n_versions
       );
     };

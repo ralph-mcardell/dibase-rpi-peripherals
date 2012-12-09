@@ -16,6 +16,7 @@
   {
     namespace internal
     {
+    /// @cond
     // A base rpi_init object is used to initialise the data for rpi_info
     // objects for production use. Tests may subclass rpi_init, override
     // virtual initialisation methods as appropriate, and replace the
@@ -23,6 +24,7 @@
     // initialiser.
       rpi_init production_code_initialiser;
       rpi_init * rpi_initialiser{&production_code_initialiser};
+    /// @endcond
 
       static char const * get_label
       ( FILE * file

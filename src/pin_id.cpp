@@ -29,7 +29,7 @@ namespace dibase { namespace rpi {
     ( std::size_t pin
     , std::size_t version
     , pin_id_int_t const * map
-    , pin_id_int_t n_pins
+    , std::size_t n_pins
     , std::size_t n_versions
     )
     {
@@ -42,7 +42,7 @@ namespace dibase { namespace rpi {
     rpi_version_mapped_pin_id::rpi_version_mapped_pin_id
     ( pin_id_int_t pin
     , pin_id_int_t const * map
-    , pin_id_int_t n_pins
+    , std::size_t n_pins
     , std::size_t n_versions
     )
     : pin_id(do_lookup(pin, rpi_info().index_version(), map, n_pins, n_versions))

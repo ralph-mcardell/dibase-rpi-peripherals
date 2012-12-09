@@ -13,6 +13,14 @@
  namespace dibase {
   namespace rpi
   {
+  /// @brief Provides Raspberry Pi platform information
+  ///
+  /// Raspberry Pi platform information is presented by rpi_info from
+  /// information gathered from the system - e.g. data available in the
+  /// Linux proc file system.
+  ///
+  /// Note: In general this information is static so once gathered by an
+  ///       initial instance is usually cached for subsequent instances.
     class rpi_info
     {
     public:

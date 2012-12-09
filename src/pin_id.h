@@ -64,15 +64,15 @@ namespace dibase { namespace rpi {
       pin_id_int_t  value;  ///< Wrapped integer value of the pin id.
     };
 
-  /// @brief pin_id subtype. Lookup id in a map by R'Pi version and pin keys
+  /// @brief Lookup pin id in a map by Raspberry Pi board version and pin keys
   ///
-  /// rpi_version_mapped_pin_id is an intermediate type not intended for use in
-  /// client code.
+  /// rpi_version_mapped_pin_id is an intermediate type not intended for
+  /// direct use in client code.
   ///
-  /// Uses a pin number key and a map to lookup an associated BCM2835 GPIO pin
-  /// id. The map contains entries mapping connector pins to GPIO pins for
-  /// each supported Raspberry Pi board version, and the correct set choosen
-  /// for the Raspberry Pi in use.
+  /// Uses a Raspberry Pi connector pin number key and a map to lookup the
+  /// associated BCM2835 GPIO pin id. The map contains entries mapping connector
+  /// pins to GPIO pins for each supported Raspberry Pi board version, the
+  /// correct pin-set choosen for the Raspberry Pi in use.
     class rpi_version_mapped_pin_id : public pin_id
     {
     protected:

@@ -15,14 +15,14 @@
  namespace dibase { namespace rpi {
  namespace internal
  {
-  /// @brief Overridable Raspberry Pi information initialisation member functions
-  ///
-  /// Raspberry Pi platform information is presented by the rpi_info class.
-  /// The information in that class will be gathered from the system - such
-  /// as data available in the Linux proc file system. However, there is a
-  /// need to allow the gathering of such information to be overriden
-  /// with mock implementations for testing purposes. This requirment is
-  /// provided by the virtual member functions of rpi_init.
+ /// @brief Overridable Raspberry Pi information initialisation member functions
+ ///
+ /// Raspberry Pi platform information is presented by the rpi_info class.
+ /// The information in that class will be gathered from the system - such
+ /// as data available in the Linux proc file system. However, there is a
+ /// need to allow the gathering of such information to be overridden
+ /// with mock implementations for testing purposes. This requirement is
+ /// provided by the virtual member functions of rpi_init.
     struct rpi_init
     {
     /// @brief Returns 1 based integer major version of Raspberry Pi board

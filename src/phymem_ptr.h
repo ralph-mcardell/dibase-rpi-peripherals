@@ -63,7 +63,7 @@ namespace dibase { namespace rpi {
     /// Thin sub-class template of \ref raw_phymem_ptr that casts the untyped
     /// void* to the mapped region to the type specified by the template
     /// parameter T. Provides typed get and indexed get into the mapped region
-    /// as well as operator overloads for * (de-reference) -> and [].
+    /// as well as operator overloads for * (dereference) -> and [].
     ///
     /// A primary use case is to access memory mapped peripheral control and
     /// data areas. In such cases the type for T should probably be qualified 

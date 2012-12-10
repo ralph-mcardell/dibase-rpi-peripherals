@@ -72,7 +72,7 @@ namespace dibase { namespace rpi {
   /// Uses a Raspberry Pi connector pin number key and a map to lookup the
   /// associated BCM2835 GPIO pin id. The map contains entries mapping connector
   /// pins to GPIO pins for each supported Raspberry Pi board version, the
-  /// correct pin-set choosen for the Raspberry Pi in use.
+  /// correct pin-set chosen for the Raspberry Pi in use.
     class rpi_version_mapped_pin_id : public pin_id
     {
     protected:
@@ -80,7 +80,7 @@ namespace dibase { namespace rpi {
     ///
     /// Constructor for sub-class use.
     ///
-    /// The base pin_id is intialised by the value for the associated pin key
+    /// The base pin_id is initialised by the value for the associated pin key
     /// in a map vector. The vector may be one of several in a 2D array and is
     /// selected based on the Raspberry Pi board version. The lookup is like
     /// so: pin_id( map[rpi_board_version_index][connector_pin_number] )
@@ -88,7 +88,7 @@ namespace dibase { namespace rpi {
     /// rpi_info.index_version() member function.
     ///
     /// @param[in]  pin         Raspberry Pi connector pin number key value
-    /// @param[in]  map         Pointer to satrt of 2D mapping array of pin_id
+    /// @param[in]  map         Pointer to start of 2D mapping array of pin_id
     ///                         integer values having one mapping vector for
     ///                         each supported Raspberry Pi board version. If an
     ///                         array slot does not map to a valid pin_id use an
@@ -164,8 +164,8 @@ namespace dibase { namespace rpi {
   /// Each Raspberry Pi P5 connector version has its own vector mapping P5
   /// pin numbers to BCM2835 GPIO pin numbers (that is, pin_id values). One
   /// extra slot is required for the non-existent pin 0, which resolves to an
-  /// invalid GPIO pin id value. AllP5 pins for version 1 boards map to invalid
-  /// pins as there is no P5 on version 1 boards.
+  /// invalid GPIO pin id value. All P5 pins for version 1 boards map to
+  /// invalid pins as there is no P5 on version 1 boards.
     extern pin_id_int_t p5_gpio_pin_map[pinout_versions][p5_map_size];
 
   /// @brief Raspberry Pi P5 connector pin representation

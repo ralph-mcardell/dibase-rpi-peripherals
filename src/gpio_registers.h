@@ -431,7 +431,7 @@ namespace dibase { namespace rpi {
 
     /// @brief Set the pull up/down actualisation control mode.
     ///
-    /// set_pull_up_down_mode has to be used in conjuction with
+    /// set_pull_up_down_mode has to be used in conjunction with
     /// \ref assert_pin_pull_up_down_clock and
     /// \ref remove_all_pin_pull_up_down_clocks. See the
     /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
@@ -450,7 +450,7 @@ namespace dibase { namespace rpi {
 
     /// @brief Assert a single pin's pull up/down clock.
     ///
-    /// assert_pin_pull_up_down_clock has to be used in conjuction with
+    /// assert_pin_pull_up_down_clock has to be used in conjunction with
     /// \ref set_pull_up_down_mode and \ref remove_all_pin_pull_up_down_clocks.
     /// See the
     /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
@@ -470,7 +470,7 @@ namespace dibase { namespace rpi {
 
     /// @brief Remove all pin's pull up/down clock assertions.
     ///
-    /// remove_all_pin_pull_up_down_clocks has to be used in conjuction with
+    /// remove_all_pin_pull_up_down_clocks has to be used in conjunction with
     /// \ref set_pull_up_down_mode and \ref assert_pin_pull_up_down_clock.
     /// See the
     /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">

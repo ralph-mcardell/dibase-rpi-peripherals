@@ -105,3 +105,89 @@ TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_max_pin_id_OK"
   CHECK(a.is_in_use(pin_id(pin_id::max_id))==true);
   CHECK(mock_allocator::in_use==true);
 }
+
+TEST_CASE( "Unit_tests/pin_cache_allocator/dealloc_unused_pin_throws"
+         , "Deallocating a pin not in use throws std::logic_error"
+         )
+{
+  mock_allocator::in_use = false;
+  pin_cache_allocator<mock_allocator> a;
+  REQUIRE_THROWS_AS(a.deallocate(pin_id(7)), std::logic_error);
+}
+
+TEST_CASE( "Unit_tests/pin_cache_allocator/dealloc_locally_in_use_pin_succeeds"
+         , "Deallocating a pin marked as locally in use should succeed and the pin marked as free"
+         )
+{
+  mock_allocator::in_use = false;
+  pin_cache_allocator<mock_allocator> a;
+  a.allocate(pin_id(8));
+  REQUIRE(a.is_in_use(pin_id(8))==true);
+  a.deallocate(pin_id(8));
+  CHECK(a.is_in_use(pin_id(8))==false);
+}
+
+TEST_CASE( "Unit_tests/pin_cache_allocator/dealloc_in_use_pin_does_pass_on_request"
+         , "Deallocating a pin marked as locally in use pass on deallocation request"
+         )
+{
+  mock_allocator::in_use = false;
+  pin_cache_allocator<mock_allocator> a;
+  a.allocate(pin_id(9));
+  REQUIRE(mock_allocator::in_use==true);
+  a.deallocate(pin_id(9));
+  CHECK(mock_allocator::in_use==false);
+}
+
+TEST_CASE( "Unit_tests/pin_cache_allocator/dealloc_pins_independent"
+         , "Deallocating one pin does not interfere with deallocating another"
+         )
+{
+  mock_allocator::in_use = false;
+  pin_cache_allocator<mock_allocator> a;
+  a.allocate(pin_id(10));
+  REQUIRE(mock_allocator::in_use==true);
+  mock_allocator::in_use = false;
+  a.allocate(pin_id(11));
+  REQUIRE(mock_allocator::in_use==true);
+  
+  a.deallocate(pin_id(10));
+  REQUIRE(mock_allocator::in_use==false);
+// 2nd pin dealloc. request only passed to mock_allocator if pin in use by a
+  REQUIRE_THROWS_AS(a.deallocate(pin_id(11)), std::domain_error);
+}
+
+TEST_CASE( "Unit_tests/pin_cache_allocator/all_pins_initially_free"
+         , "After construction of a pin_cache_allocator all pins should be free"
+         )
+{
+  mock_allocator::in_use = false;
+  pin_cache_allocator<mock_allocator> a;
+
+  for ( pin_id_int_t id=0; id!=pin_id::number_of_pins; ++id )
+    {
+      REQUIRE( a.is_in_use(pin_id(id))==false );
+    }
+}
+
+TEST_CASE( "Unit_tests/pin_cache_allocator/is_in_use_only_passes_on_request_if_locally_free"
+         , "is_in_use will report cached in use value or contained allocator's is_in_use value if localy free"
+         )
+{
+  pin_cache_allocator<mock_allocator> a;
+  mock_allocator::in_use = true;
+  CHECK(a.is_in_use(pin_id(12))==true);
+  mock_allocator::in_use = false;
+  CHECK(a.is_in_use(pin_id(12))==false);
+  a.allocate(pin_id(12));
+  REQUIRE(mock_allocator::in_use==true);
+  CHECK(a.is_in_use(pin_id(12))==true);
+  mock_allocator::in_use = false;
+  CHECK(a.is_in_use(pin_id(12))==true);
+  mock_allocator::in_use = true;
+  a.deallocate(pin_id(12));
+  REQUIRE(mock_allocator::in_use==false);
+  CHECK(a.is_in_use(pin_id(12))==false);
+  mock_allocator::in_use = true;
+  CHECK(a.is_in_use(pin_id(12))==true);
+}

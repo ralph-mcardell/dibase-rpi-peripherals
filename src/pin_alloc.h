@@ -50,7 +50,6 @@
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell
 
-
 #ifndef DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H
  #define DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H
 

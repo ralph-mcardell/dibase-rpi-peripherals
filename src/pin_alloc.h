@@ -211,6 +211,20 @@ namespace dibase { namespace rpi {
     ///             exported or the unexport file could not be opened.
       void deallocate( pin_id pin );
     };
+
+  /// @brief Standard GPIO pin allocator type alias
+  ///
+  /// The standard GPIO pin allocator is a pin_cache_allocator specialised
+  /// with pin_export_allocator as the contained allocator type used to 
+  /// pass on requests to when necessary, that is:
+  ///
+  /// - is_in_use for a pin that is currently free in the local process
+  ///   but might be in use by some other process.
+  /// - allocate if the pin is currently free in the local process then the
+  ///   allocation request is passed on for more global allocation.
+  /// - deallocate if the pin is currently in use locally then it should
+  ///   also be in use globally and so needs to be globally freed.
+    typedef pin_cache_allocator<pin_export_allocator> pin_allocator;
   }
 }} 
 #endif // DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H

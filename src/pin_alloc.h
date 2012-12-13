@@ -110,17 +110,9 @@ namespace dibase { namespace rpi {
     /// @param[in]  pin   GPIO pin id for the GPIO pin to allocate for use.
     /// @exception  bad_pin_alloc is raised if the requested pin is already in
     ///             use.
-      void allocate( pin_id pin )
-      {
-        if (pat[pin])
-          {
-            throw bad_pin_alloc( "GPIO pin allocate: pin is already being "
-                                 "used locally."
-                               );
-          }
-        allocator.allocate( pin );
-        pat[pin] = true;
-      }
+    /// @exception  std::runtime_error (or other exception) is rasied if
+    ///             a passed on allocation request should fail.
+    void allocate( pin_id pin );
 
     /// @brief deallocate a GPIO pin from use
     ///
@@ -132,18 +124,13 @@ namespace dibase { namespace rpi {
     ///
     /// @param[in]  pin   GPIO pin id for the GPIO pin to deallocate from use.
     /// @exception  std::logic_error is raised if the requested pin is not in
-    ///             use.
-      void deallocate( pin_id pin )
-      {
-        if (!pat[pin])
-          {
-            throw std::logic_error( "GPIO pin deallocate: pin is not in use "
-                                    "locally."
-                                  );
-          }
-        allocator.deallocate( pin );
-        pat[pin] = false;
-      }
+    ///             use locally by this process.
+    /// @exception  std::runtime_error (or other exception) is raised if a
+    ///             passed on deallocation request should fail or an attempt
+    ///             is made to deallocate a pin the contained allocator deems 
+    ///             free - which is probably not due to a logic error in the
+    ///             current process' program.
+      void deallocate( pin_id pin );
 
     /// @brief Returns whether a GPIO pin is availble _now_ for use
     ///
@@ -153,10 +140,76 @@ namespace dibase { namespace rpi {
     ///
     /// @param[in]  pin     GPIO pin id of GPIO pin to see if it is in use.
     /// @return true if the pin is in use at this moment or false otherwise
+    /// @exception  std::system_error (or other exception) is raised if a
+    ///             passed on  request to the contained allocator should fail.
       bool is_in_use( pin_id pin )
       {
         return pat[pin] ? true : allocator.is_in_use( pin );
       }
+    };
+
+    template <class PIN_ALLOC_T>
+    void pin_cache_allocator<PIN_ALLOC_T>::allocate( pin_id pin )
+    {
+      if (pat[pin])
+        {
+          throw bad_pin_alloc( "GPIO pin allocate: pin is already being "
+                               "used locally."
+                             );
+        }
+      allocator.allocate( pin );
+      pat[pin] = true;
+    }
+
+    template <class PIN_ALLOC_T>
+    void pin_cache_allocator<PIN_ALLOC_T>::deallocate( pin_id pin )
+    {
+      if (!pat[pin])
+        {
+          throw std::logic_error( "GPIO pin deallocate: pin is not in use "
+                                  "locally."
+                                );
+        }
+      allocator.deallocate( pin );
+      pat[pin] = false;
+    }
+
+  /// @brief Allocator using sys filesystem gpio export / unexport for allocation
+    class pin_export_allocator
+    {
+    public:
+    /// @brief Determines if a GPIO pin is in use possibly externally
+    ///
+    /// Tries to determine if a GPIO pin is in use external to the current
+    /// process by seeing if it is exported in the sys filesysten GPIO support
+    /// area.
+    ///
+    /// Note that this is not an airtight check as proceses can use GPIO
+    /// by methods other than the user space sys filesystem and so are not
+    /// required to export the GPIO pins they use in teh sys filesystem. Or
+    /// may export/unexport on an operation by operation application basis.
+    ///
+    /// @param[in]  pin     GPIO pin id of GPIO pin to see if it is in use.
+    /// @return true if the pin is in use at this moment or false otherwise
+    /// @exception  std::system_error is raised if an unexpected error is
+    ///             returned from a system call.
+      bool is_in_use( pin_id pin );
+
+    /// @brief Allocates a GPIO pin by exporting it in the sys filesystem
+    ///
+    /// @param[in]  pin   GPIO pin id for the GPIO pin to allocate for use.
+    /// @exception  bad_pin_alloc is raised if the requested pin is already
+    ///             exported.
+    /// @exception  std::runtime_error is raised if the export file cannot
+    ///             be opened.
+      void allocate( pin_id pin );
+
+    /// @brief Deallocates a GPIO pin by unexporting it in the sys filesystem
+    ///
+    /// @param[in]  pin   GPIO pin id for the GPIO pin to deallocate from use.
+    /// @exception  std::runtime_error is raised if requested pin is not
+    ///             exported or the unexport file could not be opened.
+      void deallocate( pin_id pin );
     };
   }
 }} 

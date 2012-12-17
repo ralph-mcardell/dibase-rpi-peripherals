@@ -9,6 +9,7 @@
 #include "phymem_ptr.h"
 #include "gpio_registers.h"
 #include "pin_alloc.h"
+#include <unistd.h>
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -32,15 +33,38 @@ namespace dibase { namespace rpi {
         {}
         gpio_ctrl( gpio_ctrl const & ) = delete;
       };
+
+      useconds_t const pud_wait_us{10};
+      static void apply_pull(pin_id pin, unsigned mode)
+      {
+        if ( mode&ipin::pull_up && mode&ipin::pull_down )
+          {
+            throw std::invalid_argument
+                  ("Cannot open ipin with both pull up and down enabled!");
+          }
+
+        gpio_ctrl::instance().regs->set_pull_up_down_mode
+                                    ( mode&ipin::pull_up 
+                                        ? gpio_pud_mode::enable_pull_up_control
+                                    : mode&ipin::pull_down 
+                                        ? gpio_pud_mode::enable_pull_down_control
+                                        : gpio_pud_mode::off
+                                    );
+        ::usleep(pud_wait_us);
+        gpio_ctrl::instance().regs->assert_pin_pull_up_down_clock( pin );
+        ::usleep(pud_wait_us);
+        gpio_ctrl::instance().regs->set_pull_up_down_mode(gpio_pud_mode::off);
+        gpio_ctrl::instance().regs->remove_all_pin_pull_up_down_clocks();
+      }
     }
 
-    void pin_base::open(pin_id pin, open_mode mode)
+    void pin_base::open(pin_id pin, direction_mode dir)
     {
       internal::gpio_ctrl::instance().alloc.allocate(pin);
       internal::gpio_ctrl::instance().regs->set_pin_function
                                             ( pin
-                                            , (mode==out) ? gpio_pin_fn::output
-                                                          : gpio_pin_fn::input
+                                            , (dir==out) ? gpio_pin_fn::output
+                                                         : gpio_pin_fn::input
                                             
                                             );
       this->pin = pin;
@@ -71,6 +95,17 @@ namespace dibase { namespace rpi {
       }
     }
 
+    ipin::~ipin()
+    {
+      internal::apply_pull(get_pin(), pull_disable);
+      pin_base::close();
+    }
+
+    void ipin::open(pin_id pin, unsigned mode)
+    {
+      pin_base::open(pin, in);
+      internal::apply_pull(pin, mode);
+    }
 
     bool ipin::get()
     {

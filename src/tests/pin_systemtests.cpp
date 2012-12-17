@@ -57,9 +57,18 @@ TEST_CASE( "System_tests/003/opin/open_same_pin_twice_throws"
          , "Opening the same pin more than once should fail by throwing"
          )
 {
-  ipin o{available_out_pin_id};
+  opin o{available_out_pin_id};
   CHECK(o.is_open()==true);
   REQUIRE_THROWS_AS(o.open(available_out_pin_id), bad_pin_alloc);
+}
+
+TEST_CASE( "System_tests/004/opin/put_to_closed_pin_ignored"
+         , "Attempting to change a opin state when closed is ignored"
+         )
+{
+  opin o;
+  CHECK(o.is_open()==false);
+  o.put(true);
 }
 
 
@@ -106,6 +115,15 @@ TEST_CASE( "System_tests/023/ipin/open_same_pin_twice_throws"
   REQUIRE_THROWS_AS(i.open(available_in_pin_id), bad_pin_alloc);
 }
 
+TEST_CASE( "System_tests/004/ipin/get_from_closed_pin_false"
+         , "Getting a closed ipin's state returns false"
+         )
+{
+  ipin i;
+  CHECK(i.is_open()==false);
+  CHECK(i.get()==false);
+}
+
 
 TEST_CASE( "System_tests/100/opin/put_true_put_false"
          , "Calling opin.put with true then false should toggle the state of the available_pin"
@@ -130,11 +148,49 @@ TEST_CASE( "System_tests/200/ipin/get_true_get_false"
          , "Calling ipin.get when pin high should return true and false when low"
          )
 {
-  std::cout << "\nPin input test (no pullup):\n"
+  std::cout << "\nPin input test (no pullup/pulldown):\n"
                "Connect pin BCM2835 GPIO" << available_in_pin_id 
             << " to allow state changing between high voltage and ground "
                "(switch+resistors etc.)\n\n";
   ipin i{available_in_pin_id};
+  CHECK(i.is_open()==true);
+  std::cout << "Set BCM2835 GPIO" << available_in_pin_id << " high then press <Enter>...";
+  std::string dummy;
+  std::getline(std::cin, dummy);
+  CHECK(i.get()==true);
+  std::cout << "Set BCM2835 GPIO" << available_in_pin_id << " low then press <Enter>...";
+  std::getline(std::cin, dummy);
+  CHECK(i.get()==false);
+}
+
+TEST_CASE( "System_tests/210/ipin/get_true_get_false_pullup"
+         , "Calling ipin.get with pullup enabled when pin high should return true and false when low"
+         )
+{
+  std::cout << "\nPin input test (with pin pullup):\n"
+               "Connect pin BCM2835 GPIO" << available_in_pin_id 
+            << " to allow state changing between open pull up (high) and "
+               "ground (switch+resistors etc.)\n\n";
+  ipin i{available_in_pin_id, ipin::pull_up};
+  CHECK(i.is_open()==true);
+  std::cout << "Set BCM2835 GPIO" << available_in_pin_id << " high then press <Enter>...";
+  std::string dummy;
+  std::getline(std::cin, dummy);
+  CHECK(i.get()==true);
+  std::cout << "Set BCM2835 GPIO" << available_in_pin_id << " low then press <Enter>...";
+  std::getline(std::cin, dummy);
+  CHECK(i.get()==false);
+}
+
+TEST_CASE( "System_tests/210/ipin/get_true_get_false_pulldown"
+         , "Calling ipin.get with pulldown enabled when pin high should return true and false when low"
+         )
+{
+  std::cout << "\nPin input test (with pin pulldown):\n"
+               "Connect pin BCM2835 GPIO" << available_in_pin_id 
+            << " to allow state changing between high voltage and and open "
+               " pull down (low) (switch+resistors etc.)\n\n";
+  ipin i{available_in_pin_id, ipin::pull_down};
   CHECK(i.is_open()==true);
   std::cout << "Set BCM2835 GPIO" << available_in_pin_id << " high then press <Enter>...";
   std::string dummy;

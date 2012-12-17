@@ -8,8 +8,7 @@
 
 // ##### Ongoing version. Will be updated when more facilities avaialble #####
 
-#include "phymem_ptr.h"
-#include "gpio_registers.h"
+#include "pin.h"
 
 #include <exception>    // for std::exception
 #include <iostream>     // for std IO stream objects
@@ -21,16 +20,13 @@ int main()
 {
   try
     {
-      phymem_ptr<volatile gpio_registers> 
-                pgpio(gpio_registers::physical_address, register_block_size);
-      
-      pgpio->set_pin_function(gpio_gclk, gpio_pin_fn::output);
+      opin gpio_clk_out(gpio_gclk);
 
       for (unsigned p = 0; p < 10; ++p) 
         {
-          pgpio->set_pin(gpio_gclk);
+          gpio_clk_out.put(true);
           sleep(1);
-          pgpio->clear_pin(gpio_gclk);
+          gpio_clk_out.put(false);
           sleep(1);
         }
     }

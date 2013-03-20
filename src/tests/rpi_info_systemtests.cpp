@@ -7,6 +7,7 @@
 
 #include "catch.hpp"
 #include "rpi_info.h"
+#include <iostream>
 
 using namespace dibase::rpi;
 
@@ -15,6 +16,8 @@ TEST_CASE( "Unit_tests/rpi_info/major_version"
          )
 {
   REQUIRE( ((rpi_info().major_version()==1)||(rpi_info().major_version()==2)) );
+  std::cout << "\nINFORMATION: Raspberry Pi major revision determined to be: "
+            << rpi_info().major_version() << '\n';
 }
 
 TEST_CASE( "Unit_tests/rpi_info/index_version"

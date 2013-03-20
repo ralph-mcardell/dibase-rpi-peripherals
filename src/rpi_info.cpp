@@ -72,14 +72,27 @@
             if ( isdigit(ch) )
               {
                 version = ch-'0';
-                while ( (ch=fgetc(file))&&isdigit(ch) )
+                char const * hex_digits("abcdef");
+                while ( (ch=fgetc(file))&&isalnum(ch) )
                   {
-                    version *= 10;
-                    version += ch - '0';
+                    if ( isdigit(ch) )
+                      {
+                        version *= 16;
+                        version += ch - '0';
+                      }
+                    else if ( char const * hexdigit_ptr = strchr(hex_digits, ch) )
+                      {
+                        version *= 16;
+                        version += 10 + (hexdigit_ptr-hex_digits);
+                      }
+                    else // oops something unexpected: return an invalid version
+                      {
+                        version = 0; 
+                        break;
+                      } 
                   }
               }
           }
-
         return version;
       }
 
@@ -117,9 +130,8 @@
           {
             fclose( info_file );
           }
-
         if (version>0&&version<=3) return 1;
-        else if (version>3&&version<=6) return 2;
+        else if (version>3&&version<=15) return 2;
         else
           {
             throw std::runtime_error( "rpi_init::init_major_version: Unable to "

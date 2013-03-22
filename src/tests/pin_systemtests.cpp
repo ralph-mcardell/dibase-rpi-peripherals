@@ -2,15 +2,11 @@
 /// @file pin_systemtests.cpp 
 /// @brief System tests for GPIO pin IO types.
 ///
-/// Some tests require observation of and interaction with GPIO pins
-///
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell
 
 #include "catch.hpp"
 #include "pin.h"
-#include <iostream>
-#include <string>
 #include "pin_alloc.h"
 
 using namespace dibase::rpi::peripherals;

@@ -25,9 +25,9 @@
 /// (see /sys/classes/gpio). If is not then it is exported so any other
 /// processes using the same assumption will not try to also use the GPIO pin.
 /// As mentioned this is by no means a watertight solution and may be
-/// revisited in ther future.
+/// revisited in the future.
 ///
-/// To alloe testing the intra-process pin allocation logic as a unit the
+/// To allow testing the intra-process pin allocation logic as a unit the
 /// implementation is split into two parts:
 ///   - a class template that implements the intra-process allocation logic
 ///   - a separate allocation class that performs the inter-process sys file
@@ -40,10 +40,16 @@
 /// GPIO pin allocator types should provide the following three functions:
 ///
 ///   void allocate( pin_id pin )   : allocate a pin or throw a bad_pin_alloc
-///                                   exception if the pin is in use.
-///   void deallocate( pin_id pin ) : deallocate a previously allocated pin
-///                                   or thow a std::logic error if the pin is
-///                                   not allocated.
+///                                   exception if the pin is in use. Inter
+///                                   process pin allocators may throw other
+///                                   exceptions such as std::runtime_error.
+///   void deallocate( pin_id pin ) : deallocate a previously allocated pin.
+///                                   Thow a std::logic error if the pin is
+///                                   not allocated locally or some other 
+///                                   exception such as std::runtime_error if 
+///                                   a pin is not allocated globally or its
+///                                   status cannot be determined due to some
+///                                   unexpected condition.
 ///   bool is_in_use( pin_id pin )  : Returns true if the pin is in use at the
 ///                                   time of the query, false if it is not.
 ///
@@ -64,7 +70,7 @@ namespace dibase { namespace rpi {
     struct bad_pin_alloc : std::runtime_error
     {
     /// @brief Construct from an explainatory C string.
-    /// @param[in]  what  C string expaining allocation failure
+    /// @param[in]  what  C string explaining allocation failure
       bad_pin_alloc( char const * what )
       : std::runtime_error( what )
       {}
@@ -86,7 +92,8 @@ namespace dibase { namespace rpi {
   /// contained allocator.
   ///
   /// @param PIN_ALLOC_T  Type of pin allocator to pass requests onto if 
-  ///                     cached results indicate so.
+  ///                     cached results indicate so. Dictates inter-process
+  ///                     pin allocation policy.
     template <class PIN_ALLOC_T>
     class pin_cache_allocator
     {
@@ -141,7 +148,7 @@ namespace dibase { namespace rpi {
     /// @param[in]  pin     GPIO pin id of GPIO pin to see if it is in use.
     /// @return true if the pin is in use at this moment or false otherwise
     /// @exception  std::system_error (or other exception) is raised if a
-    ///             passed on  request to the contained allocator should fail.
+    ///             passed on request to the contained allocator should fail.
       bool is_in_use( pin_id pin )
       {
         return pat[pin] ? true : allocator.is_in_use( pin );
@@ -181,13 +188,13 @@ namespace dibase { namespace rpi {
     /// @brief Determines if a GPIO pin is in use possibly externally
     ///
     /// Tries to determine if a GPIO pin is in use external to the current
-    /// process by seeing if it is exported in the sys filesysten GPIO support
+    /// process by seeing if it is exported in the sys filesystem GPIO support
     /// area.
     ///
     /// Note that this is not an airtight check as proceses can use GPIO
     /// by methods other than the user space sys filesystem and so are not
-    /// required to export the GPIO pins they use in teh sys filesystem. Or
-    /// may export/unexport on an operation by operation application basis.
+    /// required to export the GPIO pins they use in the sys filesystem. Or
+    /// may export/unexport on an operation by operation basis.
     ///
     /// @param[in]  pin     GPIO pin id of GPIO pin to see if it is in use.
     /// @return true if the pin is in use at this moment or false otherwise
@@ -207,7 +214,7 @@ namespace dibase { namespace rpi {
     /// @brief Deallocates a GPIO pin by unexporting it in the sys filesystem
     ///
     /// @param[in]  pin   GPIO pin id for the GPIO pin to deallocate from use.
-    /// @exception  std::runtime_error is raised if requested pin is not
+    /// @exception  std::runtime_error is raised if the requested pin is not
     ///             exported or the unexport file could not be opened.
       void deallocate( pin_id pin );
     };
@@ -228,4 +235,3 @@ namespace dibase { namespace rpi {
   }
 }} 
 #endif // DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H
-

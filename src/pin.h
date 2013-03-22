@@ -15,14 +15,12 @@ namespace dibase { namespace rpi {
   {
   /// @brief Base class for I/O direction specific GPIO classes opin and ipin.
   ///
-  /// Provides a public and protected member functions providing common
-  /// functionality to the sub-types. Also stores and provides read only
-  /// access to sub classesd to the pin_id associated with an open single
+  /// Specifies public and protected member functions providing common
+  /// functionality to the sub-types. Also stores, and provides read only
+  /// access to sub classes, to the pin_id associated with an open single
   /// GPIO pin I/O object.
     class pin_base
     {
-    /// Out of valid pin id number range value for uninitialised pin values
-    ///  static const pin_id_int_t uninitialised_pin_id = pin_id::number_of_pins;
     public:
     /// @brief Query open state of pin objects.
     /// @return true if pin object is open, false otherwise. 

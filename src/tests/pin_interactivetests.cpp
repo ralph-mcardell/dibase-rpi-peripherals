@@ -18,6 +18,18 @@ using namespace dibase::rpi::peripherals;
 pin_id available_out_pin_id{4}; // P1 pin GPIO_GCLK
 pin_id available_in_pin_id{17}; // P1 pin GPIO_GEN0
 
+bool yn_query(char const * query_text)
+{
+  std::string response;
+  do
+    {
+      std::cout << query_text << " (y/n)? ";
+      std::getline(std::cin, response);
+    }
+  while (response.size()!=1 || response.find_first_of("yYnN")!=0);
+  return response.find_first_of("Yy")==0;
+}
+
 TEST_CASE( "Interactive_tests/000/opin/put_true_put_false"
          , "Calling opin.put with true then false should toggle the state of the available_pin"
          )
@@ -31,11 +43,12 @@ TEST_CASE( "Interactive_tests/000/opin/put_true_put_false"
   std::string dummy;
   std::getline(std::cin, dummy);
   o.put(true);
+  CHECK( yn_query("Is the GPIO pin high") );
   std::cout << "Press <Enter> to set BCM2835 GPIO" << available_out_pin_id << " low...";
   std::getline(std::cin, dummy);
+  CHECK( yn_query("Is the GPIO pin low") );
   o.put(false);
 }
-
 
 TEST_CASE( "Interactive_tests/100/ipin/get_true_get_false"
          , "Calling ipin.get when pin high should return true and false when low"

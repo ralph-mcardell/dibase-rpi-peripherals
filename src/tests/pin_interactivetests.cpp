@@ -46,8 +46,8 @@ TEST_CASE( "Interactive_tests/000/opin/put_true_put_false"
   CHECK( yn_query("Is the GPIO pin high") );
   std::cout << "Press <Enter> to set BCM2835 GPIO" << available_out_pin_id << " low...";
   std::getline(std::cin, dummy);
-  CHECK( yn_query("Is the GPIO pin low") );
   o.put(false);
+  CHECK( yn_query("Is the GPIO pin low") );
 }
 
 TEST_CASE( "Interactive_tests/100/ipin/get_true_get_false"

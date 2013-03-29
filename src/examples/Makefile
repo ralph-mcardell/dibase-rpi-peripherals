@@ -9,7 +9,7 @@ ROOT_DIR = $(realpath $(CURDIR)/../..)
 include $(ROOT_DIR)/makeinclude.mak
 
 # Files and directories
-SRC_FILES = open-collector.cpp
+SRC_FILES = open-collector.cpp leds_and_switches.cpp
 DEP_FILES = $(SRC_FILES:%.cpp=%.d)
 
 # Executable target files have the name of the example source file less the 

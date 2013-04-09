@@ -40,14 +40,14 @@ clean: tidy
 	-$(RM) *.d.*
 
 $(EXEC_DIR)/%$(FILE_SUFFIX): $(OBJ_DIR)/%.o $(LIB_DIR)/$(LIB_FILE)
-	$(LD) $(LD_FLAGS) -o $@ $< $(LIB_DIR)/$(LIB_FILE)
+	$(LD) $(LD_FLAGS) -o $@ $< $(LIB_DIR)/$(LIB_FILE) -lpthread
+
 
 $(OBJ_DIR)/%.o: %.cpp
-	$(CC) $(COMPILE_FLAGS) -I./.. -o $@ $<
+	$(CC) $(COMPILE_FLAGS) -I./.. -o $@ $< -pthread 
 
 $(LIB_DIR)/$(LIB_FILE):
-	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=$(BUILD_CONFIG) 
-
+	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=$(BUILD_CONFIG)
 %.d: %.cpp
 	@set -e; rm -f $@; \
 	$(CC) -MM $(COMPILE_FLAGS) -MT'$$(OBJ_DIR)/$(<:%.cpp=%.o)' \

@@ -195,7 +195,7 @@ void seven_segment::show(unsigned digit)
     , /* 9: segments   ABDEG */ 111U
     };
   unsigned const number_of_segments{7};
-  display_type const all_segments_maask{1<<number_of_segments-1};
+  display_type const all_segments_mask{(1<<number_of_segments)-1};
   unsigned const number_base{10};
   if ( digit >= number_base )
     {
@@ -204,7 +204,7 @@ void seven_segment::show(unsigned digit)
   auto display_value = digit_to_seven_segment_value[digit];
   if ( active_low )
    {
-      display_value = (~display_value)&all_segments_maask;
+      display_value = (~display_value)&all_segments_mask;
    }
   for (std::size_t i=0;i<number_of_segments;++i)
     {

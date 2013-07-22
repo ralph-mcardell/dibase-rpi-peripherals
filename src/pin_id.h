@@ -10,6 +10,7 @@
 
  #include "peridef.h"
  #include <stdexcept>
+ #include <iosfwd>
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -55,7 +56,7 @@ namespace dibase { namespace rpi {
 
     /// @brief Convert a pin_id to an integer pin id number
     /// @return an integer with the same value used to construct the pin_id 
-      operator pin_id_int_t()
+      operator pin_id_int_t() const
       {
         return value;
       }
@@ -63,6 +64,15 @@ namespace dibase { namespace rpi {
     private:
       pin_id_int_t  value;  ///< Wrapped integer value of the pin id.
     };
+
+  /// @brief Stream insertion operator.
+  /// Outputs passed pin_id after casting it to a pin_id_int_t.
+  /// Required to prevent compiler getting confused when trying to stream
+  /// pin_id despite conversion to pin_id_int_t operator.
+  /// @param out  Output stream to write to
+  /// @param id   pin_id to output.
+  /// @returns out.
+  std::ostream & operator<<(std::ostream & out, pin_id id);
 
   /// @brief Lookup pin id in a map by Raspberry Pi board version and pin keys
   ///

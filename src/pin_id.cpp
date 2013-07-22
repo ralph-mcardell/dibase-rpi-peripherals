@@ -7,6 +7,7 @@
 
 #include "pin_id.h"
 #include "rpi_info.h"
+#include <iostream>
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -47,5 +48,10 @@ namespace dibase { namespace rpi {
     )
     : pin_id(do_lookup(pin, rpi_info().index_version(), map, n_pins, n_versions))
     {}
+
+    std::ostream & operator<<(std::ostream & out, pin_id id)
+    {
+      return (out << pin_id_int_t(id));
+    }
   }
 }}

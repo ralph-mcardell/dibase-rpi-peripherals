@@ -11,12 +11,12 @@
 #include <iostream>
 #include <string>
 #include "pin_alloc.h"
+#include "interactivetests_config.h"
 
 using namespace dibase::rpi::peripherals;
 
-// Change if P1 GPIO_GCLK/GPIO_GEN0 in use on your system...
-pin_id available_out_pin_id{4}; // P1 pin GPIO_GCLK
-pin_id available_in_pin_id{17}; // P1 pin GPIO_GEN0
+pin_id const available_out_pin_id(test::out_pin_id); 
+pin_id const available_in_pin_id(test::in_pin_id);
 
 bool yn_query(char const * query_text)
 {
@@ -30,7 +30,7 @@ bool yn_query(char const * query_text)
   return response.find_first_of("Yy")==0;
 }
 
-TEST_CASE( "Interactive_tests/000/opin/put_true_put_false"
+TEST_CASE( "Interactive_tests/pin/out/000/put_true_put_false"
          , "Calling opin.put with true then false should toggle the state of the available_pin"
          )
 {
@@ -50,7 +50,7 @@ TEST_CASE( "Interactive_tests/000/opin/put_true_put_false"
   CHECK( yn_query("Is the GPIO pin low") );
 }
 
-TEST_CASE( "Interactive_tests/100/ipin/get_true_get_false"
+TEST_CASE( "Interactive_tests/pin/in/100/get_true_get_false"
          , "Calling ipin.get when pin high should return true and false when low"
          )
 {
@@ -69,7 +69,7 @@ TEST_CASE( "Interactive_tests/100/ipin/get_true_get_false"
   CHECK(i.get()==false);
 }
 
-TEST_CASE( "Interactive_tests/110/ipin/get_true_get_false_pullup"
+TEST_CASE( "Interactive_tests/pin/in/110/get_true_get_false_pullup"
          , "Calling ipin.get with pullup enabled when pin high should return true and false when low"
          )
 {
@@ -88,7 +88,7 @@ TEST_CASE( "Interactive_tests/110/ipin/get_true_get_false_pullup"
   CHECK(i.get()==false);
 }
 
-TEST_CASE( "Interactive_tests/120/ipin/get_true_get_false_pulldown"
+TEST_CASE( "Interactive_tests/pin/in/120/get_true_get_false_pulldown"
          , "Calling ipin.get with pulldown enabled when pin high should return true and false when low"
          )
 {

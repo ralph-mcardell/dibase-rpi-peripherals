@@ -10,8 +10,10 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <stdexcept>
 #include <system_error>
 #include <unistd.h>
+#include <fcntl.h>
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -20,14 +22,17 @@ namespace dibase { namespace rpi {
     {
       namespace
       {
-        char const * sysfs_gpio_export_pathname{"/sys/class/gpio/export"};
-        char const * sysfs_gpio_unexport_pathname{"/sys/class/gpio/unexport"};
-        char const * sysfs_gpio_pin_dir_basename{"/sys/class/gpio/gpio"};
+        char const * gpio_export_pathname{"/sys/class/gpio/export"};
+        char const * gpio_unexport_pathname{"/sys/class/gpio/unexport"};
+        char const * gpio_pin_dir_basename{"/sys/class/gpio/gpio"};
+        char const * gpio_pin_edgemode_filename{"edge"};
+        char const * gpio_pin_direction_filename{"direction"};
+        char const * gpio_pin_value_filename{"value"};
         
         static std::string make_gpio_pin_dir_pathname(pin_id pin)
         {
           std::ostringstream ostrstrm;
-          ostrstrm << sysfs_gpio_pin_dir_basename << pin;
+          ostrstrm << gpio_pin_dir_basename << pin;
           return ostrstrm.str();
         }
 
@@ -40,6 +45,17 @@ namespace dibase { namespace rpi {
               return  pin_id_stream.good();
             }
           return false;
+        }
+
+        std::string event_mode_to_edge_file_string(edge_event_mode mode)
+        {
+          switch (mode)
+          {
+          case edge_event_mode::rising:   return "rising";
+          case edge_event_mode::falling:  return "falling";
+          case edge_event_mode::both:     return "both";
+          default: return "";
+          };
         }
       }
 
@@ -60,12 +76,53 @@ namespace dibase { namespace rpi {
 
       bool export_pin(pin_id pin)
       {
-        return write_pin_id_to_file(pin, sysfs_gpio_export_pathname);
+        return write_pin_id_to_file(pin, gpio_export_pathname);
       }
 
       bool unexport_pin(pin_id pin)
       {
-        return write_pin_id_to_file(pin, sysfs_gpio_unexport_pathname);
+        return write_pin_id_to_file(pin, gpio_unexport_pathname);
+      }
+
+      int open_ipin_for_edge_events(pin_id pin, edge_event_mode mode)
+      {
+        std::string pin_path{make_gpio_pin_dir_pathname(pin)};
+        pin_path += '/';
+        {
+          std::ofstream edgestream{pin_path+gpio_pin_edgemode_filename};
+          if (edgestream.is_open())
+            {
+              edgestream.exceptions(std::ios::badbit|std::ios::failbit);
+              auto edge_file_value(event_mode_to_edge_file_string(mode));
+              if (edge_file_value.empty())
+                {
+                  throw std::invalid_argument{"Bad edge_event_mode value."};
+                }
+              edgestream << edge_file_value;
+            }
+          else
+            {
+              throw std::runtime_error{"Open failed for pin sys fs edge file."};
+            }
+        }
+        {
+          std::ofstream directionstream{pin_path+gpio_pin_direction_filename};
+          if (directionstream.is_open())
+            {
+              directionstream.exceptions(std::ios::badbit|std::ios::failbit);
+              directionstream << "in";
+            }
+          else
+            {
+              throw std::runtime_error{"Open failed for pin sys fs direction file."};
+            }
+          return ::open((pin_path+gpio_pin_value_filename).c_str(), O_RDONLY);
+        }
+      }
+
+      bool close_ipin_for_edge_events(int pin_fd)
+      {
+        return ::close(pin_fd)==0;
       }
     }
   }

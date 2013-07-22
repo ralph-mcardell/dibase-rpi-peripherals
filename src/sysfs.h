@@ -31,6 +31,30 @@ namespace dibase { namespace rpi {
     /// @param pin  Id of GPIO pin unexport
     /// @returns true on success, flase on failure.
       bool unexport_pin(pin_id pin);
+    
+    /// @brief Internal use input pin edge event mode values
+    ///
+    /// rising  : edge events on low to high rising edges
+    /// falling : edge events on high to low falling edges
+    /// both    : edge events on rising and falling edges
+      enum class edge_event_mode{rising, falling, both};
+
+    /// @brief Open a pin for use in edge events IO multiplexing.
+    /// @param pin  Id of input pin to open for edge event monitoring uses
+    /// @param mode Indication of edge events (rising, falling or both) to 
+    ///             monitor.
+    /// @returns File descriptor value that can be used with system
+    ///          functions such as select or -1 on open failure.
+    /// @throws std::invalid_argument is mode value is invalid.
+    /// @throws std::runtime_error on failure to open a pin mode setup file
+    /// @throws std::ios_base::failure on failure or error writing pin
+    ///         setup information
+      int open_ipin_for_edge_events(pin_id pin, edge_event_mode mode);
+
+    /// @brief close file previously opened by open_ipin_for_edge_events.
+    /// @param pin_fd file descriptor returned by open_ipin_for_edge_events.
+    /// @returns true if close sucessful, false otherwise.
+      bool close_ipin_for_edge_events(int pin_fd);
     }
   }
 }} 

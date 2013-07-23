@@ -3,7 +3,7 @@
 /// @brief Linux sys filesystem utilities.
 ///
 ///
-/// @copyright Copyright (c) Dibase Limited 2012
+/// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
 
 #ifndef DIBASE_RPI_PERIPHERALS_INTERNAL_SYSFS_H
@@ -37,7 +37,11 @@ namespace dibase { namespace rpi {
     /// rising  : edge events on low to high rising edges
     /// falling : edge events on high to low falling edges
     /// both    : edge events on rising and falling edges
-      enum class edge_event_mode{rising, falling, both};
+    /// bad_mode: should never be used. Will cause std::invalid_argument to be
+    ///           thrown from open_ipin_for_edge_events. Assigned only when
+    ///           converting from external mode value types which are
+    ///           themselves invalid.
+      enum class edge_event_mode{rising, falling, both, bad_mode=0xbad};
 
     /// @brief Open a pin for use in edge events IO multiplexing.
     /// @param pin  Id of input pin to open for edge event monitoring uses
@@ -45,7 +49,7 @@ namespace dibase { namespace rpi {
     ///             monitor.
     /// @returns File descriptor value that can be used with system
     ///          functions such as select or -1 on open failure.
-    /// @throws std::invalid_argument is mode value is invalid.
+    /// @throws std::invalid_argument is mode value is bad_mode or invalid.
     /// @throws std::runtime_error on failure to open a pin mode setup file
     /// @throws std::ios_base::failure on failure or error writing pin
     ///         setup information

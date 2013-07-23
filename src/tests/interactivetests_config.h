@@ -14,7 +14,7 @@ namespace dibase { namespace rpi {
   { 
     namespace test 
     {
-    // Change if P1 GPIO_GCLK/GPIO_GEN0 in use on your system...
+    // Change if these GPIO lines are in use on your system...
       pin_id const out_pin_id(gpio_gen3); // Gertboard GP22 (GPIO22)
       pin_id const in_pin_id(gpio_gen2);  // Gertboard GP21 (GPIO21 or 27)
     }

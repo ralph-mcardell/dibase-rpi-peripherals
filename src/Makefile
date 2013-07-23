@@ -10,11 +10,12 @@ include $(ROOT_DIR)/makeinclude.mak
 
 # Files and directories
 SRC_FILES = phymem_ptr.cpp\
+            sysfs.cpp\
             pin_id.cpp\
             rpi_info.cpp\
             pin_alloc.cpp\
             pin.cpp\
-            sysfs.cpp
+            pin_edge_event.cpp
 TGT_FILE = $(LIB_DIR)/$(LIB_FILE)
 OBJ_FILES = $(SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
 OBJ_FILENAMES = $(SRC_FILES:%.cpp=%.o)

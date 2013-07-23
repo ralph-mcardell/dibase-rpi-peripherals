@@ -3,7 +3,7 @@
 /// @brief Linux sys filesystem utilities.
 ///
 ///
-/// @copyright Copyright (c) Dibase Limited 2012
+/// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
 
 #include "sysfs.h"

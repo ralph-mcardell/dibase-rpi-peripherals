@@ -78,7 +78,7 @@ namespace dibase { namespace rpi {
     /// @param[in]  pin   Id of GPIO pin to open for output.
     /// @exception  bad_pin_alloc if the GPIO pin is in use by this process
     ///             or elsewhere.
-      opin( pin_id pin )
+      explicit opin( pin_id pin )
       {
         open( pin );
       }
@@ -113,6 +113,7 @@ namespace dibase { namespace rpi {
   /// will also close an open pin on destruction.
     class ipin : public pin_base
     {
+    friend class pin_edge_event;
     public:
     /// @brief Input open mode flag enumerations
       enum open_mode
@@ -128,7 +129,7 @@ namespace dibase { namespace rpi {
     /// @param[in]  pin   Id of GPIO pin to open for input.
     /// @exception  bad_pin_alloc if the GPIO pin is in use by this process
     ///             or elsewhere.
-      ipin( pin_id pin, unsigned mode=0 )
+      explicit ipin( pin_id pin, unsigned mode=0 )
       {
         open( pin, mode );
       }

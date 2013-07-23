@@ -57,25 +57,15 @@
 /// @author Ralph E. McArdell
 
 #ifndef DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H
- #define DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H
+# define DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H
 
- #include "pin_id.h"
- #include <stdexcept>
- #include <cstring>
+# include "pin_id.h"
+# include "pinexcept.h"
+# include <cstring>
 
 namespace dibase { namespace rpi {
   namespace peripherals
   {
-  /// @brief Exception type raised if a pin cannot be allcoated.
-    struct bad_pin_alloc : std::runtime_error
-    {
-    /// @brief Construct from an explainatory C string.
-    /// @param[in]  what  C string explaining allocation failure
-      bad_pin_alloc( char const * what )
-      : std::runtime_error( what )
-      {}
-    };
-
   /// @brief Passes (de-)allocation requests to other allocator & caches results
   ///
   /// Class template providing intra-process allocation logic and taking 

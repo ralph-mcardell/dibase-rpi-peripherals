@@ -7,6 +7,7 @@
 /// @author Ralph E. McArdell
 
 #include "sysfs.h"
+#include "pinexcept.h"
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -89,7 +90,10 @@ namespace dibase { namespace rpi {
         std::string pin_path{make_gpio_pin_dir_pathname(pin)};
         pin_path += '/';
         {
-          std::ofstream edgestream{pin_path+gpio_pin_edgemode_filename};
+          std::fstream edgestream
+                        { pin_path+gpio_pin_edgemode_filename
+                        , std::ios::in|std::ios::out
+                        };
           if (edgestream.is_open())
             {
               edgestream.exceptions(std::ios::badbit|std::ios::failbit);
@@ -98,7 +102,27 @@ namespace dibase { namespace rpi {
                 {
                   throw std::invalid_argument{"Bad edge_event_mode value."};
                 }
-              edgestream << edge_file_value;
+              std::string existing_edge_file_value;
+              edgestream >> existing_edge_file_value;
+              if ( existing_edge_file_value.empty() // Think this never occurs
+                || existing_edge_file_value=="none" // newly exported value
+                || existing_edge_file_value==edge_file_value // same as wanted
+                 )
+                {
+                  if (existing_edge_file_value!=edge_file_value)
+                    {
+                      edgestream << edge_file_value;
+                    }
+                }
+              else
+                {
+                  std::ostringstream msgstrm; 
+                  msgstrm << "GPIO pin existing edge event mode '"
+                          << existing_edge_file_value
+                          << "' differs from requested edge event mode '"
+                          << edge_file_value << "'.";
+                  throw bad_pin_edge_event{msgstrm.str()};
+                }
             }
           else
             {

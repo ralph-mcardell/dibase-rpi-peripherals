@@ -25,22 +25,48 @@ namespace dibase { namespace rpi {
   /// interface and specifies pins having an "in" direction.
     class pin_edge_event
     {
-      int     pin_event_fd;
+      int     pin_event_fd; ///< Watchable file descriptor for edge events.
 
     public:
+    /// @brief Enumeration of edge transitions to monitor
       enum edge_mode
-      { rising
-      , falling
-      , both
+      { rising    ///< Rising edge trasitions
+      , falling   ///< Falling edge transitions
+      , both      ///< Both rising and falling edge transitions
       };
 
+    /// @brief Construct from pin_id value
+    /// The pin id should be exported in GPIO part of the sys file system.
+    /// @param pin_id id of pin to monitor for edge transitions
+    /// @param mode   edge_mode enumeration value indicating which edge
+    ///               trasitions raise events
+    /// @throws std::invalid_argument if mode value is invalid.
+    /// @throws std::runtime_error on failure to open a pin mode setup file
+    /// @throws std::ios_base::failure on failure or error writing pin
+    ///         setup information
+    /// @throws std::system_error if error obtaining watchable file descriptor.
       pin_edge_event(pin_id id, edge_mode mode);
+
+    /// @brief Construct from open ipin
+    /// The ipin id should be open and the pin it represents should be exported
+    /// in GPIO part of the sys file system - which is so if using the provided
+    /// pinallocator.
+    /// @param in    Open ipin to monitor for edge transitions
+    /// @param mode   edge_mode enumeration value indicating which edge
+    ///               trasitions raise events
+    /// @throws std::invalid_argument if in not open or mode is invalid.
+    /// @throws std::runtime_error on failure to open a pin mode setup file
+    /// @throws std::ios_base::failure on failure or error writing pin
+    ///         setup information
+    /// @throws std::system_error if error obtaining watchable file descriptor.
       pin_edge_event(ipin const & in, edge_mode mode);
+ 
       pin_edge_event(pin_edge_event const &) = delete;
       pin_edge_event& operator=(pin_edge_event const &) = delete;
     // Note: move construction and assignment are possibly allowable.
     
-    //  ~pin_edge_event();
+    /// @brief Destroy closing watchable file descriptor
+      ~pin_edge_event();
     };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

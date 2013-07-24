@@ -14,12 +14,12 @@ namespace dibase { namespace rpi {
   {
     namespace
     {
-      int open_for_edge_event(pin_id id, pin_edge_event::edge_mode mode)
+      static int open_for_edge_event(pin_id id, pin_edge_event::edge_mode mode)
       {
         if (! internal::is_exported(id))
           {
-            throw bad_pin_export_state{"pin_edge_event: Expect GPIO pin "
-                                       "to be exported in sys file system."};
+            throw bad_pin_export_state{"pin_edge_event: GPIO pin "
+                                       "not exported in sys file system."};
           }
         using internal::edge_event_mode;
         edge_event_mode 
@@ -49,5 +49,10 @@ namespace dibase { namespace rpi {
                     }(in,mode)
                   }
     {}
+    
+    pin_edge_event::~pin_edge_event()
+    {
+      internal::close_ipin_for_edge_events(pin_event_fd);
+    }
   }
 }}

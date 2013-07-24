@@ -116,8 +116,18 @@ namespace dibase { namespace rpi {
             {
               throw std::runtime_error{"Open failed for pin sys fs direction file."};
             }
-          return ::open((pin_path+gpio_pin_value_filename).c_str(), O_RDONLY);
         }
+        int fd{::open((pin_path+gpio_pin_value_filename).c_str(), O_RDONLY)};
+        if (fd==-1) 
+          {
+             throw std::system_error
+                  ( errno
+                  , std::system_category()
+                  , "Failed to obtain file descriptor to monitor to pin edge "
+                    "events: error from call to open."
+                  );
+          }
+        return fd;
       }
 
       bool close_ipin_for_edge_events(int pin_fd)

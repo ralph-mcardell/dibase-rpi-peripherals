@@ -49,10 +49,11 @@ namespace dibase { namespace rpi {
     ///             monitor.
     /// @returns File descriptor value that can be used with system
     ///          functions such as select or -1 on open failure.
-    /// @throws std::invalid_argument is mode value is bad_mode or invalid.
+    /// @throws std::invalid_argument if mode value is bad_mode or invalid.
     /// @throws std::runtime_error on failure to open a pin mode setup file
     /// @throws std::ios_base::failure on failure or error writing pin
     ///         setup information
+    /// @throws std::system_error if unexpected error obtaining file descriptor.
       int open_ipin_for_edge_events(pin_id pin, edge_event_mode mode);
 
     /// @brief close file previously opened by open_ipin_for_edge_events.

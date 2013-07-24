@@ -92,3 +92,45 @@ TEST_CASE( "System_tests/pin_edge_event/040/ipin create cleans up on destruction
   CHECK(post_evt_close_next_fd==pin_evt_fd);
   REQUIRE(::close(post_evt_close_next_fd)==0);
 }
+
+TEST_CASE( "System_tests/pin_edge_event/050/pin_id: only 1 mode per pin id at a time"
+         , "Can only have one non-none mode for a given GPIO pin at a time"
+         )
+{
+  {
+    ipin open_ipin{available_pin_id};
+    REQUIRE(open_ipin.is_open()==true);
+    REQUIRE(is_exported(available_pin_id)==true);
+    pin_edge_event pin_evt(available_pin_id,pin_edge_event::rising);
+    REQUIRE_THROWS_AS(pin_edge_event(available_pin_id,pin_edge_event::falling)
+                     ,bad_pin_edge_event);
+    REQUIRE_THROWS_AS(pin_edge_event(open_ipin,pin_edge_event::both)
+                     ,bad_pin_edge_event);
+    pin_edge_event pin_evt2(available_pin_id,pin_edge_event::rising);
+  }
+  ipin open_ipin{available_pin_id};
+  REQUIRE(open_ipin.is_open()==true);
+  REQUIRE(is_exported(available_pin_id)==true);
+  pin_edge_event pin_evt(available_pin_id,pin_edge_event::falling);
+}
+
+TEST_CASE( "System_tests/pin_edge_event/060/ipin: only 1 mode per pin id at a time"
+         , "Can only have one non-none mode for a given GPIO pin at a time"
+         )
+{
+  {
+    ipin open_ipin{available_pin_id};
+    REQUIRE(open_ipin.is_open()==true);
+    REQUIRE(is_exported(available_pin_id)==true);
+    pin_edge_event pin_evt(open_ipin,pin_edge_event::rising);
+    REQUIRE_THROWS_AS(pin_edge_event(available_pin_id,pin_edge_event::falling)
+                     ,bad_pin_edge_event);
+    REQUIRE_THROWS_AS(pin_edge_event(open_ipin,pin_edge_event::both)
+                     ,bad_pin_edge_event);
+    pin_edge_event pin_evt2(open_ipin,pin_edge_event::rising);
+  }
+  ipin open_ipin{available_pin_id};
+  REQUIRE(open_ipin.is_open()==true);
+  REQUIRE(is_exported(available_pin_id)==true);
+  pin_edge_event pin_evt(open_ipin,pin_edge_event::both);
+}

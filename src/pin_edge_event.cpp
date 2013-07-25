@@ -8,6 +8,8 @@
 #include "pin_edge_event.h"
 #include "sysfs.h"
 #include "pinexcept.h"
+#include <system_error>
+#include <unistd.h>
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -31,6 +33,24 @@ namespace dibase { namespace rpi {
                     };
         return internal::open_ipin_for_edge_events(id, internal_mode);
       }
+
+      static int wait_for_event(int fd, timespec * pts)
+      {
+        fd_set xfds;
+        FD_ZERO(&xfds);
+        FD_SET(fd, &xfds);
+        int rv{::pselect(fd+1, nullptr, nullptr, &xfds, pts, nullptr)};
+        if (rv==-1)
+          {
+            throw std::system_error
+                  ( errno
+                  , std::system_category()
+                  , "pin_edge_event: waiting/checking for pin edge event"
+                    " failed with error from call to pselect."
+                  );
+          }
+        return rv;
+      }
     }
 
     pin_edge_event::pin_edge_event(pin_id id, edge_mode mode)
@@ -53,6 +73,50 @@ namespace dibase { namespace rpi {
     pin_edge_event::~pin_edge_event()
     {
       internal::close_ipin_for_edge_events(pin_event_fd);
+    }
+
+    bool pin_edge_event::signalled() const
+    {
+      timespec ts;
+      ts.tv_sec = 0L;
+      ts.tv_nsec = 0L;
+      return wait_for_event(pin_event_fd, &ts)==1;
+    }
+
+    void pin_edge_event::clear() const
+    {
+      if (::lseek(pin_event_fd,0,SEEK_SET)==-1)
+        {
+            throw std::system_error
+                  ( errno
+                  , std::system_category()
+                  , "pin_edge_event: clearing pin edge event"
+                    " failed with error from call to lseek."
+                  );
+        }
+      char v{'\0'};
+      if (::read(pin_event_fd,&v,1)==-1)
+        {
+            throw std::system_error
+                  ( errno
+                  , std::system_category()
+                  , "pin_edge_event: clearing pin edge event"
+                    " failed with error from call to read."
+                  );
+        }
+     }
+
+    void pin_edge_event::wait() const
+    {
+      wait_for_event(pin_event_fd, nullptr);
+    }
+
+    bool pin_edge_event::wait_(long t_rel_secs, long t_rel_ns) const
+    {
+      timespec ts;
+      ts.tv_sec = t_rel_secs;
+      ts.tv_nsec = t_rel_ns;
+      return wait_for_event(pin_event_fd, &ts)==1;
     }
   }
 }}

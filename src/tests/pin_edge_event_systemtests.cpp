@@ -19,6 +19,7 @@ TEST_CASE( "System_tests/pin_edge_event/000/create from unexported pin fails"
          , "Creating a pin_edge_event from a pin that is unexported throws"
          )
 {
+  unexport_pin(available_pin_id);
   REQUIRE(is_exported(available_pin_id)==false);
 
   REQUIRE_THROWS_AS(pin_edge_event(available_pin_id,pin_edge_event::rising)
@@ -133,4 +134,30 @@ TEST_CASE( "System_tests/pin_edge_event/060/ipin: only 1 mode per pin id at a ti
   REQUIRE(open_ipin.is_open()==true);
   REQUIRE(is_exported(available_pin_id)==true);
   pin_edge_event pin_evt(open_ipin,pin_edge_event::both);
+}
+
+TEST_CASE( "System_tests/pin_edge_event/070/initially signalled"
+         , "Creating a pin_edge_event is initially signalled"
+         )
+{
+  export_pin(available_pin_id);
+  REQUIRE(is_exported(available_pin_id)==true);
+  pin_edge_event pin_evt(available_pin_id,pin_edge_event::rising);
+  CHECK(pin_evt.signalled());
+  unexport_pin(available_pin_id);
+  REQUIRE(is_exported(available_pin_id)==false);
+}
+
+TEST_CASE( "System_tests/pin_edge_event/080/not signalled after cleared"
+         , "Clearing signalled pin_edge_event is not longer signalled"
+         )
+{
+  export_pin(available_pin_id);
+  REQUIRE(is_exported(available_pin_id)==true);
+  pin_edge_event pin_evt(available_pin_id,pin_edge_event::rising);
+  REQUIRE(pin_evt.signalled());
+  pin_evt.clear();
+  CHECK_FALSE(pin_evt.signalled());
+  unexport_pin(available_pin_id);
+  REQUIRE(is_exported(available_pin_id)==false);
 }

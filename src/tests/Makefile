@@ -11,7 +11,8 @@ include $(ROOT_DIR)/makeinclude.mak
 # Files and directories
 COMMON_SRC_FILES = test_main.cpp
 INTERACTIVETEST_SRC_FILES = pin_interactivetests.cpp\
-                            sysfs_interactivetests.cpp
+                            sysfs_interactivetests.cpp\
+                            pin_edge_event_interactivetests.cpp
 SYSTEST_SRC_FILES = phymem_ptr_systemtests.cpp\
                     rpi_info_systemtests.cpp \
                     sysfs_systemtests.cpp\

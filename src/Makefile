@@ -11,6 +11,7 @@ include $(ROOT_DIR)/makeinclude.mak
 # Files and directories
 SRC_FILES = phymem_ptr.cpp\
             sysfs.cpp\
+            gpio_ctrl.cpp\
             pin_id.cpp\
             rpi_info.cpp\
             pin_alloc.cpp\

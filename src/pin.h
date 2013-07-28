@@ -35,6 +35,11 @@ namespace dibase { namespace rpi {
       , open_flag(false)
       {}
 
+      pin_base(pin_base const &) = delete;
+      pin_base& operator=(pin_base const &) = delete;
+      pin_base(pin_base &&) = delete;
+      pin_base& operator=(pin_base &&) = delete;
+
     /// @brief open data direction mode flag enumerations
       enum direction_mode
       { in=1

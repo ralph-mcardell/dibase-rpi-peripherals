@@ -27,9 +27,10 @@ TEST_CASE( "Interactive_tests/pin_edge_event/0000/wait waits for event"
                "Connect pin BCM2835 GPIO" << test::in_pin_id 
             << " to allow state changing between high voltage and ground "
                "(switch+resistors etc.)\n\n";
-  export_pin(test::in_pin_id);
+  ipin in_pin(test::in_pin_id);
+  REQUIRE(in_pin.is_open());
   REQUIRE(is_exported(test::in_pin_id)==true);
-  pin_edge_event pin_evt(test::in_pin_id,pin_edge_event::rising);
+  pin_edge_event pin_evt(in_pin,pin_edge_event::rising);
   REQUIRE(pin_evt.signalled());
   pin_evt.clear();
   REQUIRE_FALSE(pin_evt.signalled());
@@ -37,8 +38,6 @@ TEST_CASE( "Interactive_tests/pin_edge_event/0000/wait waits for event"
             << std::endl;
   pin_evt.wait();
   CHECK(pin_evt.signalled()); 
-  unexport_pin(test::in_pin_id);
-  REQUIRE(is_exported(test::in_pin_id)==false);
 }
 
 TEST_CASE( "Interactive_tests/pin_edge_event/0010/wait waits for time for event"
@@ -49,9 +48,10 @@ TEST_CASE( "Interactive_tests/pin_edge_event/0010/wait waits for time for event"
                "Connect pin BCM2835 GPIO" << test::in_pin_id 
             << " to allow state changing between high voltage and ground "
                "(switch+resistors etc.)\n\n";
-  export_pin(test::in_pin_id);
+  ipin in_pin(test::in_pin_id);
+  REQUIRE(in_pin.is_open());
   REQUIRE(is_exported(test::in_pin_id)==true);
-  pin_edge_event pin_evt(test::in_pin_id,pin_edge_event::falling);
+  pin_edge_event pin_evt(in_pin,pin_edge_event::falling);
   REQUIRE(pin_evt.signalled());
   pin_evt.clear();
   REQUIRE_FALSE(pin_evt.signalled());
@@ -70,8 +70,6 @@ TEST_CASE( "Interactive_tests/pin_edge_event/0010/wait waits for time for event"
                "within 5 seconds... " << std::endl;
   CHECK(pin_evt.wait_for(long_wait_time));
   CHECK(pin_evt.signalled()); 
-  unexport_pin(test::in_pin_id);
-  REQUIRE(is_exported(test::in_pin_id)==false);
 }
 
 TEST_CASE( "Interactive_tests/pin_edge_event/0020/wait waits until time event"
@@ -84,6 +82,7 @@ TEST_CASE( "Interactive_tests/pin_edge_event/0020/wait waits until time event"
                "(switch+resistors etc.)\n\n";
   ipin in_pin(test::in_pin_id);
   REQUIRE(in_pin.is_open());
+  REQUIRE(is_exported(test::in_pin_id)==true);
   pin_edge_event pin_evt(in_pin, pin_edge_event::both);
   REQUIRE(pin_evt.signalled());
   pin_evt.clear();

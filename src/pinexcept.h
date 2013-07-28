@@ -62,25 +62,6 @@ namespace dibase { namespace rpi {
       : pin_exception{what_arg}
       {}
     };
-
-  /// @brief Exception type raised when pin already has other edge events set
-  /// When trying to set the edge event mode for a pin in the sys filesystem
-  /// it may be that the pin's edge file alreay has a value indicating it has
-  /// been setup to monitor different edge events.
-    struct bad_pin_edge_event : pin_exception
-    {
-    /// @brief Construct from an explainatory std::string.
-    /// @param[in]  what_arg  std::string explaining error
-      bad_pin_edge_event(std::string const & what_arg)
-      : pin_exception{what_arg}
-      {}
-
-    /// @brief Construct from an explainatory C string.
-    /// @param[in]  what_arg  C string explaining error
-      bad_pin_edge_event(char const * what_arg)
-      : pin_exception{what_arg}
-      {}
-    };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed
 #endif // DIBASE_RPI_PERIPHERALS_PINEXCEPT_H

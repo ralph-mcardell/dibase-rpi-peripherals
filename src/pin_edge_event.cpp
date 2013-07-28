@@ -8,6 +8,7 @@
 #include "pin_edge_event.h"
 #include "sysfs.h"
 #include "pinexcept.h"
+#include "pin_alloc.h"
 #include <system_error>
 #include <unistd.h>
 
@@ -16,22 +17,54 @@ namespace dibase { namespace rpi {
   {
     namespace
     {
+      struct trivial_pin_allocator
+      {
+        bool is_in_use(pin_id)  {return false;}
+        void allocate(pin_id)   {}
+        void deallocate(pin_id) {}
+      };
+
+      typedef pin_cache_allocator<trivial_pin_allocator> pin_edge_event_allocator;
+
+      static pin_edge_event_allocator & allocator()
+      {
+        static pin_edge_event_allocator alloc;
+        return alloc;
+      }
+
       static int open_for_edge_event(pin_id id, pin_edge_event::edge_mode mode)
       {
-        if (! internal::is_exported(id))
+        try 
           {
-            throw bad_pin_export_state{"pin_edge_event: GPIO pin "
-                                       "not exported in sys file system."};
+            allocator().allocate(id);
           }
-        using internal::edge_event_mode;
-        edge_event_mode 
-        internal_mode
-                    { mode==pin_edge_event::rising  ? edge_event_mode::rising
-                    : mode==pin_edge_event::falling ? edge_event_mode::falling
-                    : mode==pin_edge_event::both    ? edge_event_mode::both
-                    : edge_event_mode::bad_mode
-                    };
-        return internal::open_ipin_for_edge_events(id, internal_mode);
+        catch (bad_pin_alloc const &)
+          {
+            throw bad_pin_alloc{"pin_edge_event: pin already has "
+                                "pin_edge_event."};
+          }
+        try
+          {
+            if (! internal::is_exported(id))
+              {
+                throw bad_pin_export_state{"pin_edge_event: GPIO pin "
+                                           "not exported in sys file system."};
+              }
+            using internal::edge_event_mode;
+            edge_event_mode 
+            internal_mode
+                        { mode==pin_edge_event::rising ?edge_event_mode::rising
+                        : mode==pin_edge_event::falling?edge_event_mode::falling
+                        : mode==pin_edge_event::both   ?edge_event_mode::both
+                        : edge_event_mode::bad_mode
+                        };
+            return internal::open_ipin_for_edge_events(id, internal_mode);
+          }
+        catch (std::exception const &)
+          {
+             allocator().deallocate(id);
+             throw;
+          }
       }
 
       static int wait_for_event(int fd, timespec * pts)
@@ -53,13 +86,10 @@ namespace dibase { namespace rpi {
       }
     }
 
-    pin_edge_event::pin_edge_event(pin_id id, edge_mode mode)
-    : pin_event_fd{open_for_edge_event(id,mode)}
-    {}
-
     pin_edge_event::pin_edge_event(ipin const & in, edge_mode mode)
     : pin_event_fd{ [](ipin const & in, edge_mode mode)->int
-                    { 
+                    { // check in open here and pass on checks needing pin_id
+                      // as access to ipin::get_pin restricted
                       if (! in.is_open())
                         {
                           throw std::invalid_argument
@@ -68,11 +98,17 @@ namespace dibase { namespace rpi {
                       return open_for_edge_event(in.get_pin(),mode);
                     }(in,mode)
                   }
+    , id{in.get_pin()}
     {}
     
     pin_edge_event::~pin_edge_event()
-    {
-      internal::close_ipin_for_edge_events(pin_event_fd);
+    { // Allow no exceptions to escape.
+      try
+      {
+        internal::close_ipin_for_edge_events(pin_event_fd); // should not throw
+        allocator().deallocate(id);  // should only throw if id not allocated!
+      } 
+      catch (...) {}
     }
 
     bool pin_edge_event::signalled() const

@@ -125,21 +125,3 @@ TEST_CASE( "System_tests/0080/sysfs/repeat open same pin OK if edge event mode s
   unexport_pin(available_pin_id);
   CHECK(is_exported(available_pin_id)==false);
 }
-
-TEST_CASE( "System_tests/0090/sysfs/repeat opensame pin BAD if edge event mode differs"
-         , "Cannot open same pin_id more than once IFF edge event mode is "
-           "different"
-         )
-{
-  export_pin(available_pin_id);
-  REQUIRE(is_exported(available_pin_id)==true);
-  auto fd(open_ipin_for_edge_events(available_pin_id, edge_event_mode::rising));
-  CHECK(fd!=-1);
-  int fd2(-2);
-  REQUIRE_THROWS_AS((fd2=open_ipin_for_edge_events(available_pin_id, edge_event_mode::both))
-                   ,bad_pin_edge_event);
-  CHECK(fd2==-2);
-  CHECK(close_ipin_for_edge_events(fd)==true);
-  unexport_pin(available_pin_id);
-  CHECK(is_exported(available_pin_id)==false);
-}

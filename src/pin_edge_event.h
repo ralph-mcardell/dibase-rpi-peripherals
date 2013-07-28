@@ -27,6 +27,7 @@ namespace dibase { namespace rpi {
     class pin_edge_event
     {
       int     pin_event_fd; ///< Watchable file descriptor for edge events.
+      pin_id  id;           ///< Id of pin on which edge events watched for.
 
     /// @brief Internal non-templated member function to perform timed waits.
     /// @param t_rel_secs  Seconds portion of relative time to wait.
@@ -44,17 +45,6 @@ namespace dibase { namespace rpi {
       , both      ///< Both rising and falling edge transitions.
       };
 
-    /// @brief Construct from pin_id value.
-    /// The pin id should be exported in the GPIO part of the sys file system.
-    /// @param pin_id Id of pin to monitor for edge transitions.
-    /// @param mode   Which edge trasitions raise events.
-    /// @throws std::invalid_argument if mode value is invalid.
-    /// @throws std::runtime_error on failure to open a pin mode setup file.
-    /// @throws std::ios_base::failure on failure or error writing pin
-    ///         setup information.
-    /// @throws std::system_error if error obtaining watchable file descriptor.
-      pin_edge_event(pin_id id, edge_mode mode);
-
     /// @brief Construct from open ipin.
     /// The ipin should be open and the pin it represents should be exported
     /// in GPIO part of the sys file system - which is so if using the provided
@@ -66,11 +56,14 @@ namespace dibase { namespace rpi {
     /// @throws std::ios_base::failure on failure or error writing pin
     ///         setup information.
     /// @throws std::system_error if error obtaining watchable file descriptor.
+    /// @throws bad_pin_alloc if the pin represented by in already has a
+    ///         pin_edge_event object associated with it.
       pin_edge_event(ipin const & in, edge_mode mode);
  
       pin_edge_event(pin_edge_event const &) = delete;
       pin_edge_event& operator=(pin_edge_event const &) = delete;
-    // Note: move construction and assignment are possibly allowable.
+      pin_edge_event(pin_edge_event &&) = delete;
+      pin_edge_event& operator=(pin_edge_event &&) = delete;
     
     /// @brief Destroy, closing watchable file descriptor.
       ~pin_edge_event();

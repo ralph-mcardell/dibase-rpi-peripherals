@@ -6,35 +6,17 @@
 /// @author Ralph E. McArdell
 
 #include "pin.h"
-#include "phymem_ptr.h"
-#include "gpio_registers.h"
-#include "pin_alloc.h"
-#include <unistd.h>
+#include "gpio_ctrl.h"
+#include <chrono>
+#include <thread>
 
 namespace dibase { namespace rpi {
   namespace peripherals
   {
     namespace internal
     {
-      struct gpio_ctrl
-      {
-        phymem_ptr<volatile gpio_registers>   regs; 
-        pin_allocator alloc;
-        
-        static gpio_ctrl & instance()
-        {
-          static gpio_ctrl gpio_control_area;
-          return gpio_control_area;
-        }
+      auto pud_wait_us(std::chrono::microseconds(10U));
 
-      private:
-        gpio_ctrl()
-        : regs(gpio_registers::physical_address, register_block_size)
-        {}
-        gpio_ctrl( gpio_ctrl const & ) = delete;
-      };
-
-      useconds_t const pud_wait_us{10};
       static void apply_pull(pin_id pin, unsigned mode)
       {
         if ( mode&ipin::pull_up && mode&ipin::pull_down )
@@ -50,9 +32,9 @@ namespace dibase { namespace rpi {
                                         ? gpio_pud_mode::enable_pull_down_control
                                         : gpio_pud_mode::off
                                     );
-        ::usleep(pud_wait_us);
+        std::this_thread::sleep_for(pud_wait_us);
         gpio_ctrl::instance().regs->assert_pin_pull_up_down_clock( pin );
-        ::usleep(pud_wait_us);
+        std::this_thread::sleep_for(pud_wait_us);
         gpio_ctrl::instance().regs->set_pull_up_down_mode(gpio_pud_mode::off);
         gpio_ctrl::instance().regs->remove_all_pin_pull_up_down_clocks();
       }

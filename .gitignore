@@ -18,6 +18,8 @@
 *.tmp
 *.temp
 
-# Built executables
+# Directories for Targets: libraries, executables, generated documentation etc.
+build
 bin
 test
+doc

@@ -13,20 +13,20 @@ COMMON_SRC_FILES = test_main.cpp
 INTERACTIVETEST_SRC_FILES = pin_interactivetests.cpp\
                             sysfs_interactivetests.cpp\
                             pin_edge_event_interactivetests.cpp
-SYSTEST_SRC_FILES = phymem_ptr_systemtests.cpp\
-                    rpi_info_systemtests.cpp \
-                    sysfs_systemtests.cpp\
-                    pin_alloc_systemtests.cpp\
-                    pin_systemtests.cpp\
-                    pin_edge_event_systemtests.cpp
+PLATTEST_SRC_FILES = phymem_ptr_platformtests.cpp\
+                    rpi_info_platformtests.cpp \
+                    sysfs_platformtests.cpp\
+                    pin_alloc_platformtests.cpp\
+                    pin_platformtests.cpp\
+                    pin_edge_event_platformtests.cpp
 UNITTEST_SRC_FILE = gpio_registers_unittests.cpp pin_id_unittests.cpp \
                     rpi_info_unittests.cpp pin_alloc_unittests.cpp
 ALL_SRC_FILES = $(COMMON_SRC_FILES) $(INTERACTIVETEST_SRC_FILES) \
-          $(SYSTEST_SRC_FILES) $(UNITTEST_SRC_FILE)
+          $(PLATTEST_SRC_FILES) $(UNITTEST_SRC_FILE)
 
 COMMON_OBJ_FILES = $(COMMON_SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
 INTERACTIVETEST_OBJ_FILES = $(INTERACTIVETEST_SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
-SYSTEST_OBJ_FILES = $(SYSTEST_SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
+PLATTEST_OBJ_FILES = $(PLATTEST_SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
 UNITTEST_OBJ_FILES = $(UNITTEST_SRC_FILE:%.cpp=$(OBJ_DIR)/%.o)
 
 ALL_OBJ_FILES = $(ALL_SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
@@ -35,19 +35,19 @@ ALL_OBJ_FILENAMES = $(ALL_SRC_FILES:%.cpp=%.o)
 DEP_FILES = $(ALL_SRC_FILES:%.cpp=%.d)
 
 INTERACTIVETEST_TGT_FILE_RELEASE = $(TEST_DIR)/interactivetests-$(LIB_NAME_BASE)$(RELEASE_FILE_SUFFIX)
-SYSTEST_TGT_FILE_RELEASE = $(TEST_DIR)/systemtests-$(LIB_NAME_BASE)$(RELEASE_FILE_SUFFIX)
+PLATTEST_TGT_FILE_RELEASE = $(TEST_DIR)/platformtests-$(LIB_NAME_BASE)$(RELEASE_FILE_SUFFIX)
 UNITTEST_TGT_FILE_RELEASE = $(TEST_DIR)/unittests-$(LIB_NAME_BASE)$(RELEASE_FILE_SUFFIX)
 
 INTERACTIVETEST_TGT_FILE_DEBUG = $(TEST_DIR)/interactivetests-$(LIB_NAME_BASE)$(DEBUG_FILE_SUFFIX)
-SYSTEST_TGT_FILE_DEBUG = $(TEST_DIR)/systemtests-$(LIB_NAME_BASE)$(DEBUG_FILE_SUFFIX)
+PLATTEST_TGT_FILE_DEBUG = $(TEST_DIR)/platformtests-$(LIB_NAME_BASE)$(DEBUG_FILE_SUFFIX)
 UNITTEST_TGT_FILE_DEBUG = $(TEST_DIR)/unittests-$(LIB_NAME_BASE)$(DEBUG_FILE_SUFFIX)
 
 INTERACTIVETEST_TGT_FILE = $(TEST_DIR)/interactivetests-$(LIB_NAME)
-SYSTEST_TGT_FILE = $(TEST_DIR)/systemtests-$(LIB_NAME)
+PLATTEST_TGT_FILE = $(TEST_DIR)/platformtests-$(LIB_NAME)
 UNITTEST_TGT_FILE = $(TEST_DIR)/unittests-$(LIB_NAME)
 
-TGT_FILES_RELEASE = $(INTERACTIVETEST_TGT_FILE_RELEASE) $(SYSTEST_TGT_FILE_RELEASE) $(UNITTEST_TGT_FILE_RELEASE)
-TGT_FILES_DEBUG = $(INTERACTIVETEST_TGT_FILE_DEBUG) $(SYSTEST_TGT_FILE_DEBUG) $(UNITTEST_TGT_FILE_DEBUG)
+TGT_FILES_RELEASE = $(INTERACTIVETEST_TGT_FILE_RELEASE) $(PLATTEST_TGT_FILE_RELEASE) $(UNITTEST_TGT_FILE_RELEASE)
+TGT_FILES_DEBUG = $(INTERACTIVETEST_TGT_FILE_DEBUG) $(PLATTEST_TGT_FILE_DEBUG) $(UNITTEST_TGT_FILE_DEBUG)
 
 # But only one list of target paths is used when building:
 ifeq ($(BUILD_CONFIG),release)
@@ -73,8 +73,8 @@ clean: tidy
 $(INTERACTIVETEST_TGT_FILE): $(COMMON_OBJ_FILES) $(INTERACTIVETEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
 	$(LD) $(LD_FLAGS) -o $@ $(COMMON_OBJ_FILES) $(INTERACTIVETEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
 
-$(SYSTEST_TGT_FILE): $(COMMON_OBJ_FILES) $(SYSTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
-	$(LD) $(LD_FLAGS) -o $@ $(COMMON_OBJ_FILES) $(SYSTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
+$(PLATTEST_TGT_FILE): $(COMMON_OBJ_FILES) $(PLATTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
+	$(LD) $(LD_FLAGS) -o $@ $(COMMON_OBJ_FILES) $(PLATTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
 
 $(UNITTEST_TGT_FILE): $(COMMON_OBJ_FILES) $(UNITTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)
 	$(LD) $(LD_FLAGS) -o $@ $(COMMON_OBJ_FILES) $(UNITTEST_OBJ_FILES) $(LIB_DIR)/$(LIB_FILE)

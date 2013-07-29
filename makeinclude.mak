@@ -85,6 +85,8 @@ LD_FLAGS_COMMON = -L $(LIB_DIR)
 LD_DEBUG_FLAGS =
 LD_RELEASE_FLAGS =
 
+LD_LIBS = -l$(LIB_NAME) -lpthread
+
 # Full link flags
 ifeq ($(BUILD_CONFIG),release)
 	LD_FLAGS = $(LD_FLAGS_COMMON) $(LD_RELEASE_FLAGS)

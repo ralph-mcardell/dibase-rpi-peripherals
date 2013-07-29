@@ -25,9 +25,9 @@ else ifeq ($(BUILD_CONFIG),debug)
 	TGT_FILES = $(TGT_FILES_DEBUG)
 endif
 
-.PHONY: all clean tidy
+.PHONY: lib all clean tidy
 
-all: $(DEP_FILES) $(TGT_FILES)
+all: lib $(DEP_FILES) $(TGT_FILES)
 
 # Currently tidy does nothing 'cos gmake nicely removes the
 # intermediate files after building that tidy would have removed.
@@ -39,8 +39,11 @@ clean: tidy
 	-$(RM) $(DEP_FILES)
 	-$(RM) *.d.*
 
+lib:
+	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=$(BUILD_CONFIG) 
+
 $(EXEC_DIR)/%$(FILE_SUFFIX): $(OBJ_DIR)/%.o $(LIB_DIR)/$(LIB_FILE)
-	$(LD) $(LD_FLAGS) -o $@ $< $(LIB_DIR)/$(LIB_FILE) -lpthread
+	$(LD) $(LD_FLAGS) -o $@ $<  $(LD_LIBS)
 
 
 $(OBJ_DIR)/%.o: %.cpp

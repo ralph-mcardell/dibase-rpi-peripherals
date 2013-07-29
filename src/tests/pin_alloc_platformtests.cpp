@@ -1,5 +1,5 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
-/// @file pin_alloc_systemtests.cpp 
+/// @file pin_alloc_platformtests.cpp 
 /// @brief System tests for pin allocation types.
 ///
 /// @copyright Copyright (c) Dibase Limited 2012
@@ -13,7 +13,7 @@ using namespace dibase::rpi::peripherals;
 // Change if P1 GPIO_GEN0 is in use on your system...
 pin_id const available_pin_id{17}; // P1 pin GPIO_GEN0
 
-TEST_CASE( "System_tests/000/pin_export_allocator/is_in_use_initially_reports_free"
+TEST_CASE( "Platform_tests/000/pin_export_allocator/is_in_use_initially_reports_free"
          , "The available_pin_id is initially not exported and assumed to be free"
          )
 {
@@ -21,7 +21,7 @@ TEST_CASE( "System_tests/000/pin_export_allocator/is_in_use_initially_reports_fr
   REQUIRE(a.is_in_use(available_pin_id)==false);
 }
 
-TEST_CASE( "System_tests/001/pin_export_allocator/alloc_pin_is_in_use_unalloc_is_free"
+TEST_CASE( "Platform_tests/001/pin_export_allocator/alloc_pin_is_in_use_unalloc_is_free"
          , "Allocate available_pin_id is in use, deallocate it is free"
          )
 {
@@ -32,7 +32,7 @@ TEST_CASE( "System_tests/001/pin_export_allocator/alloc_pin_is_in_use_unalloc_is
   CHECK(a.is_in_use(available_pin_id)==false);
 }
 
-TEST_CASE( "System_tests/002/pin_export_allocator/alloc_in_use_pin_throws"
+TEST_CASE( "Platform_tests/002/pin_export_allocator/alloc_in_use_pin_throws"
          , "Allocate available_pin_id twice should throw on 2nd allocation."
          )
 {
@@ -44,7 +44,7 @@ TEST_CASE( "System_tests/002/pin_export_allocator/alloc_in_use_pin_throws"
   CHECK(a.is_in_use(available_pin_id)==false);
 }
 
-TEST_CASE( "System_tests/003/pin_export_allocator/dealloc_free_pin_throws"
+TEST_CASE( "Platform_tests/003/pin_export_allocator/dealloc_free_pin_throws"
          , "Deallocate available_pin_id when free should throw."
          )
 {
@@ -54,7 +54,7 @@ TEST_CASE( "System_tests/003/pin_export_allocator/dealloc_free_pin_throws"
 }
 
 
-TEST_CASE( "System_tests/100/pin_allocator/is_in_use_initially_reports_free"
+TEST_CASE( "Platform_tests/100/pin_allocator/is_in_use_initially_reports_free"
          , "The available_pin_id is initially not exported and assumed to be free"
          )
 {
@@ -62,7 +62,7 @@ TEST_CASE( "System_tests/100/pin_allocator/is_in_use_initially_reports_free"
   REQUIRE(a.is_in_use(available_pin_id)==false);
 }
 
-TEST_CASE( "System_tests/101/pin_allocator/alloc_pin_is_in_use_unalloc_is_free"
+TEST_CASE( "Platform_tests/101/pin_allocator/alloc_pin_is_in_use_unalloc_is_free"
          , "Allocate available_pin_id is in use, deallocate it is free"
          )
 {
@@ -73,7 +73,7 @@ TEST_CASE( "System_tests/101/pin_allocator/alloc_pin_is_in_use_unalloc_is_free"
   CHECK(a.is_in_use(available_pin_id)==false);
 }
 
-TEST_CASE( "System_tests/102/pin_allocator/alloc_in_use_pin_throws"
+TEST_CASE( "Platform_tests/102/pin_allocator/alloc_in_use_pin_throws"
          , "Allocate available_pin_id twice should throw on 2nd allocation."
          )
 {

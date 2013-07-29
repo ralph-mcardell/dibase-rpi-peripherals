@@ -1,5 +1,5 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
-/// @file pin_systemtests.cpp 
+/// @file pin_platformtests.cpp 
 /// @brief System tests for GPIO pin IO types.
 ///
 /// @copyright Copyright (c) Dibase Limited 2012
@@ -15,7 +15,7 @@ using namespace dibase::rpi::peripherals;
 pin_id available_out_pin_id{4}; // P1 pin GPIO_GCLK
 pin_id available_in_pin_id{17}; // P1 pin GPIO_GEN0
 
-TEST_CASE( "System_tests/000/opin/close_closed_pin_benign"
+TEST_CASE( "Platform_tests/000/opin/close_closed_pin_benign"
          , "An opin may be closed even if it is not open"
          )
 {
@@ -24,7 +24,7 @@ TEST_CASE( "System_tests/000/opin/close_closed_pin_benign"
   o.close();
 }
 
-TEST_CASE( "System_tests/001/opin/open_close"
+TEST_CASE( "Platform_tests/001/opin/open_close"
          , "An opin may be default constructed then opened and closed explicitly"
          )
 {
@@ -36,7 +36,7 @@ TEST_CASE( "System_tests/001/opin/open_close"
   CHECK(o.is_open()==false);
 }
 
-TEST_CASE( "System_tests/002/opin/RAII_implicit_open_close"
+TEST_CASE( "Platform_tests/002/opin/RAII_implicit_open_close"
          , "An opin may be opened on contruction and is closed on destruction"
          )
 {
@@ -49,7 +49,7 @@ TEST_CASE( "System_tests/002/opin/RAII_implicit_open_close"
   o.close();
 }
 
-TEST_CASE( "System_tests/003/opin/open_same_pin_twice_throws"
+TEST_CASE( "Platform_tests/003/opin/open_same_pin_twice_throws"
          , "Opening the same pin more than once should fail by throwing"
          )
 {
@@ -58,7 +58,7 @@ TEST_CASE( "System_tests/003/opin/open_same_pin_twice_throws"
   REQUIRE_THROWS_AS(o.open(available_out_pin_id), bad_pin_alloc);
 }
 
-TEST_CASE( "System_tests/004/opin/put_to_closed_pin_ignored"
+TEST_CASE( "Platform_tests/004/opin/put_to_closed_pin_ignored"
          , "Attempting to change a opin state when closed is ignored"
          )
 {
@@ -68,7 +68,7 @@ TEST_CASE( "System_tests/004/opin/put_to_closed_pin_ignored"
 }
 
 
-TEST_CASE( "System_tests/020/ipin/close_closed_pin_benign"
+TEST_CASE( "Platform_tests/020/ipin/close_closed_pin_benign"
          , "An opin may be closed even if it is not open"
          )
 {
@@ -77,7 +77,7 @@ TEST_CASE( "System_tests/020/ipin/close_closed_pin_benign"
   i.close();
 }
 
-TEST_CASE( "System_tests/021/ipin/open_close"
+TEST_CASE( "Platform_tests/021/ipin/open_close"
          , "An opin may be default constructed then opened and closed explicitly"
          )
 {
@@ -89,7 +89,7 @@ TEST_CASE( "System_tests/021/ipin/open_close"
   CHECK(i.is_open()==false);
 }
 
-TEST_CASE( "System_tests/022/ipin/RAII_implicit_open_close"
+TEST_CASE( "Platform_tests/022/ipin/RAII_implicit_open_close"
          , "An opin may be opened on contruction and is closed on destruction"
          )
 {
@@ -102,7 +102,7 @@ TEST_CASE( "System_tests/022/ipin/RAII_implicit_open_close"
   i.close();
 }
 
-TEST_CASE( "System_tests/023/ipin/open_same_pin_twice_throws"
+TEST_CASE( "Platform_tests/023/ipin/open_same_pin_twice_throws"
          , "Opening the same pin more than once should fail by throwing"
          )
 {
@@ -111,7 +111,7 @@ TEST_CASE( "System_tests/023/ipin/open_same_pin_twice_throws"
   REQUIRE_THROWS_AS(i.open(available_in_pin_id), bad_pin_alloc);
 }
 
-TEST_CASE( "System_tests/004/ipin/get_from_closed_pin_false"
+TEST_CASE( "Platform_tests/004/ipin/get_from_closed_pin_false"
          , "Getting a closed ipin's state returns false"
          )
 {

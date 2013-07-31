@@ -27,7 +27,7 @@ TEST_CASE( "Unit-tests/clock_registers/field offsets"
          )
 {
   enum RegisterOffsets
-  { PWM_CTRL_OFFSET=40, PWM_DIV_OFFSET=44  // NB: NOT HEX values!!
+  { PWM_CTRL_OFFSET=40*4, PWM_DIV_OFFSET=41*4  // NB: NOT HEX values!!
   , GP0_CTRL_OFFSET=0x70, GP0_DIV_OFFSET=0x74
   , GP1_CTRL_OFFSET=0x78, GP1_DIV_OFFSET=0x7c
   , GP2_CTRL_OFFSET=0x80, GP2_DIV_OFFSET=0x84

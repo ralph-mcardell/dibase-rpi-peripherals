@@ -19,7 +19,7 @@
 
 namespace dibase { namespace rpi {
   namespace peripherals
-  {  
+  {
   /// @brief Represents layout of clock control registers with operations.
   ///
   /// Permits access to BCM2835 (GPIO) clock mamanger control registers 
@@ -35,26 +35,33 @@ namespace dibase { namespace rpi {
     {
     private:
       enum
-      { pwm_offset = 10///< PWM control & divisor registers' offset
-      , gp_offset =  28///< General purpose control & divisor registers' offset
-      , password = 0x5A000000 ///< Magic value: see BCM2835 peripherals manual tables 6-34 & 35.
+      { gp_offset = 28///< General purpose control & divisor registers' offset
+      , pwm_offset=40 ///< PWM control & divisor registers' offset
+      , regs_per_clk=2///< Number of 32-bit (4-byte) registers for each clock
+      , num_gp_clks=3 ///< Number of general purpose clocks
+      
+    /// @brief 32-bit register gap between GP clocks end & PWN clocks start
+      , gp_pwm_gap=pwm_offset-gp_offset-(num_gp_clks*regs_per_clk)
+
+      /// @brief Magic value: see BCM2835 peripherals manual tables 6-34 & 35.
+      , password = 0x5A000000
       };
     public:
     /// @brief Physical address of start of BCM2835 clock control registers
       static const physical_address_t physical_address
                                           = peripheral_base_address + 0x101000;
 
-       register_t reserved_do_not_use_0[pwm_offset];///< Reserved, currently unused
-       register_t pwm_ctrl; ///< PWM clock control register
-       register_t pwm_div;  ///< PWM clock divisor register
-
-       register_t reserved_do_not_use_1[gp_offset-pwm_offset-2];///< Reserved, currently unused
+       register_t reserved_do_not_use_0[gp_offset];///< Reserved, currently unused
        register_t gp0_ctrl; ///< General purpose clock 0 control register
        register_t gp0_div;  ///< General purpose clock 0 divisor register
        register_t gp1_ctrl; ///< General purpose clock 1 control register
        register_t gp1_div;  ///< General purpose clock 1 divisor register
        register_t gp2_ctrl; ///< General purpose clock 2 control register
        register_t gp2_div;  ///< General purpose clock 2 divisor register
+
+       register_t reserved_do_not_use_1[gp_pwm_gap];///< Reserved, currently unused
+       register_t pwm_ctrl; ///< PWM clock control register
+       register_t pwm_div;  ///< PWM clock divisor register
     };
   }
 }}

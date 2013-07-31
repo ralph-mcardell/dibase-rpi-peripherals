@@ -20,6 +20,22 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
+  /// @brief Clock manager control registers record for a single clock
+  ///
+  /// Each clock has two control registers: 
+  ///   - a main control register, XX_CTL
+  ///   - a frequency divisor reqgister, XX_DIV
+  /// These are grouped together in this structure as the members control and
+  /// divisor respectfully.
+    struct clock_record
+    {
+      register_t control; ///< Clock control (XX_CTL) register
+      register_t divisor; ///< Clock fequency divisor (XX_DIV) register
+    };
+
+    struct clock_registers;
+    typedef clock_record clock_registers::*   clock_id;
+
   /// @brief Represents layout of clock control registers with operations.
   ///
   /// Permits access to BCM2835 (GPIO) clock mamanger control registers 
@@ -51,18 +67,19 @@ namespace dibase { namespace rpi {
       static const physical_address_t physical_address
                                           = peripheral_base_address + 0x101000;
 
-       register_t reserved_do_not_use_0[gp_offset];///< Reserved, currently unused
-       register_t gp0_ctrl; ///< General purpose clock 0 control register
-       register_t gp0_div;  ///< General purpose clock 0 divisor register
-       register_t gp1_ctrl; ///< General purpose clock 1 control register
-       register_t gp1_div;  ///< General purpose clock 1 divisor register
-       register_t gp2_ctrl; ///< General purpose clock 2 control register
-       register_t gp2_div;  ///< General purpose clock 2 divisor register
+      register_t reserved_do_not_use_0[gp_offset];///< Reserved, currently unused
+      clock_record gp0_clk; ///< General purpose clock 0
+      clock_record gp1_clk; ///< General purpose clock 1
+      clock_record gp2_clk; ///< General purpose clock 2
 
-       register_t reserved_do_not_use_1[gp_pwm_gap];///< Reserved, currently unused
-       register_t pwm_ctrl; ///< PWM clock control register
-       register_t pwm_div;  ///< PWM clock divisor register
+      register_t reserved_do_not_use_1[gp_pwm_gap];///< Reserved, currently unused
+      clock_record pwm_clk; ///< PWM clock
     };
+
+    clock_id const gp0_clk_id{&clock_registers::gp0_clk};
+    clock_id const gp1_clk_id{&clock_registers::gp1_clk};
+    clock_id const gp2_clk_id{&clock_registers::gp2_clk};
+    clock_id const pwm_clk_id{&clock_registers::pwm_clk};
   }
 }}
 #endif // DIBASE_RPI_PERIPHERALS_CLOCK_REGISTERS_H

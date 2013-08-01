@@ -45,6 +45,26 @@ namespace dibase { namespace rpi {
     , mash_3_stage = (3<<9)
     };
 
+  /// @brief Strongly typed enumeration of clock SRC control mode values.
+  ///
+  /// Each clock takes its 'master' clock from one of several sources as
+  /// specified by the clock's control SRC field. See 
+  /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+  /// Broadcom BCM2835 ARM Peripherals Datasheet</a> Chapter 6 General Purpose
+  /// I/O (GPIO), section 6.3 "General Purpose GPIO Clocks" for more
+  /// information.
+    enum class clock_source : register_t
+    { gnd = 0
+    , oscillator = 1
+    , testdebug0 = 2
+    , testdebug1 = 3
+    , plla = 4
+    , pllc = 5
+    , plld = 6
+    , hdmi_aux = 7
+    /* field values 8..15 are also mapped to GND so are not used here */
+    };
+
   /// @brief Clock manager control registers record for a single clock
   ///
   /// Each clock has two control registers: 
@@ -66,6 +86,8 @@ namespace dibase { namespace rpi {
       , ctrl_busy_mask = (1U<<7)
       , ctrl_flip_mask = (1U<<8)
       , ctrl_mash_mask = (3U<<9)
+      , ctrl_src_mask  = 15U
+      , ctrl_src_max_used = 7U
 
       /// @brief Magic value: see BCM2835 peripherals manual tables 6-34 & 35.
       , password = 0x5A000000U
@@ -96,6 +118,17 @@ namespace dibase { namespace rpi {
       clock_mash_mode get_mash() volatile const 
       { 
         return static_cast<clock_mash_mode>(control&ctrl_mash_mask);
+      }
+
+    /// @brief Returns value of SRC control register field.
+    /// Note: Raw field values of 8...15 are mapped to clock_source::gnd
+    /// (value 0).
+    /// @returns SRC field value in clock control register.
+      clock_source get_source() volatile const 
+      { 
+        register_t raw_src{control&ctrl_src_mask};
+        return raw_src>ctrl_src_max_used? clock_source::gnd
+                                        : static_cast<clock_source>(raw_src);
       }
 
     /// @brief Set the value of ENAB control register bit
@@ -163,6 +196,28 @@ namespace dibase { namespace rpi {
         control = ((control|password)               // password bits on
                     & ~ctrl_mash_mask)              // current MASH bits off
                   | static_cast<register_t>(mode);  // new MASH bits on
+        return true;
+      }
+
+    /// @brief Set the value of SRC control register field
+    /// Will not perform operation if clock is busy and force is not
+    /// busy_override::yes.
+    /// @param src  Value to set SRC field to
+    /// @param force Specifies whether to allow operation if clock is busy
+    /// @returns  true if operation performed, false if it was not performed
+    ///           because clock was busy.
+      bool set_source(clock_source src, busy_override force=busy_override::no)
+      volatile
+      { 
+        if (force==busy_override::no && is_busy())
+          {
+            return false;
+          }
+
+      // Only write to control once and with password value set.
+        control = ((control|password)             // password bits on
+                    & ~ctrl_src_mask)             // current SRC bits off
+                  | static_cast<register_t>(src); // new SRC bits on
         return true;
       }
     };
@@ -242,12 +297,22 @@ namespace dibase { namespace rpi {
         return (this->*clk).get_flip();
       }
 
-    /// @brief Returns value of MASH control register field
+    /// @brief Returns value of clock MASH control register field
     /// @param clk  Clock id of clock to return MASH mode value of
     /// @returns MASH field value in clock control register.
       clock_mash_mode get_mash(clock_id clk) volatile const 
       { 
         return (this->*clk).get_mash();
+      }
+
+    /// @brief Returns value of clock SRC control register field.
+    /// Note: Raw field values of 8...15 are mapped to clock_source::gnd
+    /// (value 0).
+    /// @param clk  Clock id of clock to return SRC field value of
+    /// @returns SRC field value in clock control register.
+      clock_source get_source(clock_id clk) volatile const 
+      { 
+        return (this->*clk).get_source();
       }
 
     /// @brief Set the value of clock ENAB control register bit
@@ -296,7 +361,7 @@ namespace dibase { namespace rpi {
     /// Will not perform operation if clock is busy and force is not
     /// busy_override::yes.
     /// @param clk   Clock id of clock to modify MASH field value of
-    /// @param mode  Value to set MASH field to
+    /// @param mode  Value to set clock MASH field to
     /// @param force Specifies whether to allow operation if clock is busy
     /// @returns  true if operation performed, false if it was not performed
     ///           because clock was busy.
@@ -307,6 +372,22 @@ namespace dibase { namespace rpi {
       ) volatile
       { 
         return (this->*clk).set_mash(mode, force);
+      }
+
+    /// @brief Set the value of clock SRC control register field
+    /// Will not perform operation if clock is busy and force is not
+    /// busy_override::yes.
+    /// @param src  Value to set clock SRC field to
+    /// @param force Specifies whether to allow operation if clock is busy
+    /// @returns  true if operation performed, false if it was not performed
+    ///           because clock was busy.
+      bool set_source
+      ( clock_id clk
+      , clock_source src
+      , busy_override force=busy_override::no
+      ) volatile
+      { 
+        return (this->*clk).set_source(src, force);
       }
     };
 

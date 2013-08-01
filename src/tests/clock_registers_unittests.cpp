@@ -76,6 +76,32 @@ TEST_CASE( "Unit-tests/clock_record/0040/get_mash"
   CHECK(cr.get_mash()==clock_mash_mode::mash_1_stage);
 }
 
+TEST_CASE( "Unit-tests/clock_record/0050/get_source"
+         , "Clock control SRC field read and returned correctly by get_source"
+         )
+{
+  clock_record cr{15U,0}; // SRC bits are control register bits 0..3
+  for (;cr.control!=7;--cr.control)
+    { /* SRC values 15...8 all map to clock_source::gnd */
+      CHECK(cr.get_source()==clock_source::gnd);
+    }
+  CHECK(cr.get_source()==clock_source::hdmi_aux);
+  --cr.control;
+  CHECK(cr.get_source()==clock_source::plld);
+  --cr.control;
+  CHECK(cr.get_source()==clock_source::pllc);
+  --cr.control;
+  CHECK(cr.get_source()==clock_source::plla);
+  --cr.control;
+  CHECK(cr.get_source()==clock_source::testdebug1);
+  --cr.control;
+  CHECK(cr.get_source()==clock_source::testdebug0);
+  --cr.control;
+  CHECK(cr.get_source()==clock_source::oscillator);
+  --cr.control;
+  CHECK(cr.get_source()==clock_source::gnd);
+}
+
 TEST_CASE( "Unit-tests/clock_record/0200/set_enable"
          , "Clock control ENAB bit written correctly by set_enable"
          )
@@ -116,7 +142,7 @@ TEST_CASE( "Unit-tests/clock_record/0220/set_flip"
 }
 
 TEST_CASE( "Unit-tests/clock_record/0230/set_mash"
-         , "Clock control MASH mode vlaue written correctly by set_mash"
+         , "Clock control MASH mode value written correctly by set_mash"
          )
 {
   clock_record cr{0,0};
@@ -132,6 +158,37 @@ TEST_CASE( "Unit-tests/clock_record/0230/set_mash"
   CHECK(cr.set_mash(clock_mash_mode::integer_division));
   CHECK(cr.get_mash()==clock_mash_mode::integer_division);
   CHECK(cr.control==0x5a000000U);//0x5a000000=write password; 0x000=MASH bits
+}
+
+TEST_CASE( "Unit-tests/clock_record/0240/set_source"
+         , "Clock control SRC value written correctly by set_source"
+         )
+{
+  clock_record cr{0,0};
+  CHECK(cr.set_source(clock_source::hdmi_aux));
+  CHECK(cr.get_source()==clock_source::hdmi_aux);
+  CHECK(cr.control==0x5a000007U);//0x5a000000=write password; 0x7=SRC (3) bits
+  CHECK(cr.set_source(clock_source::plld));
+  CHECK(cr.get_source()==clock_source::plld);
+  CHECK(cr.control==0x5a000006U);
+  CHECK(cr.set_source(clock_source::pllc));
+  CHECK(cr.get_source()==clock_source::pllc);
+  CHECK(cr.control==0x5a000005U);
+  CHECK(cr.set_source(clock_source::plla));
+  CHECK(cr.get_source()==clock_source::plla);
+  CHECK(cr.control==0x5a000004U);
+  CHECK(cr.set_source(clock_source::testdebug1));
+  CHECK(cr.get_source()==clock_source::testdebug1);
+  CHECK(cr.control==0x5a000003U);
+  CHECK(cr.set_source(clock_source::testdebug0));
+  CHECK(cr.get_source()==clock_source::testdebug0);
+  CHECK(cr.control==0x5a000002U);
+  CHECK(cr.set_source(clock_source::oscillator));
+  CHECK(cr.get_source()==clock_source::oscillator);
+  CHECK(cr.control==0x5a000001U);
+  CHECK(cr.set_source(clock_source::gnd));
+  CHECK(cr.get_source()==clock_source::gnd);
+  CHECK(cr.control==0x5a000000U);
 }
 
 TEST_CASE( "Unit-tests/clock_record/0400/set_enable for busy clocks"
@@ -174,7 +231,7 @@ TEST_CASE( "Unit-tests/clock_record/0410/set_flip for busy clocks"
   CHECK(cr.control==0x5a000080U);//0x5a000000=write password; 0x80=BUSY, FLIP off
 }
 
-TEST_CASE( "Unit-tests/clock_record/0410/set_mash for busy clocks"
+TEST_CASE( "Unit-tests/clock_record/0420/set_mash for busy clocks"
          , "Check set_mash field behaviour for busy clocks is as expected"
          )
 {
@@ -205,6 +262,63 @@ TEST_CASE( "Unit-tests/clock_record/0410/set_mash for busy clocks"
   CHECK(cr.set_mash(clock_mash_mode::integer_division, busy_override::yes));
   CHECK(cr.get_mash()==clock_mash_mode::integer_division);
   CHECK(cr.control==0x5a000080U);//0x5a000000=write password; 0x000=MASH|BUSY bits
+}
+
+TEST_CASE( "Unit-tests/clock_record/0430/set_source for busy clocks"
+         , "Check set_source field behaviour for busy clocks is as expected"
+         )
+{
+  clock_record cr{128U,0};
+  CHECK_FALSE(cr.set_source(clock_source::hdmi_aux));
+  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK_FALSE(cr.set_source(clock_source::plld));
+  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK_FALSE(cr.set_source(clock_source::pllc));
+  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK_FALSE(cr.set_source(clock_source::plla));
+  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK_FALSE(cr.set_source(clock_source::testdebug1));
+  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK_FALSE(cr.set_source(clock_source::testdebug0));
+  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK_FALSE(cr.set_source(clock_source::oscillator));
+  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  cr.control |= 1U; // Set low bit of SRC field (oscillator)
+  CHECK_FALSE(cr.set_source(clock_source::gnd));
+  CHECK(cr.get_source()==clock_source::oscillator); //gnd=0
+  CHECK(cr.control==(128U|1U));// BUSY and not forced: no write occured
+
+  CHECK(cr.set_source(clock_source::hdmi_aux, busy_override::yes));
+  CHECK(cr.get_source()==clock_source::hdmi_aux);
+  CHECK(cr.control==0x5a000087U);//0x5a000000=write password; 0x87=BUSY|SRC bits
+  CHECK(cr.set_source(clock_source::plld, busy_override::yes));
+  CHECK(cr.get_source()==clock_source::plld);
+  CHECK(cr.control==0x5a000086U);
+  CHECK(cr.set_source(clock_source::pllc, busy_override::yes));
+  CHECK(cr.get_source()==clock_source::pllc);
+  CHECK(cr.control==0x5a000085U);
+  CHECK(cr.set_source(clock_source::plla, busy_override::yes));
+  CHECK(cr.get_source()==clock_source::plla);
+  CHECK(cr.control==0x5a000084U);
+  CHECK(cr.set_source(clock_source::testdebug1, busy_override::yes));
+  CHECK(cr.get_source()==clock_source::testdebug1);
+  CHECK(cr.control==0x5a000083U);
+  CHECK(cr.set_source(clock_source::testdebug0, busy_override::yes));
+  CHECK(cr.get_source()==clock_source::testdebug0);
+  CHECK(cr.control==0x5a000082U);
+  CHECK(cr.set_source(clock_source::oscillator, busy_override::yes));
+  CHECK(cr.get_source()==clock_source::oscillator);
+  CHECK(cr.control==0x5a000081U);
+  CHECK(cr.set_source(clock_source::gnd, busy_override::yes));
+  CHECK(cr.get_source()==clock_source::gnd);
+  CHECK(cr.control==0x5a000080U);
 }
 
 enum RegisterOffsets // Byte offsets
@@ -392,7 +506,7 @@ TEST_CASE( "Unit-tests/clock_registers/0050/get_flip"
   CHECK_FALSE(clk_regs.get_flip(gp2_clk_id));
 }
 
-TEST_CASE( "Unit-tests/clock_record/0060/get_mash"
+TEST_CASE( "Unit-tests/clock_registers/0060/get_mash"
          , "Control MASH field read and returned OK by get_mash for given clock"
          )
 {
@@ -419,6 +533,55 @@ TEST_CASE( "Unit-tests/clock_record/0060/get_mash"
   CHECK(clk_regs.get_mash(gp2_clk_id)==clock_mash_mode::mash_1_stage);
   clk_regs.gp2_clk.control &= ~512U;
   CHECK(clk_regs.get_mash(gp2_clk_id)==clock_mash_mode::integer_division);
+}
+
+
+TEST_CASE( "Unit-tests/clock_registers/0070/get_source"
+         , "Control SRC field read & returned OK by get_source for given clock"
+         )
+{
+  clock_registers clk_regs;
+// initially start with all bytes of clk_regs set to 0x00:
+  std::memset(&clk_regs, 0x00, sizeof(clk_regs));
+  clk_regs.pwm_clk.control = 255U; // 255: All SRC bits plus some others
+  clk_regs.gp0_clk.control = 255U;
+  clk_regs.gp1_clk.control = 255U;
+  clk_regs.gp2_clk.control = 255U;
+  for (;(clk_regs.pwm_clk.control&15U)!=7U
+      ; --clk_regs.pwm_clk.control, --clk_regs.gp0_clk.control
+      , --clk_regs.gp1_clk.control, --clk_regs.gp2_clk.control
+      )
+    { /* Clock SRC values 15...8 all map to clock_source::gnd */
+      CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::gnd);
+      CHECK(clk_regs.get_source(gp1_clk_id)==clock_source::gnd);
+      CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd);
+      CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::gnd);
+    }
+  CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::hdmi_aux);
+  --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
+  --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
+  CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::plld);
+  --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
+  --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
+  CHECK(clk_regs.get_source(gp1_clk_id)==clock_source::pllc);
+  --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
+  --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::plla);
+  --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
+  --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
+  CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::testdebug1);
+  --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
+  --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::testdebug0);
+  --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
+  --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
+  CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::oscillator);
+  --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
+  --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
+  CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::gnd);
+  CHECK(clk_regs.get_source(gp1_clk_id)==clock_source::gnd);
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd);
+  CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::gnd);
 }
 
 TEST_CASE( "Unit-tests/clock_registers/0200/set_enable"
@@ -581,6 +744,42 @@ TEST_CASE( "Unit-tests/clock_registers/0230/set_mash"
   CHECK(clk_regs.gp2_clk.control==0x5a000000U);
 }
 
+TEST_CASE( "Unit-tests/clock_registers/0240/set_source"
+         , "Control SRC value written correctly by set_source for given clock"
+         )
+{
+  clock_registers clk_regs;
+// initially start with all bytes of clk_regs set to 0x00:
+  std::memset(&clk_regs, 0x00, sizeof(clk_regs));
+  CHECK(clk_regs.set_source(pwm_clk_id, clock_source::hdmi_aux));
+  CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::hdmi_aux);
+  CHECK(clk_regs.pwm_clk.control==0x5a000007U);//0x5a000000=write password; 0x7=SRC (3) bits
+  CHECK(clk_regs.set_source(pwm_clk_id,clock_source::plld));
+  CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::plld);
+  CHECK(clk_regs.pwm_clk.control==0x5a000006U);
+ 
+  CHECK(clk_regs.set_source(gp0_clk_id, clock_source::pllc));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::pllc);
+  CHECK(clk_regs.gp0_clk.control==0x5a000005U);
+  CHECK(clk_regs.set_source(gp0_clk_id, clock_source::plla));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::plla);
+  CHECK(clk_regs.gp0_clk.control==0x5a000004U);
+
+  CHECK(clk_regs.set_source(gp1_clk_id, clock_source::testdebug1));
+  CHECK(clk_regs.get_source(gp1_clk_id)==clock_source::testdebug1);
+  CHECK(clk_regs.gp1_clk.control==0x5a000003U);
+  CHECK(clk_regs.set_source(gp1_clk_id, clock_source::testdebug0));
+  CHECK(clk_regs.get_source(gp1_clk_id)==clock_source::testdebug0);
+  CHECK(clk_regs.gp1_clk.control==0x5a000002U);
+
+  CHECK(clk_regs.set_source(gp2_clk_id, clock_source::oscillator));
+  CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::oscillator);
+  CHECK(clk_regs.gp2_clk.control==0x5a000001U);
+  CHECK(clk_regs.set_source(gp2_clk_id, clock_source::gnd));
+  CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::gnd);
+  CHECK(clk_regs.gp2_clk.control==0x5a000000U);
+}
+
 TEST_CASE( "Unit-tests/clock_registers/0400/set_enable for busy clock"
          , "Check set_enable bit behaviour for busy clock is as expected"
          )
@@ -649,4 +848,27 @@ TEST_CASE( "Unit-tests/clock_registers/0420/set_mash for busy clock"
   CHECK(clk_regs.set_mash(gp0_clk_id, clock_mash_mode::mash_2_stage, busy_override::yes));
   CHECK(clk_regs.get_mash(gp0_clk_id)==clock_mash_mode::mash_2_stage);
   CHECK(clk_regs.gp0_clk.control==0x5a000480U);//0x5a000000=write password; 0x480==MASH|BUSY
+}
+
+TEST_CASE( "Unit-tests/clock_registers/0430/set_source for busy clock"
+         , "Check set_source field behaviour for busy clock is as expected"
+         )
+{
+  clock_registers clk_regs;
+// initially start with all bytes of clk_regs set to 0x00:
+  std::memset(&clk_regs, 0x00, sizeof(clk_regs));
+  clk_regs.gp0_clk.control = 128U; // BUSY flag is bit 7
+  CHECK_FALSE(clk_regs.set_source(gp0_clk_id, clock_source::hdmi_aux));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd); // gnd = 0
+  CHECK(clk_regs.gp0_clk.control==128U);// BUSY and not forced: no write occured
+  CHECK_FALSE(clk_regs.set_source(gp0_clk_id,clock_source::plld));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd);
+  CHECK(clk_regs.gp0_clk.control==128U);
+
+  CHECK(clk_regs.set_source(gp0_clk_id, clock_source::testdebug1, busy_override::yes));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::testdebug1);
+  CHECK(clk_regs.gp0_clk.control==0x5a000083U);
+  CHECK(clk_regs.set_source(gp0_clk_id, clock_source::gnd, busy_override::yes));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd);
+  CHECK(clk_regs.gp0_clk.control==0x5a000080U);
 }

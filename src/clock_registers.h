@@ -56,19 +56,19 @@ namespace dibase { namespace rpi {
 
     /// @brief Return ststus of control register BUSY flag.
     /// @returns true if control register BUSY bit set, false if not.
-      bool is_busy() volatile { return control&ctrl_busy_mask; }
+      bool is_busy() volatile const { return control&ctrl_busy_mask; }
 
     /// @brief Returns value of ENAB control register bit
     /// @returns true if ENAB control bit set or false if it is not.
-      bool get_enable() volatile { return control&ctrl_enab_mask; }
+      bool get_enable() volatile const { return control&ctrl_enab_mask; }
 
     /// @brief Returns value of KILL control register bit
     /// @returns true if KILL control bit set or false if it is not.
-      bool get_kill() volatile { return control&ctrl_kill_mask; }
+      bool get_kill() volatile const { return control&ctrl_kill_mask; }
 
     /// @brief Returns value of FLIP control register bit
     /// @returns true if FLIP control bit set or false if it is not.
-      bool get_flip() volatile { return control&ctrl_flip_mask; }
+      bool get_flip() volatile const { return control&ctrl_flip_mask; }
 
     /// @brief Set the value of ENAB control register bit
     /// Will not perform operation if clock is busy and force is not
@@ -159,22 +159,34 @@ namespace dibase { namespace rpi {
     /// @brief Return status of control register BUSY flag for specified clock.
     /// @param clk  Clock id of clock to return busy status of
     /// @returns true if control register BUSY bit set, false if not.
-      bool is_busy(clock_id clk) volatile { return (this->*clk).is_busy(); }
+      bool is_busy(clock_id clk) volatile const
+      {
+        return (this->*clk).is_busy();
+      }
 
     /// @brief Return value of control register ENAB bit for specified clock.
     /// @param clk  Clock id of clock to return enable bit value of
     /// @returns true if control register ENAB bit set, false if not.
-      bool get_enable(clock_id clk) volatile {return (this->*clk).get_enable();}
+      bool get_enable(clock_id clk) volatile const
+      {
+        return (this->*clk).get_enable();
+      }
 
     /// @brief Return value of control register KILL bit for specified clock.
     /// @param clk  Clock id of clock to return kill bit value of
     /// @returns true if control register KILL bit set, false if not.
-      bool get_kill(clock_id clk) volatile { return (this->*clk).get_kill(); }
+      bool get_kill(clock_id clk) volatile const
+      {
+        return (this->*clk).get_kill();
+      }
 
     /// @brief Return value of control register FLIP bit for specified clock.
     /// @param clk  Clock id of clock to return flip bit value of
     /// @returns true if control register FLIP bit set, false if not.
-      bool get_flip(clock_id clk) volatile { return (this->*clk).get_flip(); }
+      bool get_flip(clock_id clk) volatile const
+      {
+        return (this->*clk).get_flip();
+      }
 
     /// @brief Set the value of ENAB control register bit
     /// Will not perform operation if clock is busy and force is not

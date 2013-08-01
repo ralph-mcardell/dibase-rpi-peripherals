@@ -140,7 +140,7 @@ namespace dibase { namespace rpi {
     /// @param[in]  bitnumber Bit number in the register pair looked at as a
     ///                       single value (0..63, not range checked).
     /// @return Zero if the bit is 0 or a non-zero value if it is 1.
-      register_t get_bit( unsigned int bitnumber ) volatile
+      register_t get_bit( unsigned int bitnumber ) volatile const
       {
          return reg[bitnumber/register_width] & (1U<<(bitnumber%register_width));
       }
@@ -256,7 +256,7 @@ namespace dibase { namespace rpi {
     ///
     /// @param[in]  pinid   Id number of the GPIO pin to get level of.
     /// @return Zero if the pin level is low or a non-zero value if it is high.
-      register_t pin_level( pin_id pinid ) volatile
+      register_t pin_level( pin_id pinid ) volatile const
       {
         return gplev.get_bit(pinid);
       }
@@ -269,7 +269,7 @@ namespace dibase { namespace rpi {
     /// @param[in]  pinid   Id number of the GPIO pin to get event status of.
     /// @return Zero if no event detected for the pin or a non-zero value if
     ///         an event was detected for the pin.
-      register_t pin_event( pin_id pinid ) volatile
+      register_t pin_event( pin_id pinid ) volatile const
       {
         return gpeds.get_bit(pinid);
       }

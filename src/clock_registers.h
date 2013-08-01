@@ -20,14 +20,29 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
-  /// @brief Override clock busy enumerations
+  /// @brief Strongly typed enumeration of clock busy override values
   /// Many operations are best not performed if a clock is busy and 
   /// interface functions usually do not allow such operations to proceed
-  /// is a clock is busy by default but allow forcing the issue if the
+  /// if a clock is busy by default but allow forcing the issue if the
   /// caller specifies busy_override::yes.
     enum class busy_override
     { no      ///< Do not override do-not-do-if-clock-busy advise
     , yes     ///< Override do-not-do-if-clock-busy advise
+    };
+
+  /// @brief Strongly typed enumeration of clock MASH control mode values.
+  ///
+  /// Each clock uses one of several MASH noise shaping behaviour.
+  /// Refer to 
+  /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+  /// Broadcom BCM2835 ARM Peripherals Datasheet</a> Chapter 6 General Purpose
+  /// I/O (GPIO), section 6.3 "General Purpose GPIO Clocks" for more
+  /// information.
+    enum class clock_mash_mode : register_t
+    { integer_division = 0
+    , mash_1_stage = (1<<9)
+    , mash_2_stage = (2<<9)
+    , mash_3_stage = (3<<9)
     };
 
   /// @brief Clock manager control registers record for a single clock
@@ -37,6 +52,11 @@ namespace dibase { namespace rpi {
   ///   - a frequency divisor reqgister, XX_DIV
   /// These are grouped together in this structure as the members control and
   /// divisor respectfully.
+  ///
+  /// Member function operations are provided to query and set the various
+  /// fields and flags of a clock's control and divisor registers. These are
+  /// all marked volatile as a matter of course as real-use instances will
+  /// map onto IO peripheral device control registers.
     struct clock_record
     {
     private:
@@ -45,6 +65,7 @@ namespace dibase { namespace rpi {
       , ctrl_kill_mask = (1U<<5)
       , ctrl_busy_mask = (1U<<7)
       , ctrl_flip_mask = (1U<<8)
+      , ctrl_mash_mask = (3U<<9)
 
       /// @brief Magic value: see BCM2835 peripherals manual tables 6-34 & 35.
       , password = 0x5A000000U
@@ -69,6 +90,13 @@ namespace dibase { namespace rpi {
     /// @brief Returns value of FLIP control register bit
     /// @returns true if FLIP control bit set or false if it is not.
       bool get_flip() volatile const { return control&ctrl_flip_mask; }
+
+    /// @brief Returns value of MASH control register field
+    /// @returns MASH field value in clock control register.
+      clock_mash_mode get_mash() volatile const 
+      { 
+        return static_cast<clock_mash_mode>(control&ctrl_mash_mask);
+      }
 
     /// @brief Set the value of ENAB control register bit
     /// Will not perform operation if clock is busy and force is not
@@ -115,6 +143,28 @@ namespace dibase { namespace rpi {
                                   : control&(~ctrl_flip_mask));
         return true;
       }
+
+    /// @brief Set the value of MASH control register field
+    /// Will not perform operation if clock is busy and force is not
+    /// busy_override::yes.
+    /// @param mode  Value to set MASH field to
+    /// @param force Specifies whether to allow operation if clock is busy
+    /// @returns  true if operation performed, false if it was not performed
+    ///           because clock was busy.
+      bool set_mash(clock_mash_mode mode, busy_override force=busy_override::no)
+      volatile
+      { 
+        if (force==busy_override::no && is_busy())
+          {
+            return false;
+          }
+
+      // Only write to control once and with password value set.
+        control = ((control|password)               // password bits on
+                    & ~ctrl_mash_mask)              // current MASH bits off
+                  | static_cast<register_t>(mode);  // new MASH bits on
+        return true;
+      }
     };
 
     struct clock_registers;
@@ -131,6 +181,10 @@ namespace dibase { namespace rpi {
   /// details. PWN clock control and divisor register offsets gleaned from
   /// Gertboard gb_pwm.h source code.
   ///
+  /// Member function operations are provided to query and set the various
+  /// fields and flags of a specified clock's control and divisor registers.
+  /// These are all marked volatile as a matter of course as real-use instance
+  /// will map onto IO peripheral device control registers.
     struct clock_registers
     {
     private:
@@ -188,7 +242,15 @@ namespace dibase { namespace rpi {
         return (this->*clk).get_flip();
       }
 
-    /// @brief Set the value of ENAB control register bit
+    /// @brief Returns value of MASH control register field
+    /// @param clk  Clock id of clock to return MASH mode value of
+    /// @returns MASH field value in clock control register.
+      clock_mash_mode get_mash(clock_id clk) volatile const 
+      { 
+        return (this->*clk).get_mash();
+      }
+
+    /// @brief Set the value of clock ENAB control register bit
     /// Will not perform operation if clock is busy and force is not
     /// busy_override::yes.
     /// @param clk  Clock id of clock to modify enable bit value of
@@ -205,7 +267,7 @@ namespace dibase { namespace rpi {
         return (this->*clk).set_enable(state, force);
       }
 
-    /// @brief Set the value of KILL control register bit
+    /// @brief Set the value of clock KILL control register bit
     /// @param clk  Clock id of clock to modify kill bit value of
     /// @param state State to set KILL bit to: true->1, false->0
       void set_kill(clock_id clk, bool state) volatile 
@@ -213,7 +275,7 @@ namespace dibase { namespace rpi {
         (this->*clk).set_kill(state);
       }
 
-    /// @brief Set the value of FLIP control register bit
+    /// @brief Set the value of clock FLIP control register bit
     /// Will not perform operation if clock is busy and force is not
     /// busy_override::yes.
     /// @param clk  Clock id of clock to modify flip bit value of
@@ -228,6 +290,23 @@ namespace dibase { namespace rpi {
       ) volatile 
       {
         return (this->*clk).set_flip(state, force);
+      }
+
+    /// @brief Set the value of clock MASH control register field
+    /// Will not perform operation if clock is busy and force is not
+    /// busy_override::yes.
+    /// @param clk   Clock id of clock to modify MASH field value of
+    /// @param mode  Value to set MASH field to
+    /// @param force Specifies whether to allow operation if clock is busy
+    /// @returns  true if operation performed, false if it was not performed
+    ///           because clock was busy.
+      bool set_mash
+      ( clock_id clk
+      , clock_mash_mode mode
+      , busy_override force=busy_override::no
+      ) volatile
+      { 
+        return (this->*clk).set_mash(mode, force);
       }
     };
 

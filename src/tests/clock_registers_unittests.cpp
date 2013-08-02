@@ -102,6 +102,34 @@ TEST_CASE( "Unit-tests/clock_record/0050/get_source"
   CHECK(cr.get_source()==clock_source::gnd);
 }
 
+TEST_CASE( "Unit-tests/clock_record/0060/get_divi"
+         , "Clock divisor DIVI field read and returned correctly by get_divi"
+         )
+{
+  clock_record cr{0x88123123U,0xDEDU};
+  CHECK(cr.get_divi()==0); // Real clock DIVI value should never be 0
+  cr.divisor = 0xFFF000U;
+  CHECK(cr.get_divi()==0xFFFU);
+  cr.divisor = 0x765000U;
+  CHECK(cr.get_divi()==0x765U);
+  cr.divisor = 0x55444333U;
+  CHECK(cr.get_divi()==0x444U);
+}
+
+TEST_CASE( "Unit-tests/clock_record/0060/get_divf"
+         , "Clock divisor DIVF field read and returned correctly by get_divf"
+         )
+{
+  clock_record cr{0x88123123U,0xDED000U};
+  CHECK(cr.get_divf()==0); // Real clock DIVI value should never be 0
+  cr.divisor = 0xFFFU;
+  CHECK(cr.get_divf()==0xFFFU);
+  cr.divisor = 0x765U;
+  CHECK(cr.get_divf()==0x765U);
+  cr.divisor = 0x55444333U;
+  CHECK(cr.get_divf()==0x333U);
+}
+
 TEST_CASE( "Unit-tests/clock_record/0200/set_enable"
          , "Clock control ENAB bit written correctly by set_enable"
          )
@@ -584,6 +612,39 @@ TEST_CASE( "Unit-tests/clock_registers/0070/get_source"
   CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::gnd);
 }
 
+TEST_CASE( "Unit-tests/clock_registers/0080/get_divi"
+         , "Divisor DIVI field read & returned OK by get_divi for given clock"
+         )
+{
+  clock_registers clk_regs;
+// initially start with all bytes of clk_regs set to some non-zero:
+  std::memset(&clk_regs, 0xBA, sizeof(clk_regs));
+  clk_regs.pwm_clk.divisor = 0xBAD;
+  CHECK(clk_regs.get_divi(pwm_clk_id)==0); // Real clock DIVI value should never be 0
+  clk_regs.gp0_clk.divisor = 0xFFF000U;
+  CHECK(clk_regs.get_divi(gp0_clk_id)==0xFFFU);
+  clk_regs.gp1_clk.divisor = 0x8FE000U;
+  CHECK(clk_regs.get_divi(gp1_clk_id)==0x8FEU);
+  clk_regs.gp2_clk.divisor = 0xAABBBCCCU;
+  CHECK(clk_regs.get_divi(gp2_clk_id)==0xBBBU);
+}
+
+TEST_CASE( "Unit-tests/clock_registers/0080/get_divf"
+         , "Divisor DIVF field read & returned OK by get_divf for given clock"
+         )
+{
+  clock_registers clk_regs;
+// initially start with all bytes of clk_regs set to some non-zero:
+  std::memset(&clk_regs, 0xBA, sizeof(clk_regs));
+  clk_regs.pwm_clk.divisor = 0xBAD000;
+  CHECK(clk_regs.get_divf(pwm_clk_id)==0); // Real clock DIVI value should never be 0
+  clk_regs.gp0_clk.divisor = 0xFFFU;
+  CHECK(clk_regs.get_divf(gp0_clk_id)==0xFFFU);
+  clk_regs.gp1_clk.divisor = 0x8FEU;
+  CHECK(clk_regs.get_divf(gp1_clk_id)==0x8FEU);
+  clk_regs.gp2_clk.divisor = 0xAABBBCCCU;
+  CHECK(clk_regs.get_divf(gp2_clk_id)==0xCCCU);
+}
 TEST_CASE( "Unit-tests/clock_registers/0200/set_enable"
          , "Control ENAB bit modified OK by set_enable for given clock"
          )

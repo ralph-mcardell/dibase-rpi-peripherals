@@ -88,6 +88,13 @@ namespace dibase { namespace rpi {
       , ctrl_mash_mask = (3U<<9)
       , ctrl_src_mask  = 15U
       , ctrl_src_max_used = 7U
+      , div_divi_min   = 1U // Note: varies with ctrl MASH mode
+      , div_divi_max   = 0xfffU
+      , div_divi_shift = 12U
+      , div_divi_mask  = (div_divi_max<<div_divi_shift)
+      , div_divf_min   = 0
+      , div_divf_max   = 0xfff
+      , div_divf_mask  = div_divf_max
 
       /// @brief Magic value: see BCM2835 peripherals manual tables 6-34 & 35.
       , password = 0x5A000000U
@@ -124,11 +131,25 @@ namespace dibase { namespace rpi {
     /// Note: Raw field values of 8...15 are mapped to clock_source::gnd
     /// (value 0).
     /// @returns SRC field value in clock control register.
-      clock_source get_source() volatile const 
+      clock_source get_source() volatile const
       { 
         register_t raw_src{control&ctrl_src_mask};
         return raw_src>ctrl_src_max_used? clock_source::gnd
                                         : static_cast<clock_source>(raw_src);
+      }
+
+    /// @brief Returns value of DIVI divisor register field.
+    /// @returns DIVI field value of clock divisor register in range [1..0xFFF]
+      register_t get_divi() volatile const
+      {
+        return (divisor&div_divi_mask)>>div_divi_shift;
+      }
+
+    /// @brief Returns value of DIVF divisor register field.
+    /// @returns DIVF field value of clock divisor register in range [0..0xFFF]
+      register_t get_divf() volatile const
+      {
+        return (divisor&div_divf_mask);
       }
 
     /// @brief Set the value of ENAB control register bit
@@ -313,6 +334,22 @@ namespace dibase { namespace rpi {
       clock_source get_source(clock_id clk) volatile const 
       { 
         return (this->*clk).get_source();
+      }
+
+    /// @brief Returns value of clock DIVI divisor register field.
+    /// @param clk  Clock id of clock to return DIVI field value of
+    /// @returns DIVI field value of clock divisor register in range [1..0xFFF]
+      register_t get_divi(clock_id clk) volatile const
+      {
+        return (this->*clk).get_divi();
+      }
+
+    /// @brief Returns value of clock DIVF divisor register field.
+    /// @param clk  Clock id of clock to return DIVF field value of
+    /// @returns DIVF field value of clock divisor register in range [0..0xFFF]
+      register_t get_divf(clock_id clk) volatile const
+      {
+        return (this->*clk).get_divf();
       }
 
     /// @brief Set the value of clock ENAB control register bit

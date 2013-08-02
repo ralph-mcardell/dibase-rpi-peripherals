@@ -116,7 +116,7 @@ TEST_CASE( "Unit-tests/clock_record/0060/get_divi"
   CHECK(cr.get_divi()==0x444U);
 }
 
-TEST_CASE( "Unit-tests/clock_record/0060/get_divf"
+TEST_CASE( "Unit-tests/clock_record/0070/get_divf"
          , "Clock divisor DIVF field read and returned correctly by get_divf"
          )
 {
@@ -217,6 +217,57 @@ TEST_CASE( "Unit-tests/clock_record/0240/set_source"
   CHECK(cr.set_source(clock_source::gnd));
   CHECK(cr.get_source()==clock_source::gnd);
   CHECK(cr.control==0x5a000000U);
+}
+
+TEST_CASE( "Unit-tests/clock_record/0250/set_divi"
+         , "Clock divisor DIVI value written correctly by set_divi"
+         )
+{
+  clock_record cr{0,0};
+  CHECK(cr.set_divi(1));
+  CHECK(cr.get_divi()==1);
+  CHECK(cr.divisor==0x5a001000U);//0x5a000000=write pswd; 0x001=DIVI (12) bits
+  CHECK(cr.set_divi(0xfffU));
+  CHECK(cr.get_divi()==0xfffU);
+  CHECK(cr.divisor==0x5afff000U);
+  cr.divisor = 0x123U; // Set non-divi related bits. set_divi should not modify
+  CHECK(cr.set_divi(0x5a5U));
+  CHECK(cr.get_divi()==0x5a5U);
+  CHECK(cr.divisor==0x5a5a5123U);
+  CHECK(cr.set_divi(0xa5aU));
+  CHECK(cr.get_divi()==0xa5aU);
+  CHECK(cr.divisor==0x5aa5a123U);
+  cr.divisor = 0xffeeedddU;
+  CHECK_FALSE(cr.set_divi(0U));
+  CHECK(cr.get_divi()==0xeeeU); // Operation failed: no change
+  CHECK(cr.divisor==0xffeeedddU);
+  CHECK_FALSE(cr.set_divi(0x1000U));
+  CHECK(cr.get_divi()==0xeeeU); // Operation failed: no change
+  CHECK(cr.divisor==0xffeeedddU);
+}
+
+TEST_CASE( "Unit-tests/clock_record/0260/set_divf"
+         , "Clock divisor DIVF value written correctly by set_divf"
+         )
+{
+  clock_record cr{0,0xfff};
+  CHECK(cr.set_divf(0));
+  CHECK(cr.get_divf()==0);
+  CHECK(cr.divisor==0x5a000000U);//0x5a000000=write pswd; 0x000=DIVF (12) bits
+  CHECK(cr.set_divf(0xfffU));
+  CHECK(cr.get_divf()==0xfffU);
+  CHECK(cr.divisor==0x5a000fffU);
+  cr.divisor = 0x123000U; // Set non-divf related bits. set_divf should not modify
+  CHECK(cr.set_divf(0x5a5U));
+  CHECK(cr.get_divf()==0x5a5U);
+  CHECK(cr.divisor==0x5a1235a5U);
+  CHECK(cr.set_divf(0xa5aU));
+  CHECK(cr.get_divf()==0xa5aU);
+  CHECK(cr.divisor==0x5a123a5aU);
+  cr.divisor = 0xffeeedddU;
+  CHECK_FALSE(cr.set_divf(0x1000U));
+  CHECK(cr.get_divf()==0xdddU); // Operation failed: no change
+  CHECK(cr.divisor==0xffeeedddU);
 }
 
 TEST_CASE( "Unit-tests/clock_record/0400/set_enable for busy clocks"
@@ -347,6 +398,46 @@ TEST_CASE( "Unit-tests/clock_record/0430/set_source for busy clocks"
   CHECK(cr.set_source(clock_source::gnd, busy_override::yes));
   CHECK(cr.get_source()==clock_source::gnd);
   CHECK(cr.control==0x5a000080U);
+}
+
+TEST_CASE( "Unit-tests/clock_record/0440/set_divi for busy clocks"
+         , "Check set_divi behaviour for busy clocks is as expected"
+         )
+{
+  clock_record cr{128U,0};
+  CHECK_FALSE(cr.set_divi(1));
+  CHECK(cr.get_divi()==0);
+  CHECK(cr.divisor==0);
+  CHECK_FALSE(cr.set_divi(0xfffU));
+  CHECK(cr.get_divi()==0);
+  CHECK(cr.divisor==0);
+
+  CHECK(cr.set_divi(1, busy_override::yes));
+  CHECK(cr.get_divi()==1);
+  CHECK(cr.divisor==0x5a001000U);//0x5a000000=write pswd; 0x001=DIVI (12) bits
+  CHECK(cr.set_divi(0xfffU, busy_override::yes));
+  CHECK(cr.get_divi()==0xfffU);
+  CHECK(cr.divisor==0x5afff000U);
+}
+
+TEST_CASE( "Unit-tests/clock_record/0450/set_divf for busy clocks"
+         , "Check set_divf behaviour for busy clocks is as expected"
+         )
+{
+  clock_record cr{128U,0};
+  CHECK_FALSE(cr.set_divf(1));
+  CHECK(cr.get_divf()==0);
+  CHECK(cr.divisor==0);
+  CHECK_FALSE(cr.set_divf(0xfffU));
+  CHECK(cr.get_divf()==0);
+  CHECK(cr.divisor==0);
+
+  CHECK(cr.set_divf(1, busy_override::yes));
+  CHECK(cr.get_divf()==1);
+  CHECK(cr.divisor==0x5a000001U);//0x5a000000=write pswd; 0x001=DIVF (12) bits
+  CHECK(cr.set_divf(0xfffU, busy_override::yes));
+  CHECK(cr.get_divf()==0xfffU);
+  CHECK(cr.divisor==0x5a000fffU);
 }
 
 enum RegisterOffsets // Byte offsets
@@ -629,7 +720,7 @@ TEST_CASE( "Unit-tests/clock_registers/0080/get_divi"
   CHECK(clk_regs.get_divi(gp2_clk_id)==0xBBBU);
 }
 
-TEST_CASE( "Unit-tests/clock_registers/0080/get_divf"
+TEST_CASE( "Unit-tests/clock_registers/0090/get_divf"
          , "Divisor DIVF field read & returned OK by get_divf for given clock"
          )
 {
@@ -841,6 +932,61 @@ TEST_CASE( "Unit-tests/clock_registers/0240/set_source"
   CHECK(clk_regs.gp2_clk.control==0x5a000000U);
 }
 
+TEST_CASE( "Unit-tests/clock_registers/0250/set_divi"
+         , "Divisor DIVI value written correctly by set_divi for given clock"
+         )
+{
+  clock_registers clk_regs;
+// initially start with all bytes of clk_regs set to 0x00:
+  std::memset(&clk_regs, 0x00, sizeof(clk_regs));
+  CHECK(clk_regs.set_divi(pwm_clk_id, 1));
+  CHECK(clk_regs.get_divi(pwm_clk_id)==1);
+  CHECK(clk_regs.pwm_clk.divisor==0x5a001000U);//0x5a000000=write pswd; 0x001=DIVI (12) bits
+  CHECK(clk_regs.set_divi(gp0_clk_id, 0xfffU));
+  CHECK(clk_regs.get_divi(gp0_clk_id)==0xfffU);
+  CHECK(clk_regs.gp0_clk.divisor==0x5afff000U);
+  clk_regs.gp1_clk.divisor = 0x123U; // Set non-divi related bits. set_divi should not modify
+  CHECK(clk_regs.set_divi(gp1_clk_id,0x5a5U));
+  CHECK(clk_regs.get_divi(gp1_clk_id)==0x5a5U);
+  CHECK(clk_regs.gp1_clk.divisor==0x5a5a5123U);
+  CHECK(clk_regs.set_divi(gp1_clk_id,0xa5aU));
+  CHECK(clk_regs.get_divi(gp1_clk_id)==0xa5aU);
+  CHECK(clk_regs.gp1_clk.divisor==0x5aa5a123U);
+  clk_regs.gp2_clk.divisor = 0xffeeedddU;
+  CHECK_FALSE(clk_regs.set_divi(gp2_clk_id, 0U));
+  CHECK(clk_regs.get_divi(gp2_clk_id)==0xeeeU); // Operation failed: no change
+  CHECK(clk_regs.gp2_clk.divisor==0xffeeedddU);
+  CHECK_FALSE(clk_regs.set_divi(gp2_clk_id, 0x1000U));
+  CHECK(clk_regs.get_divi(gp2_clk_id)==0xeeeU); // Operation failed: no change
+  CHECK(clk_regs.gp2_clk.divisor==0xffeeedddU);
+}
+
+TEST_CASE( "Unit-tests/clock_registers/0260/set_divf"
+         , "Divisor DIVF value written correctly by set_divf for given clock"
+         )
+{
+  clock_registers clk_regs;
+// initially start with all bytes of clk_regs set to 0x00:
+  std::memset(&clk_regs, 0x00, sizeof(clk_regs));
+  clk_regs.pwm_clk.divisor = 0xfff;
+  CHECK(clk_regs.set_divf(pwm_clk_id, 0));
+  CHECK(clk_regs.get_divf(pwm_clk_id)==0);
+  CHECK(clk_regs.pwm_clk.divisor==0x5a000000U);//0x5a000000=write pswd; 0x000=DIVF (12) bits
+  CHECK(clk_regs.set_divf(gp0_clk_id, 0xfffU));
+  CHECK(clk_regs.get_divf(gp0_clk_id)==0xfffU);
+  CHECK(clk_regs.gp0_clk.divisor==0x5a000fffU);
+  clk_regs.gp1_clk.divisor = 0x123000U; // Set non-divf related bits. set_divf should not modify
+  CHECK(clk_regs.set_divf(gp1_clk_id,0x5a5U));
+  CHECK(clk_regs.get_divf(gp1_clk_id)==0x5a5U);
+  CHECK(clk_regs.gp1_clk.divisor==0x5a1235a5U);
+  CHECK(clk_regs.set_divf(gp1_clk_id,0xa5aU));
+  CHECK(clk_regs.get_divf(gp1_clk_id)==0xa5aU);
+  CHECK(clk_regs.gp1_clk.divisor==0x5a123a5aU);
+  clk_regs.gp2_clk.divisor = 0xffeeedddU;
+  CHECK_FALSE(clk_regs.set_divf(gp2_clk_id, 0x1000U));
+  CHECK(clk_regs.get_divf(gp2_clk_id)==0xdddU); // Operation failed: no change
+  CHECK(clk_regs.gp2_clk.divisor==0xffeeedddU);
+}
 TEST_CASE( "Unit-tests/clock_registers/0400/set_enable for busy clock"
          , "Check set_enable bit behaviour for busy clock is as expected"
          )
@@ -932,4 +1078,50 @@ TEST_CASE( "Unit-tests/clock_registers/0430/set_source for busy clock"
   CHECK(clk_regs.set_source(gp0_clk_id, clock_source::gnd, busy_override::yes));
   CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd);
   CHECK(clk_regs.gp0_clk.control==0x5a000080U);
+}
+
+TEST_CASE( "Unit-tests/clock_registers/0440/set_divi for busy clocks"
+         , "Check set_divi behaviour for busy clocks is as expected"
+         )
+{
+  clock_registers clk_regs;
+// initially start with all bytes of clk_regs set to 0x00:
+  std::memset(&clk_regs, 0x00, sizeof(clk_regs));
+  clk_regs.gp1_clk.control = 128U; // BUSY flag is bit 7
+  CHECK_FALSE(clk_regs.set_divi(gp1_clk_id, 1));
+  CHECK(clk_regs.get_divi(gp1_clk_id)==0);
+  CHECK(clk_regs.gp1_clk.divisor==0);
+  CHECK_FALSE(clk_regs.set_divi(gp1_clk_id, 0xfffU));
+  CHECK(clk_regs.get_divi(gp1_clk_id)==0);
+  CHECK(clk_regs.gp1_clk.divisor==0);
+
+  CHECK(clk_regs.set_divi(gp1_clk_id, 1, busy_override::yes));
+  CHECK(clk_regs.get_divi(gp1_clk_id)==1);
+  CHECK(clk_regs.gp1_clk.divisor==0x5a001000U);//0x5a000000=write pswd; 0x001=DIVI (12) bits
+  CHECK(clk_regs.set_divi(gp1_clk_id, 0xfffU, busy_override::yes));
+  CHECK(clk_regs.get_divi(gp1_clk_id)==0xfffU);
+  CHECK(clk_regs.gp1_clk.divisor==0x5afff000U);
+}
+
+TEST_CASE( "Unit-tests/clock_registers/0450/set_divf for busy clocks"
+         , "Check set_divf behaviour for busy clocks is as expected"
+         )
+{
+  clock_registers clk_regs;
+// initially start with all bytes of clk_regs set to 0x00:
+  std::memset(&clk_regs, 0x00, sizeof(clk_regs));
+  clk_regs.gp1_clk.control = 128U; // BUSY flag is bit 7
+  CHECK_FALSE(clk_regs.set_divf(gp1_clk_id, 1));
+  CHECK(clk_regs.get_divf(gp1_clk_id)==0);
+  CHECK(clk_regs.gp1_clk.divisor==0);
+  CHECK_FALSE(clk_regs.set_divf(gp1_clk_id, 0xfffU));
+  CHECK(clk_regs.get_divf(gp1_clk_id)==0);
+  CHECK(clk_regs.gp1_clk.divisor==0);
+
+  CHECK(clk_regs.set_divf(gp1_clk_id, 1, busy_override::yes));
+  CHECK(clk_regs.get_divf(gp1_clk_id)==1);
+  CHECK(clk_regs.gp1_clk.divisor==0x5a000001U);//0x5a000000=write pswd; 0x001=DIVF (12) bits
+  CHECK(clk_regs.set_divf(gp1_clk_id, 0xfffU, busy_override::yes));
+  CHECK(clk_regs.get_divf(gp1_clk_id)==0xfffU);
+  CHECK(clk_regs.gp1_clk.divisor==0x5a000fffU);
 }

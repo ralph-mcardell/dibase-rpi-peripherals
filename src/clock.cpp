@@ -66,17 +66,19 @@ namespace dibase { namespace rpi {
     }
 
     using internal::gpio_ctrl;
+
     clock::id clock_pin::pin_id_to_clock_id(pin_id pin)
     { // Select alt function decsriptors for pin for GPCLKn special functions
-      auto clk_fn_info=pin_alt_fn_result_set
-                            (pin_alt_fn_select( pin
-                                              ,
-                                                { gpio_special_fn::gpclk0
-                                                , gpio_special_fn::gpclk1 
-                                                , gpio_special_fn::gpclk2 
-                                                }
-                                              )
-                            );
+      using pin_alt_fn::result_set;
+      using pin_alt_fn::select;
+      using pin_alt_fn::gpio_special_fn;
+      auto clk_fn_info=result_set(select( pin
+                                        , { gpio_special_fn::gpclk0
+                                          , gpio_special_fn::gpclk1 
+                                          , gpio_special_fn::gpclk2 
+                                          }
+                                        )
+                                  );
       if (clk_fn_info.empty())
         {
           throw std::invalid_argument

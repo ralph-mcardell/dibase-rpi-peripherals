@@ -32,7 +32,7 @@ namespace dibase { namespace rpi {
         register_t      divf;   ///< Clock divisor register DIVF field value
         
       public:
-      /// @brief Create from user clock paraemter type values
+      /// @brief Create from user clock parameter type values
       /// 
       /// Values are checked and any that are invalid cause an exception to
       ///  be thrown.

@@ -21,7 +21,7 @@ BUILD_CONFIG = release
 
 include makeinclude.mak
 
-.PHONY: all dirs debug release test check tidy clean help
+.PHONY: all dirs debug release test testcompilefail check tidy clean help
 
 export COMPILE_OPTS
 
@@ -38,9 +38,12 @@ release: dirs
 	$(MAKE) -C $(SRC_DIR)/examples BUILD_CONFIG=release
 
 test: dirs
-	$(MAKE) -C $(SRC_DIR)/tests BUILD_CONFIG=debug
+	$(MAKE) -C $(SRC_DIR)/tests BUILD_CONFIG=debug 
 
-check: dirs test
+testcompilefail: dirs
+	$(MAKE) -C $(SRC_DIR)/tests BUILD_CONFIG=debug COMPILE_OPTS=-DCOMPILE_FAIL_TESTS
+
+  check: dirs test
 	@echo 'To be done...'
 
 tidy: dirs
@@ -56,14 +59,15 @@ clean: dirs
 help:
 	@echo 'Usage: make [target]'
 	@echo 'Targets:'
-	@echo '  all (default)  Build release and debug targets.'
-	@echo '  release        Build release library and example executables.'
-	@echo '  debug          Build debug library and example executables.'
-	@echo '  test           Build tests.'
-	@echo '  check          Build test and execute tests.'
-	@echo '  clean          Remove final and intermediate targets.'
-	@echo '  tidy           Remove only intermediate targets such as .o files.'
-	@echo '  help           Print this help.'
+	@echo '  all (default)   Build release and debug targets.'
+	@echo '  release         Build release library and example executables.'
+	@echo '  debug           Build debug library and example executables.'
+	@echo '  test            Build tests.'
+	@echo '  testcompilefail Build tests with COMPILE_FAIL_TESTS defined.'
+	@echo '  check           Build test and execute tests.'
+	@echo '  clean           Remove final and intermediate targets.'
+	@echo '  tidy            Remove only intermediate targets such as .o files.'
+	@echo '  help            Print this help.'
 
 # The following rules ensure we have the varous end
 # and intermediate target directories available:

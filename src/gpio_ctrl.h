@@ -5,8 +5,8 @@
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
 
-#ifndef DIBASE_RPI_PERIPHERALS_INTERNAL_IO_CTRL_H
- #define DIBASE_RPI_PERIPHERALS_INTERNAL_IO_CTRL_H
+#ifndef DIBASE_RPI_PERIPHERALS_INTERNAL_GPIO_CTRL_H
+ #define DIBASE_RPI_PERIPHERALS_INTERNAL_GPIO_CTRL_H
 
 #include "phymem_ptr.h"
 #include "gpio_registers.h"
@@ -40,7 +40,7 @@ namespace dibase { namespace rpi {
         gpio_ctrl & operator=(gpio_ctrl const &) = delete;
         gpio_ctrl & operator=(gpio_ctrl &&) = delete;
       };
-    }
-  }
-}}
-#endif // DIBASE_RPI_PERIPHERALS_INTERNAL_IO_CTRL_H
+    } // namespace internal closed
+  } // namespace peripherals closed
+}} // namespaces rpi and dibase closed
+#endif // DIBASE_RPI_PERIPHERALS_INTERNAL_GPIO_CTRL_H

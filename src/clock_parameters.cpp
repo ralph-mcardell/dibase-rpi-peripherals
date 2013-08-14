@@ -8,8 +8,6 @@
 #include "clock_parameters.h"
 #include <stdexcept>
 
-#include <iostream> // TEMPORARY -- REMOVE
-
 namespace dibase { namespace rpi {
   namespace peripherals
   {
@@ -76,15 +74,7 @@ namespace dibase { namespace rpi {
           }
         register_t divi_rmdr{src_hz-divi*avg_hz};
         register_t rnd_coeff{avg_hz/2};
-
         divf = (divi_rmdr*1024ULL+rnd_coeff)/avg_hz;
-
-std::clog << "src_hz:"<<src_hz<<"  avg_hz:"<<avg_hz
-          <<"  src_hz/avg_hz:"<< double(src_hz)/avg_hz
-          <<"\ndivi:"<<divi
-          <<"\ndivi_rmdr:"<<divi_rmdr<<"  rnd_coeff:"<<rnd_coeff
-          <<"\ndivf:"<<divf
-          <<std::endl;
 
         clock_filter filter{freq.filter()};
         bool more_to_try{true};
@@ -100,9 +90,6 @@ std::clog << "src_hz:"<<src_hz<<"  avg_hz:"<<avg_hz
               }
             divf = 0U;
             freq_avg = src_hz / divi;
-std::clog << "src_hz:"<<src_hz<<"  divi:"<<divi
-          <<"  src_hz/divi:"<<src_hz / divi <<"  freq_avg:"<<freq_avg.count()
-          <<std::endl;
             freq_min = freq_max = freq_avg;
             mash = clock_mash_mode::integer_division;
             if ( freq_max>max_freq )

@@ -219,13 +219,13 @@ constexpr unsigned cnt_pins_alt_fn_with_specl_fns
                     + cnt_pins_alt4_specl_fn
                     + cnt_pins_alt5_specl_fn
                     };
-TEST_CASE( "Unit-tests/pin_alt_fn_select/0000/default: select all less no_fn"
-         , "Default constructing a pin_alt_fn_select and constructing a "
-           "pin_alt_fn_result_set from it should have result items for all "
+TEST_CASE( "Unit-tests/pin_alt_fn_select/0000/select all less no_fn"
+         , "Calling pin_alt_fn_select with no parameters the returned "
+           "pin_alt_fn_result_set should have result items for all "
            "pins alt functions that have a specific special function"
          )
 {
-  auto pafrs = pin_alt_fn_result_set(pin_alt_fn_select{});
+  auto pafrs = pin_alt_fn_result_set(pin_alt_fn_select());
   CHECK(pafrs.size()==cnt_pins_alt_fn_with_specl_fns);
   CHECK_FALSE(pafrs.empty());
   CHECK(pafrs[0].pin()==0U);
@@ -239,13 +239,13 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0000/default: select all less no_fn"
 }
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0010/select all with no_fn"
-         , "Constructing a pin_alt_fn_select specifying include_no_fn and "
-           "constructing a pin_alt_fn_result_set from it should have result "
-           "items for all pins alt function 'slots'"
+         , "Calling pin_alt_fn_select just specifying include_no_fn the "
+           "returned pin_alt_fn_result_set should have result items for all "
+           "pins' alt function 'slots'"
          )
 {
   auto pafrs = pin_alt_fn_result_set(pin_alt_fn_select
-                                      { pin_alt_fn_select::include_no_fn }
+                                      ( select_options::include_no_fn )
                                     );
   constexpr unsigned expected_size{54U*6U}; // 54 GPIO pins with 6 ALT functions
   CHECK(pafrs.size()==expected_size);
@@ -257,12 +257,12 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0010/select all with no_fn"
 }
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0020/1 pin: select not no_fn"
-         , "Constructing a pin_alt_fn_select with a single pin_id and "
-           "constructing a pin_alt_fn_result_set from it should have result "
-           "items for pin's alt functions that have a specific special function"
+         , "Calling pin_alt_fn_select with a single pin_id the returned "
+           "pin_alt_fn_result_set should have result items for pin's alt "
+           "functions that have a specific special function"
          )
 {
-  auto pafrs = pin_alt_fn_result_set(pin_alt_fn_select{pin_id{18}});
+  auto pafrs = pin_alt_fn_result_set(pin_alt_fn_select(pin_id{18}));
   REQUIRE(pafrs.size()==5U);
   CHECK_FALSE(pafrs.empty());
 // GPIO pin 18 ALT special functions read from datasheet table 6-31
@@ -285,15 +285,15 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0020/1 pin: select not no_fn"
 
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0030/1 pin: select with no_fn"
-         , "Constructing a pin_alt_fn_select with a single pin_id and "
-           "constructing a pin_alt_fn_result_set from it should have result "
-           "items for pin's alt functions."
+         , "Calling pin_alt_fn_select with a single pin_id the returned "
+           "pin_alt_fn_result_set should have result items for pin's alt "
+           "functions."
          )
 {
   auto pafrs = pin_alt_fn_result_set
-                ( pin_alt_fn_select{ pin_id{18}
-                                   ,pin_alt_fn_select::include_no_fn
-                                   }
+                ( pin_alt_fn_select( pin_id{18}
+                                   ,select_options::include_no_fn
+                                   )
                 );
   REQUIRE(pafrs.size()==6U);
   CHECK_FALSE(pafrs.empty());
@@ -319,12 +319,12 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0030/1 pin: select with no_fn"
 }
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0040/select specific special fn"
-         , "Constructing a pin_alt_fn_select with a single special function & "
-           "constructing a pin_alt_fn_result_set from it should have result "
-           "items for all pin-alt functions having that function."
+         , "Calling pin_alt_fn_select with a single special function the "
+           "returned pin_alt_fn_result_set should have result items for all "
+           "pin-alt functions having that function."
          )
 {
-  auto pafrs=pin_alt_fn_result_set(pin_alt_fn_select{gpio_special_fn::gpclk0});
+  auto pafrs=pin_alt_fn_result_set(pin_alt_fn_select(gpio_special_fn::gpclk0));
 // GPCLK0 function instances read from datasheet table 6-31
   REQUIRE(pafrs.size()==4U);
   CHECK_FALSE(pafrs.empty());
@@ -343,25 +343,25 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0040/select specific special fn"
 }
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0050/select specific special fn for specific pin"
-         , "Constructing a pin_alt_fn_select with a single pin & a special "
-           "function & constructing a pin_alt_fn_result_set from it should "
-           "have either empty result or result with single item"
+         , "Calling pin_alt_fn_select with a single pin & a special "
+           "function the returned pin_alt_fn_result_set should have either an "
+           "empty result or result with a single item"
          )
 {
 // Pin 11 has no GPCLK0 function....
   auto e_pafrs = pin_alt_fn_result_set
-                  ( pin_alt_fn_select{ pin_id{1}
+                  ( pin_alt_fn_select( pin_id{1}
                                      , gpio_special_fn::gpclk0
-                                     }
+                                     )
                   );
   CHECK(e_pafrs.size()==0U);
   CHECK(e_pafrs.empty());
 
 // Pin 20 does have a GPCLK0 function...  
   auto pafrs = pin_alt_fn_result_set
-                ( pin_alt_fn_select{ pin_id{20}
+                ( pin_alt_fn_select( pin_id{20}
                                    , gpio_special_fn::gpclk0
-                                   }
+                                   )
                 );
   REQUIRE(pafrs.size()==1U);
   CHECK_FALSE(pafrs.empty());
@@ -371,12 +371,12 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0050/select specific special fn for spe
 }
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0060/pin list: select not no_fn"
-         , "Constructing a pin_alt_fn_select with a pin_id list & constructing "
-           "a pin_alt_fn_result_set from it should have result items for all "
-           "listed pins' alt functions that have a specific special function"
+         , "Calling pin_alt_fn_select with a pin_id list the returned "
+           "a pin_alt_fn_result_set should have result items for all listed "
+           "pins' alt functions that have a specific special function"
          )
 {
-  auto pafrs = pin_alt_fn_result_set(pin_alt_fn_select{pin_id{1}, pin_id{0}});
+  auto pafrs = pin_alt_fn_result_set(pin_alt_fn_select({pin_id{1}, pin_id{0}}));
   REQUIRE(pafrs.size()==4U);
   CHECK_FALSE(pafrs.empty());
 // GPIO pin 18 ALT special functions read from datasheet table 6-31
@@ -395,15 +395,15 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0060/pin list: select not no_fn"
 }
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0070/pin list: select with no_fn"
-         , "Constructing a pin_alt_fn_select with a pin_id list & constructing"
-           "a pin_alt_fn_result_set from it should have result items for all "
-           "listed pins' alt functions"
+         , "Calling pin_alt_fn_select with a pin_id list the returned"
+           "a pin_alt_fn_result_set should have result items for all listed "
+           "pins' alt functions"
          )
 {
   auto pafrs = pin_alt_fn_result_set
-                ( pin_alt_fn_select{ {pin_id{1}, pin_id{0}}
-                                   , pin_alt_fn_select::include_no_fn
-                                   }
+                ( pin_alt_fn_select( {pin_id{1}, pin_id{0}}
+                                   , select_options::include_no_fn
+                                   )
                 );
   REQUIRE(pafrs.size()==12U);
   CHECK_FALSE(pafrs.empty());
@@ -423,15 +423,16 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0070/pin list: select with no_fn"
 }
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0080/select some specific special fns"
-         , "Constructing a pin_alt_fn_select with a special function list & "
-           "constructing a pin_alt_fn_result_set from them should have result "
-           "items for all pin-alt functions having any of those functions."
+         , "Calling pin_alt_fn_select with a special function list the "
+           "returned pin_alt_fn_result_set should have result items for all "
+           "pin-alt functions having any of those functions."
          )
 {
   auto pafrs=pin_alt_fn_result_set
-              (pin_alt_fn_select{ gpio_special_fn::gpclk1
-                                , gpio_special_fn::gpclk2
-                                }
+              (pin_alt_fn_select({ gpio_special_fn::gpclk1
+                                 , gpio_special_fn::gpclk2
+                                 }
+                                )
               );
 // GPCLK1/2 function instances read from datasheet table 6-31
   REQUIRE(pafrs.size()==6U);
@@ -457,21 +458,20 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0080/select some specific special fns"
 }
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0090/select some specific special fns for some specific pins"
-         , "Constructing a pin_alt_fn_select with lists for pins & special "
-           "functions & constructing a pin_alt_fn_result_set from them should "
-           "have result items for any listed pin's alt functions having any "
-           "of the listed special functions."
+         , "returned  with lists for pins & special functions the returned "
+           "pin_alt_fn_result_set should have result items for any listed "
+           "pin's alt functions having any of the listed special functions."
          )
 {
   auto pafrs=pin_alt_fn_result_set
-              (pin_alt_fn_select{ { pin_id{4}, pin_id{5}, pin_id{6}
+              (pin_alt_fn_select( { pin_id{4}, pin_id{5}, pin_id{6}
                                   , pin_id{20}, pin_id{21}
                                   }
                                 ,
                                   { gpio_special_fn::gpclk1
                                   , gpio_special_fn::gpclk2 
                                   }
-                                }
+                                )
               );
 // GPCLK1/2 function instances read from datasheet table 6-31
   REQUIRE(pafrs.size()==3U);
@@ -488,19 +488,18 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0090/select some specific special fns f
 }
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0100/select some specific special fns for a specific pin"
-         , "Constructing a pin_alt_fn_select with pin & list of special "
-           "functions & constructing a pin_alt_fn_result_set from them should "
-           "have result items for any of the pin's alt functions having any "
-           "of the listed special functions."
+         , "returned  with pin & list of special functions the returned "
+           "pin_alt_fn_result_set should have result items for any of the "
+           "pin's alt functions having any of the listed special functions."
          )
 {
   auto pafrs=pin_alt_fn_result_set
-              (pin_alt_fn_select{ pin_id{5}
+              (pin_alt_fn_select( pin_id{5}
                                 ,
                                   { gpio_special_fn::gpclk1
                                   , gpio_special_fn::gpclk2 
                                   }
-                                }
+                                )
               );
 // GPCLK1/2 function instances read from datasheet table 6-31
   REQUIRE(pafrs.size()==1U);
@@ -511,20 +510,19 @@ TEST_CASE( "Unit-tests/pin_alt_fn_select/0100/select some specific special fns f
 }
 
 TEST_CASE( "Unit-tests/pin_alt_fn_select/0110/select some specific special fn for some specific pins"
-         , "Constructing a pin_alt_fn_select with list for pins & a special "
-           "function & constructing a pin_alt_fn_result_set from them should "
-           "have result items for any listed pin's alt functions having the "
-           "special function."
+         , "functions & constructing a with list for pins & a special function "
+           "the returned pin_alt_fn_result_set should have result items "
+           "for any listed pin's alt functions having the special function."
          )
 {
   auto pafrs=pin_alt_fn_result_set
-              (pin_alt_fn_select{ { pin_id{4}, pin_id{5}, pin_id{6}
+              (pin_alt_fn_select( { pin_id{4}, pin_id{5}, pin_id{6}
                                   , pin_id{20}, pin_id{21}
                                   }
                                 , gpio_special_fn::gpclk1                 
-                                }
+                                )
               );
-// GPCLK1/2 function instances read from datasheet table 6-31
+// GPCLK1 function instances read from datasheet table 6-31
   REQUIRE(pafrs.size()==2U);
   CHECK_FALSE(pafrs.empty());
   CHECK(pafrs[0].pin()==5U);

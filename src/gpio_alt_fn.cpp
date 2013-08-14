@@ -142,7 +142,7 @@ namespace dibase { namespace rpi {
                                 };
 
       template <class PinSeqT, class Predicate>
-      pin_alt_fn_result_set_builder 
+      pin_alt_fn_result_set
       make_results(PinSeqT pin_seq, Predicate add_pred)
       {
         pin_alt_fn_result_set_builder results;
@@ -157,7 +157,7 @@ namespace dibase { namespace rpi {
                   }
               }
           }
-        return results;
+        return pin_alt_fn_result_set{results};
       }
 
       class pin_id_range_iterator
@@ -216,101 +216,86 @@ namespace dibase { namespace rpi {
       };
     }
  
-    pin_alt_fn_select::pin_alt_fn_select(no_fn_mode nfm)
-    : result_builder
-      { make_results( pin_id_range{}
-                    , [nfm](gpio_special_fn spl_fn)
-                      { return nfm==include_no_fn 
-                            || spl_fn!=gpio_special_fn::no_fn;
-                      }
-                    )
-      } 
-    {}
+    pin_alt_fn_result_set pin_alt_fn_select(select_options opt)
+    { return  make_results( pin_id_range{}
+                          , [opt](gpio_special_fn spl_fn)
+                            { return opt==select_options::include_no_fn 
+                                  || spl_fn!=gpio_special_fn::no_fn;
+                            }
+                          );
+    } 
 
-    pin_alt_fn_select::pin_alt_fn_select(pin_id p, no_fn_mode nfm)
-    : result_builder
-      { make_results( pin_id_range{p,p}
-                    , [nfm](gpio_special_fn spl_fn)
-                      { return nfm==include_no_fn 
-                            || spl_fn!=gpio_special_fn::no_fn;
-                      }
-                    )
-      } 
-    {}
+    pin_alt_fn_result_set pin_alt_fn_select(pin_id p, select_options opt)
+    { return  make_results( pin_id_range{p,p}
+                          , [opt](gpio_special_fn spl_fn)
+                            { return opt==select_options::include_no_fn 
+                                  || spl_fn!=gpio_special_fn::no_fn;
+                            }
+                          );
+    } 
 
-    pin_alt_fn_select::pin_alt_fn_select(gpio_special_fn s)
-    : result_builder
-      { make_results( pin_id_range{}
-                    , [s](gpio_special_fn spl_fn){return spl_fn==s;}
-                    )
-      } 
-    {}
+    pin_alt_fn_result_set pin_alt_fn_select(gpio_special_fn s)
+    { return  make_results( pin_id_range{}
+                          , [s](gpio_special_fn spl_fn){return spl_fn==s;}
+                          );
+    } 
 
-    pin_alt_fn_select::pin_alt_fn_select(pin_id p, gpio_special_fn s)
-    : result_builder
-      { make_results( pin_id_range{p,p}
-                    , [s](gpio_special_fn spl_fn){return spl_fn==s;}
-                    )
-      } 
-    {}
+    pin_alt_fn_result_set pin_alt_fn_select(pin_id p, gpio_special_fn s)
+    { return  make_results( pin_id_range{p,p}
+                          , [s](gpio_special_fn spl_fn){return spl_fn==s;}
+                          );
+    } 
 
-    pin_alt_fn_select::pin_alt_fn_select
+    pin_alt_fn_result_set pin_alt_fn_select
     ( std::initializer_list<pin_id> ps
-    , no_fn_mode nfm
+    , select_options opt
     )
-    : result_builder
-      { make_results( ps
-                    , [nfm](gpio_special_fn spl_fn)
-                      { return nfm==include_no_fn 
-                            || spl_fn!=gpio_special_fn::no_fn;
-                      }
-                    )
-      } 
-    {}
+    { return  make_results( ps
+                          , [opt](gpio_special_fn spl_fn)
+                            { return opt==select_options::include_no_fn 
+                                  || spl_fn!=gpio_special_fn::no_fn;
+                            }
+                          );
+    } 
 
-    pin_alt_fn_select::pin_alt_fn_select
+    pin_alt_fn_result_set pin_alt_fn_select
     ( std::initializer_list<gpio_special_fn> ss
     )
-    : result_builder
-      { make_results( pin_id_range{}
-                    , [ss](gpio_special_fn spl_fn)
-                      { return std::find(ss.begin(),ss.end(),spl_fn)!=ss.end();
-                      }
-                    )
-      } 
-    {}
+    { return  make_results
+              ( pin_id_range{}
+              , [ss](gpio_special_fn spl_fn)
+                { return std::find(ss.begin(),ss.end(),spl_fn)!=ss.end();
+                }
+              );
+    } 
 
-    pin_alt_fn_select::pin_alt_fn_select
+    pin_alt_fn_result_set pin_alt_fn_select
     ( pin_id p
     , std::initializer_list<gpio_special_fn> ss
     )
-    : result_builder
-      { make_results( pin_id_range{p,p}
-                    , [ss](gpio_special_fn spl_fn)
-                      { return std::find(ss.begin(),ss.end(),spl_fn)!=ss.end();
-                      }
-                    )
-      } 
-    {}
+    { return  make_results
+              ( pin_id_range{p,p}
+              , [ss](gpio_special_fn spl_fn)
+                { return std::find(ss.begin(),ss.end(),spl_fn)!=ss.end();
+                }
+              );
+    } 
 
-    pin_alt_fn_select::pin_alt_fn_select
+    pin_alt_fn_result_set pin_alt_fn_select
     ( std::initializer_list<pin_id> ps
     , gpio_special_fn s
     )
-    : result_builder
-      { make_results(ps, [s](gpio_special_fn spl_fn){return spl_fn==s;}) } 
-    {}
+    { return make_results(ps, [s](gpio_special_fn spl_fn){return spl_fn==s;}); } 
 
-    pin_alt_fn_select::pin_alt_fn_select
+    pin_alt_fn_result_set pin_alt_fn_select
     ( std::initializer_list<pin_id> ps
     , std::initializer_list<gpio_special_fn> ss
     )
-    : result_builder
-      { make_results( ps
-                    , [ss](gpio_special_fn spl_fn)
-                      {return std::find(ss.begin(),ss.end(),spl_fn)!=ss.end();}
-                    )
-      } 
-    {}
+    { return  make_results
+                ( ps
+                , [ss](gpio_special_fn spl_fn)
+                  {return std::find(ss.begin(),ss.end(),spl_fn)!=ss.end();}
+                );
+    } 
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

@@ -273,38 +273,44 @@ namespace dibase { namespace rpi {
       const_iterator cend() const noexcept { return items.cend(); }
     };
 
-  /// @brief GPIO pins alternative functions result (subset) selector
-    class pin_alt_fn_select
-    {
-      pin_alt_fn_result_set_builder result_builder;
-
-    public:
-      enum no_fn_mode
-      { exclude_no_fn  ///< Exclude pin/alt fn that have no special function
-      , include_no_fn  ///< Include pin/alt fn that have no special function
-      };
-
-      explicit pin_alt_fn_select(no_fn_mode nfm=exclude_no_fn);
-      explicit pin_alt_fn_select(pin_id p, no_fn_mode nfm=exclude_no_fn);
-      explicit pin_alt_fn_select(gpio_special_fn s);
-      explicit pin_alt_fn_select(pin_id p, gpio_special_fn s);
-      explicit pin_alt_fn_select( std::initializer_list<pin_id> ps
-                                , no_fn_mode nfm=exclude_no_fn
-                                );
-      explicit pin_alt_fn_select(std::initializer_list<gpio_special_fn> ss);
-      pin_alt_fn_select( pin_id p
-                       , std::initializer_list<gpio_special_fn> ss
-                       );
-      pin_alt_fn_select( std::initializer_list<pin_id> ps
-                       , gpio_special_fn s);
-      pin_alt_fn_select( std::initializer_list<pin_id> ps
-                       , std::initializer_list<gpio_special_fn> ss
-                       );
-      operator pin_alt_fn_result_set() 
-      {
-        return pin_alt_fn_result_set(result_builder); 
-      }
+    enum class select_options
+    { exclude_no_fn  ///< Exclude pin/alt fn that have no special function
+    , include_no_fn  ///< Include pin/alt fn that have no special function
     };
+
+    pin_alt_fn_result_set 
+    pin_alt_fn_select(select_options opt=select_options::exclude_no_fn);
+
+    pin_alt_fn_result_set 
+    pin_alt_fn_select( pin_id p
+                     , select_options opt=select_options::exclude_no_fn
+                     );
+
+    pin_alt_fn_result_set pin_alt_fn_select(gpio_special_fn s);
+
+    pin_alt_fn_result_set pin_alt_fn_select(pin_id p, gpio_special_fn s);
+
+    pin_alt_fn_result_set 
+    pin_alt_fn_select( std::initializer_list<pin_id> ps
+                     , select_options opt=select_options::exclude_no_fn
+                     );
+
+    pin_alt_fn_result_set
+    pin_alt_fn_select(std::initializer_list<gpio_special_fn> ss);
+
+    pin_alt_fn_result_set
+    pin_alt_fn_select( pin_id p
+                     , std::initializer_list<gpio_special_fn> ss
+                     );
+
+    pin_alt_fn_result_set pin_alt_fn_select( std::initializer_list<pin_id> ps
+                                           , gpio_special_fn s
+                                           );
+
+    pin_alt_fn_result_set
+    pin_alt_fn_select( std::initializer_list<pin_id> ps
+                     , std::initializer_list<gpio_special_fn> ss
+                     );
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed
 #endif // DIBASE_RPI_PERIPHERALS_GPIO_ALT_FN_H

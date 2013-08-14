@@ -52,7 +52,7 @@ namespace dibase { namespace rpi {
   /// Broadcom BCM2835 ARM Peripherals Datasheet</a> Chapter 6 General Purpose
   /// I/O (GPIO), section 6.3 "General Purpose GPIO Clocks" for more
   /// information.
-    enum class clock_source : register_t
+    enum class clock_src : register_t
     { gnd = 0
     , oscillator = 1
     , testdebug0 = 2
@@ -127,14 +127,14 @@ namespace dibase { namespace rpi {
       }
 
     /// @brief Returns value of SRC control register field.
-    /// Note: Raw field values of 8...15 are mapped to clock_source::gnd
+    /// Note: Raw field values of 8...15 are mapped to clock_src::gnd
     /// (value 0).
     /// @returns Clock control register SRC field value.
-      clock_source get_source() volatile const
+      clock_src get_source() volatile const
       { 
         register_t raw_src{control&ctrl_src_mask};
-        return raw_src>ctrl_src_max_used? clock_source::gnd
-                                        : static_cast<clock_source>(raw_src);
+        return raw_src>ctrl_src_max_used? clock_src::gnd
+                                        : static_cast<clock_src>(raw_src);
       }
 
     /// @brief Returns value of DIVI divisor register field.
@@ -226,7 +226,7 @@ namespace dibase { namespace rpi {
     /// @param force Specifies whether to allow operation if clock is busy
     /// @returns  true if operation performed, false if it was not performed
     ///           because clock was busy.
-      bool set_source(clock_source src, busy_override force=busy_override::no)
+      bool set_source(clock_src src, busy_override force=busy_override::no)
       volatile
       { 
         if (force==busy_override::no && is_busy())
@@ -379,11 +379,11 @@ namespace dibase { namespace rpi {
       }
 
     /// @brief Returns value of clock SRC control register field.
-    /// Note: Raw field values of 8...15 are mapped to clock_source::gnd
+    /// Note: Raw field values of 8...15 are mapped to clock_src::gnd
     /// (value 0).
     /// @param clk  Clock id of clock to return SRC field value of
     /// @returns Value of clock control register SRC field.
-      clock_source get_source(clock_id clk) volatile const 
+      clock_src get_source(clock_id clk) volatile const 
       { 
         return (this->*clk).get_source();
       }
@@ -473,7 +473,7 @@ namespace dibase { namespace rpi {
     ///           because clock was busy.
       bool set_source
       ( clock_id clk
-      , clock_source src
+      , clock_src src
       , busy_override force=busy_override::no
       ) volatile
       { 

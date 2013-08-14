@@ -82,24 +82,24 @@ TEST_CASE( "Unit-tests/clock_record/0050/get_source"
 {
   clock_record cr{15U,0}; // SRC bits are control register bits 0..3
   for (;cr.control!=7;--cr.control)
-    { /* SRC values 15...8 all map to clock_source::gnd */
-      CHECK(cr.get_source()==clock_source::gnd);
+    { /* SRC values 15...8 all map to clock_src::gnd */
+      CHECK(cr.get_source()==clock_src::gnd);
     }
-  CHECK(cr.get_source()==clock_source::hdmi_aux);
+  CHECK(cr.get_source()==clock_src::hdmi_aux);
   --cr.control;
-  CHECK(cr.get_source()==clock_source::plld);
+  CHECK(cr.get_source()==clock_src::plld);
   --cr.control;
-  CHECK(cr.get_source()==clock_source::pllc);
+  CHECK(cr.get_source()==clock_src::pllc);
   --cr.control;
-  CHECK(cr.get_source()==clock_source::plla);
+  CHECK(cr.get_source()==clock_src::plla);
   --cr.control;
-  CHECK(cr.get_source()==clock_source::testdebug1);
+  CHECK(cr.get_source()==clock_src::testdebug1);
   --cr.control;
-  CHECK(cr.get_source()==clock_source::testdebug0);
+  CHECK(cr.get_source()==clock_src::testdebug0);
   --cr.control;
-  CHECK(cr.get_source()==clock_source::oscillator);
+  CHECK(cr.get_source()==clock_src::oscillator);
   --cr.control;
-  CHECK(cr.get_source()==clock_source::gnd);
+  CHECK(cr.get_source()==clock_src::gnd);
 }
 
 TEST_CASE( "Unit-tests/clock_record/0060/get_divi"
@@ -193,29 +193,29 @@ TEST_CASE( "Unit-tests/clock_record/0240/set_source"
          )
 {
   clock_record cr{0,0};
-  CHECK(cr.set_source(clock_source::hdmi_aux));
-  CHECK(cr.get_source()==clock_source::hdmi_aux);
+  CHECK(cr.set_source(clock_src::hdmi_aux));
+  CHECK(cr.get_source()==clock_src::hdmi_aux);
   CHECK(cr.control==0x5a000007U);//0x5a000000=write password; 0x7=SRC (3) bits
-  CHECK(cr.set_source(clock_source::plld));
-  CHECK(cr.get_source()==clock_source::plld);
+  CHECK(cr.set_source(clock_src::plld));
+  CHECK(cr.get_source()==clock_src::plld);
   CHECK(cr.control==0x5a000006U);
-  CHECK(cr.set_source(clock_source::pllc));
-  CHECK(cr.get_source()==clock_source::pllc);
+  CHECK(cr.set_source(clock_src::pllc));
+  CHECK(cr.get_source()==clock_src::pllc);
   CHECK(cr.control==0x5a000005U);
-  CHECK(cr.set_source(clock_source::plla));
-  CHECK(cr.get_source()==clock_source::plla);
+  CHECK(cr.set_source(clock_src::plla));
+  CHECK(cr.get_source()==clock_src::plla);
   CHECK(cr.control==0x5a000004U);
-  CHECK(cr.set_source(clock_source::testdebug1));
-  CHECK(cr.get_source()==clock_source::testdebug1);
+  CHECK(cr.set_source(clock_src::testdebug1));
+  CHECK(cr.get_source()==clock_src::testdebug1);
   CHECK(cr.control==0x5a000003U);
-  CHECK(cr.set_source(clock_source::testdebug0));
-  CHECK(cr.get_source()==clock_source::testdebug0);
+  CHECK(cr.set_source(clock_src::testdebug0));
+  CHECK(cr.get_source()==clock_src::testdebug0);
   CHECK(cr.control==0x5a000002U);
-  CHECK(cr.set_source(clock_source::oscillator));
-  CHECK(cr.get_source()==clock_source::oscillator);
+  CHECK(cr.set_source(clock_src::oscillator));
+  CHECK(cr.get_source()==clock_src::oscillator);
   CHECK(cr.control==0x5a000001U);
-  CHECK(cr.set_source(clock_source::gnd));
-  CHECK(cr.get_source()==clock_source::gnd);
+  CHECK(cr.set_source(clock_src::gnd));
+  CHECK(cr.get_source()==clock_src::gnd);
   CHECK(cr.control==0x5a000000U);
 }
 
@@ -348,55 +348,55 @@ TEST_CASE( "Unit-tests/clock_record/0430/set_source for busy clocks"
          )
 {
   clock_record cr{128U,0};
-  CHECK_FALSE(cr.set_source(clock_source::hdmi_aux));
-  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK_FALSE(cr.set_source(clock_src::hdmi_aux));
+  CHECK(cr.get_source()==clock_src::gnd); //gnd=0
   CHECK(cr.control==128U);// BUSY and not forced: no write occured
-  CHECK_FALSE(cr.set_source(clock_source::plld));
-  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK_FALSE(cr.set_source(clock_src::plld));
+  CHECK(cr.get_source()==clock_src::gnd); //gnd=0
   CHECK(cr.control==128U);// BUSY and not forced: no write occured
-  CHECK_FALSE(cr.set_source(clock_source::pllc));
-  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK_FALSE(cr.set_source(clock_src::pllc));
+  CHECK(cr.get_source()==clock_src::gnd); //gnd=0
   CHECK(cr.control==128U);// BUSY and not forced: no write occured
-  CHECK_FALSE(cr.set_source(clock_source::plla));
-  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK_FALSE(cr.set_source(clock_src::plla));
+  CHECK(cr.get_source()==clock_src::gnd); //gnd=0
   CHECK(cr.control==128U);// BUSY and not forced: no write occured
-  CHECK_FALSE(cr.set_source(clock_source::testdebug1));
-  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK_FALSE(cr.set_source(clock_src::testdebug1));
+  CHECK(cr.get_source()==clock_src::gnd); //gnd=0
   CHECK(cr.control==128U);// BUSY and not forced: no write occured
-  CHECK_FALSE(cr.set_source(clock_source::testdebug0));
-  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK_FALSE(cr.set_source(clock_src::testdebug0));
+  CHECK(cr.get_source()==clock_src::gnd); //gnd=0
   CHECK(cr.control==128U);// BUSY and not forced: no write occured
-  CHECK_FALSE(cr.set_source(clock_source::oscillator));
-  CHECK(cr.get_source()==clock_source::gnd); //gnd=0
+  CHECK_FALSE(cr.set_source(clock_src::oscillator));
+  CHECK(cr.get_source()==clock_src::gnd); //gnd=0
   CHECK(cr.control==128U);// BUSY and not forced: no write occured
   cr.control |= 1U; // Set low bit of SRC field (oscillator)
-  CHECK_FALSE(cr.set_source(clock_source::gnd));
-  CHECK(cr.get_source()==clock_source::oscillator); //gnd=0
+  CHECK_FALSE(cr.set_source(clock_src::gnd));
+  CHECK(cr.get_source()==clock_src::oscillator); //gnd=0
   CHECK(cr.control==(128U|1U));// BUSY and not forced: no write occured
 
-  CHECK(cr.set_source(clock_source::hdmi_aux, busy_override::yes));
-  CHECK(cr.get_source()==clock_source::hdmi_aux);
+  CHECK(cr.set_source(clock_src::hdmi_aux, busy_override::yes));
+  CHECK(cr.get_source()==clock_src::hdmi_aux);
   CHECK(cr.control==0x5a000087U);//0x5a000000=write password; 0x87=BUSY|SRC bits
-  CHECK(cr.set_source(clock_source::plld, busy_override::yes));
-  CHECK(cr.get_source()==clock_source::plld);
+  CHECK(cr.set_source(clock_src::plld, busy_override::yes));
+  CHECK(cr.get_source()==clock_src::plld);
   CHECK(cr.control==0x5a000086U);
-  CHECK(cr.set_source(clock_source::pllc, busy_override::yes));
-  CHECK(cr.get_source()==clock_source::pllc);
+  CHECK(cr.set_source(clock_src::pllc, busy_override::yes));
+  CHECK(cr.get_source()==clock_src::pllc);
   CHECK(cr.control==0x5a000085U);
-  CHECK(cr.set_source(clock_source::plla, busy_override::yes));
-  CHECK(cr.get_source()==clock_source::plla);
+  CHECK(cr.set_source(clock_src::plla, busy_override::yes));
+  CHECK(cr.get_source()==clock_src::plla);
   CHECK(cr.control==0x5a000084U);
-  CHECK(cr.set_source(clock_source::testdebug1, busy_override::yes));
-  CHECK(cr.get_source()==clock_source::testdebug1);
+  CHECK(cr.set_source(clock_src::testdebug1, busy_override::yes));
+  CHECK(cr.get_source()==clock_src::testdebug1);
   CHECK(cr.control==0x5a000083U);
-  CHECK(cr.set_source(clock_source::testdebug0, busy_override::yes));
-  CHECK(cr.get_source()==clock_source::testdebug0);
+  CHECK(cr.set_source(clock_src::testdebug0, busy_override::yes));
+  CHECK(cr.get_source()==clock_src::testdebug0);
   CHECK(cr.control==0x5a000082U);
-  CHECK(cr.set_source(clock_source::oscillator, busy_override::yes));
-  CHECK(cr.get_source()==clock_source::oscillator);
+  CHECK(cr.set_source(clock_src::oscillator, busy_override::yes));
+  CHECK(cr.get_source()==clock_src::oscillator);
   CHECK(cr.control==0x5a000081U);
-  CHECK(cr.set_source(clock_source::gnd, busy_override::yes));
-  CHECK(cr.get_source()==clock_source::gnd);
+  CHECK(cr.set_source(clock_src::gnd, busy_override::yes));
+  CHECK(cr.get_source()==clock_src::gnd);
   CHECK(cr.control==0x5a000080U);
 }
 
@@ -670,37 +670,37 @@ TEST_CASE( "Unit-tests/clock_registers/0070/get_source"
       ; --clk_regs.pwm_clk.control, --clk_regs.gp0_clk.control
       , --clk_regs.gp1_clk.control, --clk_regs.gp2_clk.control
       )
-    { /* Clock SRC values 15...8 all map to clock_source::gnd */
-      CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::gnd);
-      CHECK(clk_regs.get_source(gp1_clk_id)==clock_source::gnd);
-      CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd);
-      CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::gnd);
+    { /* Clock SRC values 15...8 all map to clock_src::gnd */
+      CHECK(clk_regs.get_source(gp2_clk_id)==clock_src::gnd);
+      CHECK(clk_regs.get_source(gp1_clk_id)==clock_src::gnd);
+      CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::gnd);
+      CHECK(clk_regs.get_source(pwm_clk_id)==clock_src::gnd);
     }
-  CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::hdmi_aux);
+  CHECK(clk_regs.get_source(pwm_clk_id)==clock_src::hdmi_aux);
   --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
   --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
-  CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::plld);
+  CHECK(clk_regs.get_source(gp2_clk_id)==clock_src::plld);
   --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
   --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
-  CHECK(clk_regs.get_source(gp1_clk_id)==clock_source::pllc);
+  CHECK(clk_regs.get_source(gp1_clk_id)==clock_src::pllc);
   --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
   --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
-  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::plla);
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::plla);
   --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
   --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
-  CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::testdebug1);
+  CHECK(clk_regs.get_source(pwm_clk_id)==clock_src::testdebug1);
   --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
   --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
-  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::testdebug0);
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::testdebug0);
   --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
   --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
-  CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::oscillator);
+  CHECK(clk_regs.get_source(gp2_clk_id)==clock_src::oscillator);
   --clk_regs.pwm_clk.control; --clk_regs.gp0_clk.control;
   --clk_regs.gp1_clk.control; --clk_regs.gp2_clk.control;
-  CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::gnd);
-  CHECK(clk_regs.get_source(gp1_clk_id)==clock_source::gnd);
-  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd);
-  CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::gnd);
+  CHECK(clk_regs.get_source(gp2_clk_id)==clock_src::gnd);
+  CHECK(clk_regs.get_source(gp1_clk_id)==clock_src::gnd);
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::gnd);
+  CHECK(clk_regs.get_source(pwm_clk_id)==clock_src::gnd);
 }
 
 TEST_CASE( "Unit-tests/clock_registers/0080/get_divi"
@@ -903,32 +903,32 @@ TEST_CASE( "Unit-tests/clock_registers/0240/set_source"
   clock_registers clk_regs;
 // initially start with all bytes of clk_regs set to 0x00:
   std::memset(&clk_regs, 0x00, sizeof(clk_regs));
-  CHECK(clk_regs.set_source(pwm_clk_id, clock_source::hdmi_aux));
-  CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::hdmi_aux);
+  CHECK(clk_regs.set_source(pwm_clk_id, clock_src::hdmi_aux));
+  CHECK(clk_regs.get_source(pwm_clk_id)==clock_src::hdmi_aux);
   CHECK(clk_regs.pwm_clk.control==0x5a000007U);//0x5a000000=write password; 0x7=SRC (3) bits
-  CHECK(clk_regs.set_source(pwm_clk_id,clock_source::plld));
-  CHECK(clk_regs.get_source(pwm_clk_id)==clock_source::plld);
+  CHECK(clk_regs.set_source(pwm_clk_id,clock_src::plld));
+  CHECK(clk_regs.get_source(pwm_clk_id)==clock_src::plld);
   CHECK(clk_regs.pwm_clk.control==0x5a000006U);
  
-  CHECK(clk_regs.set_source(gp0_clk_id, clock_source::pllc));
-  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::pllc);
+  CHECK(clk_regs.set_source(gp0_clk_id, clock_src::pllc));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::pllc);
   CHECK(clk_regs.gp0_clk.control==0x5a000005U);
-  CHECK(clk_regs.set_source(gp0_clk_id, clock_source::plla));
-  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::plla);
+  CHECK(clk_regs.set_source(gp0_clk_id, clock_src::plla));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::plla);
   CHECK(clk_regs.gp0_clk.control==0x5a000004U);
 
-  CHECK(clk_regs.set_source(gp1_clk_id, clock_source::testdebug1));
-  CHECK(clk_regs.get_source(gp1_clk_id)==clock_source::testdebug1);
+  CHECK(clk_regs.set_source(gp1_clk_id, clock_src::testdebug1));
+  CHECK(clk_regs.get_source(gp1_clk_id)==clock_src::testdebug1);
   CHECK(clk_regs.gp1_clk.control==0x5a000003U);
-  CHECK(clk_regs.set_source(gp1_clk_id, clock_source::testdebug0));
-  CHECK(clk_regs.get_source(gp1_clk_id)==clock_source::testdebug0);
+  CHECK(clk_regs.set_source(gp1_clk_id, clock_src::testdebug0));
+  CHECK(clk_regs.get_source(gp1_clk_id)==clock_src::testdebug0);
   CHECK(clk_regs.gp1_clk.control==0x5a000002U);
 
-  CHECK(clk_regs.set_source(gp2_clk_id, clock_source::oscillator));
-  CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::oscillator);
+  CHECK(clk_regs.set_source(gp2_clk_id, clock_src::oscillator));
+  CHECK(clk_regs.get_source(gp2_clk_id)==clock_src::oscillator);
   CHECK(clk_regs.gp2_clk.control==0x5a000001U);
-  CHECK(clk_regs.set_source(gp2_clk_id, clock_source::gnd));
-  CHECK(clk_regs.get_source(gp2_clk_id)==clock_source::gnd);
+  CHECK(clk_regs.set_source(gp2_clk_id, clock_src::gnd));
+  CHECK(clk_regs.get_source(gp2_clk_id)==clock_src::gnd);
   CHECK(clk_regs.gp2_clk.control==0x5a000000U);
 }
 
@@ -1065,18 +1065,18 @@ TEST_CASE( "Unit-tests/clock_registers/0430/set_source for busy clock"
 // initially start with all bytes of clk_regs set to 0x00:
   std::memset(&clk_regs, 0x00, sizeof(clk_regs));
   clk_regs.gp0_clk.control = 128U; // BUSY flag is bit 7
-  CHECK_FALSE(clk_regs.set_source(gp0_clk_id, clock_source::hdmi_aux));
-  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd); // gnd = 0
+  CHECK_FALSE(clk_regs.set_source(gp0_clk_id, clock_src::hdmi_aux));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::gnd); // gnd = 0
   CHECK(clk_regs.gp0_clk.control==128U);// BUSY and not forced: no write occured
-  CHECK_FALSE(clk_regs.set_source(gp0_clk_id,clock_source::plld));
-  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd);
+  CHECK_FALSE(clk_regs.set_source(gp0_clk_id,clock_src::plld));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::gnd);
   CHECK(clk_regs.gp0_clk.control==128U);
 
-  CHECK(clk_regs.set_source(gp0_clk_id, clock_source::testdebug1, busy_override::yes));
-  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::testdebug1);
+  CHECK(clk_regs.set_source(gp0_clk_id, clock_src::testdebug1, busy_override::yes));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::testdebug1);
   CHECK(clk_regs.gp0_clk.control==0x5a000083U);
-  CHECK(clk_regs.set_source(gp0_clk_id, clock_source::gnd, busy_override::yes));
-  CHECK(clk_regs.get_source(gp0_clk_id)==clock_source::gnd);
+  CHECK(clk_regs.set_source(gp0_clk_id, clock_src::gnd, busy_override::yes));
+  CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::gnd);
   CHECK(clk_regs.gp0_clk.control==0x5a000080U);
 }
 

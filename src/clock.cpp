@@ -86,7 +86,7 @@ namespace dibase { namespace rpi {
         }
       if (clk_fn_info.size()!=1)
         {
-          throw std::invalid_argument // NO pin has >1 clock function
+          throw std::range_error // NO pin has >1 clock function
                   {"clock_pin::clock_pin: Internal data error: more than one "
                    "pin alt function selected that supports a clock function."
                   };
@@ -95,7 +95,7 @@ namespace dibase { namespace rpi {
       if ( clk_fn!=gpio_special_fn::gpclk0 
         && clk_fn!=gpio_special_fn::gpclk1 && clk_fn!=gpio_special_fn::gpclk2 )
         {
-          throw std::invalid_argument // Expect one of selection special fns!
+          throw std::range_error // Expect one of selection special fns!
                   {"clock_pin::clock_pin: Internal data error: Unexpected "
                    "pin alt-fn special function - does not represent a "
                    "GPCLKn special function."
@@ -110,6 +110,7 @@ namespace dibase { namespace rpi {
 
     clock_pin::~clock_pin()
     {
+      stop();
       gpio_ctrl::instance().alloc.deallocate(pin);
     }
   } // namespace peripherals closed

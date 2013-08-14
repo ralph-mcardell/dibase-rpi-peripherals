@@ -3,7 +3,9 @@
 # Author: Ralph E. McArdell
 
 # Build configuration (debug | release), default to debug:
+
 BUILD_CONFIG = debug
+
 ROOT_DIR = $(realpath $(CURDIR)/../..)
 
 include $(ROOT_DIR)/makeinclude.mak
@@ -23,7 +25,9 @@ UNITTEST_SRC_FILE = gpio_registers_unittests.cpp\
                     clock_registers_unittests.cpp\
                     pin_id_unittests.cpp\
                     rpi_info_unittests.cpp\
-                    pin_alloc_unittests.cpp
+                    pin_alloc_unittests.cpp\
+                    gpio_alt_fn_unittests.cpp\
+                    clock_parameters_unittests.cpp
 ALL_SRC_FILES = $(COMMON_SRC_FILES) $(INTERACTIVETEST_SRC_FILES) \
           $(PLATTEST_SRC_FILES) $(UNITTEST_SRC_FILE)
 

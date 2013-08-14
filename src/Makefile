@@ -12,11 +12,15 @@ include $(ROOT_DIR)/makeinclude.mak
 SRC_FILES = phymem_ptr.cpp\
             sysfs.cpp\
             gpio_ctrl.cpp\
+            gpio_alt_fn.cpp\
+            clock_ctrl.cpp\
             pin_id.cpp\
             rpi_info.cpp\
             pin_alloc.cpp\
+            clock_parameters.cpp\
             pin.cpp\
-            pin_edge_event.cpp
+            pin_edge_event.cpp\
+            clock.cpp
 TGT_FILE = $(LIB_DIR)/$(LIB_FILE)
 OBJ_FILES = $(SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
 OBJ_FILENAMES = $(SRC_FILES:%.cpp=%.o)

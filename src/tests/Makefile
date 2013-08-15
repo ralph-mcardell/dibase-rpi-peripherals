@@ -20,14 +20,15 @@ PLATTEST_SRC_FILES = phymem_ptr_platformtests.cpp\
                     sysfs_platformtests.cpp\
                     pin_alloc_platformtests.cpp\
                     pin_platformtests.cpp\
-                    pin_edge_event_platformtests.cpp
+                    pin_edge_event_platformtests.cpp\
+                    clock_pin_platformtests.cpp
 UNITTEST_SRC_FILE = gpio_registers_unittests.cpp\
                     clock_registers_unittests.cpp\
                     pin_id_unittests.cpp\
                     rpi_info_unittests.cpp\
                     pin_alloc_unittests.cpp\
                     gpio_alt_fn_unittests.cpp\
-                    clock_unittests.cpp\
+                    clock_pin_unittests.cpp\
                     clock_parameters_unittests.cpp
 ALL_SRC_FILES = $(COMMON_SRC_FILES) $(INTERACTIVETEST_SRC_FILES) \
           $(PLATTEST_SRC_FILES) $(UNITTEST_SRC_FILE)

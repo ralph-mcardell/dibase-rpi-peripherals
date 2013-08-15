@@ -1,12 +1,12 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
-/// @file clock.h 
-/// @brief GPIO clock classes' specifications.
+/// @file clock_pin.h 
+/// @brief GPIO pin as clock classes' specifications.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
 
-#ifndef DIBASE_RPI_PERIPHERALS_CLOCK_H
-# define DIBASE_RPI_PERIPHERALS_CLOCK_H
+#ifndef DIBASE_RPI_PERIPHERALS_CLOCK_PIN_H
+# define DIBASE_RPI_PERIPHERALS_CLOCK_PIN_H
 # include "pin_id.h"
 # include <ratio>
 # include <chrono>
@@ -239,129 +239,56 @@ namespace dibase { namespace rpi {
       constexpr clock_filter filter() const { return filter_mode; }
     };
 
-  /// @brief Clock setup and control type
-  /// Instances are associated with one of the clock managed by the BCM2835
-  /// clock manager - currently restricted to general purpose lcocks 0, 1 and 2
-  /// and the PWM clock, although it seem there are others that are, like the
-  /// PWM clock not documented and are currently not supported.
-  ///
-  /// A clock is constructed from a clock id, a clock source describing type
-  /// (source type and frequency) and an clock_frequency instance providing the
-  /// requested clock frequency and filtering hint.
-  ///
-  /// Once constructed the clock can be started and stopped.
-    class clock
-    {
-    public:
-    /// @brief local clock id enumeration
-      enum class id
-      { gp0   ///< Id for general purpose clock 0 (a.k.a. GP0 or GPCLK0)
-      , gp1   ///< Id for general purpose clock 0 (a.k.a. GP0 or GPCLK0)
-      , gp2   ///< Id for general purpose clock 0 (a.k.a. GP0 or GPCLK0)
-      , pwm   ///< Id for PWM clock -- should only be used with PWM support
-      };
 
-    private:
-      hertz     freq_min;   ///< Minimum frequency of clock
-      hertz     freq_avg;   ///< Average frequency of clock
-      hertz     freq_max;   ///< Maximum frequency of clock
-      id        clk_id;     ///< id of clock a clock instance is associated with
 
-    /// @brief Non-template clock initialisation (private) member function
-    /// Called by constructor member template to initialise a clock instance
-    /// Calculates and sets clock frequency values and sets clock manager
-    /// control and divisor fields for associated clock.
-    /// @param src_freq   Frequency of clock source
-    /// @param src_type   Clock source type
-    /// @param freq       Clock requested frequency characteristics
-    /// @throws std::invalid_argument if the requested clock frequency is
-    ///         out of range for the filtering mode requested or the source
-    ///         and requested frequencies are not in the valid range of
-    ///         ratios: 1<=(requested frequency)/(source frequency)<=0xfff
-    /// @throws std::range_error if DIVI is too small for the selected MASH
-    ///         mode.
-      void initialise
-      ( hertz src_freq
-      , clock_source src_type
-      , clock_frequency const & freq
-      );
-
-    public:
-    /// @brief Construct from clock id, source and frequency characteristics
-    /// Calculates and sets clock frequency values and sets clock manager
-    /// control and divisor fields for associated clock.
-    /// @param (template) Source Clock source type supporting frequency()
-    ///                   member function returning source frequency in Hertz
-    ///                   and source() member function returning a clock_source
-    ///                   value.
-    /// @para, id         clock::id value indicating associated clock device.
-    /// @param src        Instance of Source specifying clock source parameters
-    /// @param freq       Clock requested frequency characteristics
-    /// @throws std::invalid_argument if the requested clock frequency is
-    ///         out of range for the filtering mode requested or the source
-    ///         and requested frequencies are not in the valid range of
-    ///         ratios: 1<=(requested frequency)/(source frequency)<=0xfff
-    /// @throws std::range_error if DIVI is too small for the selected MASH
-    ///         mode.
-      template <class Source>
-      clock(id id_,  Source src, clock_frequency const & freq)
-      : clk_id{id_}
-      {
-        initialise(src.frequency(), src.source(), freq);
-      }
-
-      clock(clock const &) = delete;
-      clock& operator=(clock const &) = delete;
-      clock(clock &&) = delete;
-      clock& operator=(clock &&) = delete;
-
-    /// @brief Destroy : stop clock before clock instance goes away
-      ~clock()
-      {
-        stop();
-      }
-
-    /// @brief Start clock running (enable clock)
-      void  start() const;
-
-    /// @brief Stop clock running (disable clock)
-      void  stop() const;
-
-    /// @brief Return enabaled (running) state of clock
-    /// @returns true if clock is running (ebabled), false if not.
-      bool is_running() const;
-
-    /// @brief Return creation calculated clock minimum frequency
-    /// @returns Calculated clock minimum frequency in Hertz
-      hertz frequency_min() const { return freq_min; }
-
-    /// @brief Return creation calculated clock average frequency
-    /// @returns Calculated clock average frequency in Hertz
-      hertz frequency_avg() const { return freq_avg; }
-
-    /// @brief Return creation calculated clock maximum frequency
-    /// @returns Calculated clock maximum frequency in Hertz
-      hertz frequency_max() const { return freq_max; }
-    };
- 
-  /// @brief Sub-class of clock that is associated with a GPIO pin
-  /// General purpose clocks 0, 1 and 2 signal may be output to GPIO pins
-  /// when set to the appropriate alternate pin function. See
+  /// @brief Use a GPIO pin as general purpose clock.
+  /// General purpose clocks 0, 1 and 2 may be output to GPIO pins when set
+  /// to the appropriate alternate pin function. See
   /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
   /// table 6-31 to see which pin/alt function combinations support a GPCLK
   /// function.
-  /// A clock_pin instance is constructed with a GPIO pin_id rather than a
-  /// clock id whcih is used to determine which, if any, GPCLK function is
-  /// supported and if so which pin alternative function to use. 
+  /// A clock_pin instance is constructed with a GPIO pin_id which is used to
+  /// determine which, if any, GPCLK function is supported and if so which
+  /// pin alternative function to use. 
   /// If the pin supports a GPCLK function and the source and frequency
-  /// parameters are valid then the clock is setup and the pin allocated and
-  /// set to the relevant alt-fn. 
-    class clock_pin : public clock
+  /// parameters are valid and the clock not already in use locally within
+  ///  the same process then the clock is setup and the pin allocated and
+  /// set to the relevant alt-fn. Note: no attmpt is made to see if the clock
+  /// is in use externally by other processes.
+  ///
+  /// Once constructed the clock can be started and stopped.
+    class clock_pin
     {
-    /// @brief Helper. Checks pin has GPCLK function and returns clock::id
-    /// @param pin    Id of pin to use as clock
-      static clock::id pin_id_to_clock_id(pin_id pin);
-      pin_id const pin;     ///< Id of GPIO pin clock signal output to
+    /// @brief Helper. Non-templated helper to perform construction logic
+    /// Checks pin has clock function, can be allocated, clock parameters are
+    /// sane and clock not in use. Sets up clock, allocates and sets up pin alt
+    /// function for clock.
+    /// @param pin        Id of pin to use as clock
+    /// @param src_freq   Clock source frequency in Hertz
+    /// @param src_type   Clock source type
+    /// @param freq       Clock requested frequency characteristics
+    /// @throws std::invalid_argument if the requested pin has no clock
+    ///         function, the clock frequency is out of range for the
+    ///         filtering mode requested or the source and requested
+    ///         frequencies are not in the valid range of ratios:
+    ///         1<=(requested frequency)/(source frequency)<=0xfff
+    /// @throws std::range_error if the pin supports more than one clock
+    ///         function or the special function type is not one of the GPCLK
+    ///         values (neither of which should occur) or the clock divisor
+    ///         DIVI field value is too small for the selected MASH mode.
+    /// @throws bad_pin_alloc if the clock related to the pin is already
+    ///         being used within the same process (program).
+      unsigned  construct( pin_id pin
+                         , hertz src_freq
+                         , clock_source src_type
+                         , clock_frequency const & freq
+                         );
+
+      hertz           freq_min; ///< Minimum frequency of clock
+      hertz           freq_avg; ///< Average frequency of clock
+      hertz           freq_max; ///< Maximum frequency of clock
+      unsigned const  clk;      ///< Value indicating pin's clock function
+      pin_id const    pin;      ///< Id of GPIO pin clock signal output to
 
     public:
     /// @brief Construct from GPIO pin and clock source and frequency parameters
@@ -387,13 +314,40 @@ namespace dibase { namespace rpi {
     ///         DIVI field value is too small for the selected MASH mode.
       template <class Source>
       clock_pin(pin_id p, Source src, clock_frequency const & freq)
-      : clock(pin_id_to_clock_id(p), src, freq)
-      , pin(p)
+      : clk{construct((p), src.frequency(), src.source(), freq)}
+      , pin{p}
       {}
 
     /// @brief Destroy: stop the clock and de-allocate the GPIO pin.
       ~clock_pin();
+
+      clock_pin(clock_pin const &) = delete;
+      clock_pin& operator=(clock_pin const &) = delete;
+      clock_pin(clock_pin &&) = delete;
+      clock_pin& operator=(clock_pin &&) = delete;
+
+    /// @brief Start clock running (enable clock)
+      void  start() const;
+
+    /// @brief Stop clock running (disable clock)
+      void  stop() const;
+
+    /// @brief Return enabaled (running) state of clock
+    /// @returns true if clock is running (ebabled), false if not.
+      bool is_running() const;
+
+    /// @brief Return creation calculated clock minimum frequency
+    /// @returns Calculated clock minimum frequency in Hertz
+      hertz frequency_min() const { return freq_min; }
+
+    /// @brief Return creation calculated clock average frequency
+    /// @returns Calculated clock average frequency in Hertz
+      hertz frequency_avg() const { return freq_avg; }
+
+    /// @brief Return creation calculated clock maximum frequency
+    /// @returns Calculated clock maximum frequency in Hertz
+      hertz frequency_max() const { return freq_max; }
     };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed
-#endif // DIBASE_RPI_PERIPHERALS_CLOCK_H
+#endif // DIBASE_RPI_PERIPHERALS_CLOCK_PIN_H

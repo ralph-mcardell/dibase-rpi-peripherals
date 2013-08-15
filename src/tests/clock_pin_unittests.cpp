@@ -1,13 +1,13 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
-/// @file clock_unittests.cpp 
-/// @brief Unit tests for clock, clock_pin and related types.
+/// @file clock_pin_unittests.cpp 
+/// @brief Unit tests for clock_pin and related types.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
 
 #include "catch.hpp"
 
-#include "clock.h"
+#include "clock_pin.h"
 
 using namespace dibase::rpi::peripherals;
 

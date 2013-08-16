@@ -191,7 +191,7 @@ TEST_CASE( "Unit-tests/clock_parameters/0080/create DIVI too low throws min filt
 
 TEST_CASE( "Unit-tests/clock_parameters/0090/create clock freq. > max allowed, no filtered"
          , "Check throws if the requested average frequency is greater the "
-           "maximum allowed (25MHz)"
+           "maximum allowed (125MHz)"
          )
 {
   fixed_oscillator_clock_source src{megahertz{383}};
@@ -235,7 +235,7 @@ TEST_CASE( "Unit-tests/clock_parameters/0110/create clock freq. > than source"
 }
 
 TEST_CASE( "Unit-tests/clock_parameters/0120/create clock freq. too low"
-         , "Check throws if the requested average frequency is to small a "
+         , "Check throws if the requested average frequency is too small a "
            "fraction of the source"
          )
 {
@@ -250,8 +250,7 @@ TEST_CASE( "Unit-tests/clock_parameters/0120/create clock freq. too low"
 }
 
 TEST_CASE( "Unit-tests/clock_parameters/0130/create zero clock freq. "
-         , "Check throws if the requested average frequency is to small a "
-           "fraction of the source"
+         , "Check throws if the requested average frequency is zero"
          )
 {
   fixed_oscillator_clock_source src{hertz{0x1000}};

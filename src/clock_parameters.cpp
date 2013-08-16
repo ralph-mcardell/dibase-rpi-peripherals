@@ -13,17 +13,25 @@ namespace dibase { namespace rpi {
   {
     namespace internal
     {
-      static clock_src clock_source_to_clock_src( clock_source in )
+      namespace
       {
-        return in==clock_source::oscillator ? clock_src::oscillator :
-               in==clock_source::plla       ? clock_src::plla :
-               in==clock_source::pllc       ? clock_src::pllc :
-               in==clock_source::plld       ? clock_src::plld :
-               in==clock_source::hdmi_aux   ? clock_src::hdmi_aux :
-               in==clock_source::testdebug0 ? clock_src::testdebug0 :
-               in==clock_source::testdebug1 ? clock_src::testdebug1 :
-               in==clock_source::ground     ? clock_src::gnd : clock_src::gnd
-               ;
+        static clock_src clock_source_to_clock_src( clock_source in )
+        {
+          return in==clock_source::oscillator ? clock_src::oscillator :
+                 in==clock_source::plla       ? clock_src::plla :
+                 in==clock_source::pllc       ? clock_src::pllc :
+                 in==clock_source::plld       ? clock_src::plld :
+                 in==clock_source::hdmi_aux   ? clock_src::hdmi_aux :
+                 in==clock_source::testdebug0 ? clock_src::testdebug0 :
+                 in==clock_source::testdebug1 ? clock_src::testdebug1 :
+                 in==clock_source::ground     ? clock_src::gnd : clock_src::gnd
+                 ;
+        }
+        
+        constexpr auto max_filter_freq =
+                                  hertz{frequency_cast<hertz>(megahertz{25})};
+        constexpr auto max_freq = hertz{frequency_cast<hertz>(megahertz{125})};
+        constexpr auto divf_divisor(1024ULL);
       }
 
       clock_parameters::clock_parameters
@@ -31,11 +39,9 @@ namespace dibase { namespace rpi {
       , hertz src_freq
       , clock_frequency freq
       )
-      : freq_max(25654321) // too large for jitter reducing filtering modes 
+      : freq_max(max_freq) // too large for jitter reducing filtering modes 
       , source{clock_source_to_clock_src(src_type)}
       {
-        hertz const max_filter_freq{frequency_cast<hertz>(megahertz{25})};
-        hertz const max_freq{frequency_cast<hertz>(megahertz{125})};
         
         if (freq.average_frequency()==0U)
           {
@@ -65,7 +71,7 @@ namespace dibase { namespace rpi {
                   };
 
           }
-        if (divi>0xfffU)
+        if (divi>clock_record::divisor_divi_max)
           {
             throw std::invalid_argument
                   { "clock_parameters::clock_parameters: clock_source frequency"
@@ -74,7 +80,7 @@ namespace dibase { namespace rpi {
           }
         register_t divi_rmdr{src_hz-divi*avg_hz};
         register_t rnd_coeff{avg_hz/2};
-        divf = (divi_rmdr*1024ULL+rnd_coeff)/avg_hz;
+        divf = (divi_rmdr*divf_divisor+rnd_coeff)/avg_hz;
 
         clock_filter filter{freq.filter()};
         bool more_to_try{true};
@@ -84,7 +90,7 @@ namespace dibase { namespace rpi {
           {
           case clock_filter::none:
             more_to_try = false;
-            if (divf>511U && divi<0xfffU)
+            if (divf>=divf_divisor/2 && divi<clock_record::divisor_divi_max)
               {
                 ++divi;
               }
@@ -102,7 +108,7 @@ namespace dibase { namespace rpi {
             break;
 
           case clock_filter::minimum:
-            freq_avg = src_hz*1024ULL / (divi*1024U+divf);
+            freq_avg = src_hz*divf_divisor / (divi*divf_divisor+divf);
             freq_max = src_hz / divi;
             freq_min = src_hz / (divi+1);
             mash = clock_mash_mode::mash_1_stage;
@@ -112,7 +118,7 @@ namespace dibase { namespace rpi {
           case clock_filter::medium:
              if ( divi>1)
               {
-                freq_avg = src_hz*1024ULL / (divi*1024U+divf);
+                freq_avg = src_hz*divf_divisor / (divi*divf_divisor+divf);
                 freq_max = src_hz / (divi-1);
                 freq_min = src_hz / (divi+2);
                 mash = clock_mash_mode::mash_2_stage;
@@ -123,7 +129,7 @@ namespace dibase { namespace rpi {
           case clock_filter::maximum:
             if ( divi>3)
               {
-                freq_avg = src_hz*1024ULL / (divi*1024U+divf);
+                freq_avg = src_hz*divf_divisor / (divi*divf_divisor+divf);
                 freq_max = src_hz / (divi-3);
                 freq_min = src_hz / (divi+4);
                 mash = clock_mash_mode::mash_3_stage;

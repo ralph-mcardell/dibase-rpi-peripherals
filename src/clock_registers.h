@@ -68,7 +68,7 @@ namespace dibase { namespace rpi {
   ///
   /// Each clock has two control registers: 
   ///   - a main control register, XX_CTL
-  ///   - a frequency divisor reqgister, XX_DIV
+  ///   - a frequency divisor register, XX_DIV
   /// These are grouped together in this structure as the members control and
   /// divisor respectfully.
   ///
@@ -100,8 +100,10 @@ namespace dibase { namespace rpi {
       };
 
     public:
+      constexpr static auto divisor_divi_max = register_t{div_divi_max};
+
       register_t control; ///< Clock control (XX_CTL) register
-      register_t divisor; ///< Clock fequency divisor (XX_DIV) register
+      register_t divisor; ///< Clock frequency divisor (XX_DIV) register
 
     /// @brief Return status of control register BUSY flag.
     /// @returns true if control register BUSY bit set, false if not.
@@ -302,7 +304,7 @@ namespace dibase { namespace rpi {
 
   /// @brief Represents layout of clock control registers with operations.
   ///
-  /// Permits access to BCM2835 (GPIO) clock mananger control registers 
+  /// Permits access to BCM2835 (GPIO) clock manager control registers 
   /// when an instance is mapped to the correct physical memory location.
   ///
   /// See the
@@ -319,18 +321,18 @@ namespace dibase { namespace rpi {
     {
     private:
       enum
-      { gp_offset = 28///< General purpose control & divisor registers' offset
-      , pwm_offset=40 ///< PWM control & divisor registers' offset
-      , regs_per_clk=2///< Number of 32-bit (4-byte) registers for each clock
-      , num_gp_clks=3 ///< Number of general purpose clocks
+      { gp_offset   = 28///< General purpose control & divisor registers' offset
+      , pwm_offset  = 40///< PWM control & divisor registers' offset
+      , regs_per_clk= 2 ///< Number of 32-bit (4-byte) registers for each clock
+      , num_gp_clks = 3 ///< Number of general purpose clocks
       
     /// @brief 32-bit register gap between GP clocks end & PWM clocks start
       , gp_pwm_gap=pwm_offset-gp_offset-(num_gp_clks*regs_per_clk)
       };
     public:
     /// @brief Physical address of start of BCM2835 clock control registers
-      static const physical_address_t physical_address
-                                          = peripheral_base_address + 0x101000;
+      constexpr static auto 
+        physical_address = physical_address_t{peripheral_base_address+0x101000};
 
       register_t reserved_do_not_use_0[gp_offset];///< Reserved, currently unused
       clock_record gp0_clk; ///< General purpose clock 0

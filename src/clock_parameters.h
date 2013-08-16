@@ -15,11 +15,11 @@ namespace dibase { namespace rpi {
   {
     namespace internal
     {
-    /// @brief For library interal use. Check and determine clock parameters
+    /// @brief For library internal use. Check and determine clock parameters
     /// From clock source and clock requested frequency information check and
     /// determine various clock parameters in two groups: user frequency
-    /// infromation (min,max, average) and clock peripheral register field
-    /// values: (SRC, MASH,  DIVI, DIVF) required to setup a clock.
+    /// information (min,max, average) and clock peripheral register field
+    /// values: (SRC, MASH,  DIVI, DIVF) required to set-up a clock.
       class clock_parameters
       {
         hertz freq_min;         ///< Clock minimum frequency in Hz
@@ -41,14 +41,14 @@ namespace dibase { namespace rpi {
       /// MASH filtering mode is determined using the clock_frequency::filter()
       /// value as a starting point. If the DIVI value would cause division
       /// by zero or a negative value or the maximum frequency is out of range
-      /// the MASH mode is reduced down until a usable DIVI and maximim
+      /// the MASH mode is reduced down until a usable DIVI and maximum
       /// frequency are found. An exception is raised if none can be found or
       /// if the resultant DIVI value is less than that allowed for the
       /// selected MASH mode.
       ///
       /// @param src_type Library user layer clock source type value
       /// @param src_freq Clock source frequency
-      /// @param freq     Requested clock frequency spacification
+      /// @param freq     Requested clock frequency specification
       /// @throws std::invalid_argument if the requested clock frequency is
       ///         out of range for the filtering mode requested or the source
       ///         and requested frequencies are not in the valid range of

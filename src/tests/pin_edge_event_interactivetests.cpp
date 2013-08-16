@@ -17,9 +17,9 @@ using namespace dibase::rpi::peripherals::internal;
 
 namespace
 {
-  auto short_wait_time(std::chrono::milliseconds(100U));
-  auto long_wait_time(std::chrono::seconds(5U));
-  auto wait_timeout_error_time(std::chrono::milliseconds(20));
+  auto const short_wait_time(std::chrono::milliseconds(100U));
+  auto const long_wait_time(std::chrono::seconds(5U));
+  auto const wait_timeout_error_time(std::chrono::milliseconds(20));
 }
 
 TEST_CASE( "Interactive_tests/pin_edge_event/0000/wait waits for event"

@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file clock_pin_interactivetests.cpp 
-/// @brief Platform tests for clock_pin and related types.
+/// @brief Interactive platform tests for clock_pin type.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
@@ -20,16 +20,16 @@ using namespace dibase::rpi::peripherals;
 namespace
 {
   pin_id const available_clk_pin_id(test::clk_pin_id); 
-  auto short_wait_time(std::chrono::milliseconds(100U));
+  auto const short_wait_time(std::chrono::milliseconds(100U));
 
-  void prompt(std::string prefix, std::string suffix)
+  static void prompt(std::string prefix, std::string suffix)
   {
     std::cout << prefix << available_clk_pin_id << suffix;
     std::string dummy;
     std::getline(std::cin, dummy);
   }
 
-  bool yn_query(char const * query_text)
+  static bool yn_query(char const * query_text)
   {
     std::string response;
     do

@@ -20,8 +20,7 @@ namespace
   pin_id const available_out_pin_id(test::out_pin_id); 
   pin_id const available_in_pin_id(test::in_pin_id);
 
-
-  bool yn_query(char const * query_text)
+  static bool yn_query(char const * query_text)
   {
     std::string response;
     do

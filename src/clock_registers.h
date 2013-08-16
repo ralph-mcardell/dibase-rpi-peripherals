@@ -152,8 +152,8 @@ namespace dibase { namespace rpi {
       }
 
     /// @brief Set the value of ENAB control register bit
-    /// Will not perform the operation if clock is busy and force is not
-    /// busy_override::yes.
+    /// Will not enable the clock or disable it again if not running if clock
+    /// is busy and not overridden (force is busy_override::yes).
     /// @param state State to set ENAB bit to: true->1, false->0
     /// @param force Specifies whether to allow operation if clock is busy
     /// @returns  true if operation performed, false if it was not performed
@@ -161,8 +161,10 @@ namespace dibase { namespace rpi {
       bool set_enable(bool state, busy_override force=busy_override::no)
       volatile
       { 
-        if (force==busy_override::no && is_busy())
-          {
+        if (  force==busy_override::no && is_busy() 
+           && (state==true || (state==false && get_enable()==false))
+           ) // No can do if busy and not overriding
+          {  // and turning clock on or turning clock off when not running
             return false;
           }
         control = password|(state ? control|ctrl_enab_mask

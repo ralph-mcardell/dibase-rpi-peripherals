@@ -15,21 +15,24 @@
 
 using namespace dibase::rpi::peripherals;
 
-pin_id const available_out_pin_id(test::out_pin_id); 
-pin_id const available_in_pin_id(test::in_pin_id);
-
-bool yn_query(char const * query_text)
+namespace
 {
-  std::string response;
-  do
-    {
-      std::cout << query_text << " (y/n)? ";
-      std::getline(std::cin, response);
-    }
-  while (response.size()!=1 || response.find_first_of("yYnN")!=0);
-  return response.find_first_of("Yy")==0;
-}
+  pin_id const available_out_pin_id(test::out_pin_id); 
+  pin_id const available_in_pin_id(test::in_pin_id);
 
+
+  bool yn_query(char const * query_text)
+  {
+    std::string response;
+    do
+      {
+        std::cout << query_text << " (y/n)? ";
+        std::getline(std::cin, response);
+      }
+    while (response.size()!=1 || response.find_first_of("yYnN")!=0);
+    return response.find_first_of("Yy")==0;
+  }
+}
 TEST_CASE( "Interactive_tests/pin/out/000/put_true_put_false"
          , "Calling opin.put with true then false should toggle the state of the available_pin"
          )

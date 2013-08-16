@@ -13,8 +13,11 @@
 using namespace dibase::rpi::peripherals;
 using namespace dibase::rpi::peripherals::internal;
 
-unsigned const select_wait_time_secs{1U};
-unsigned const max_wait_time_secs{5U};
+namespace
+{
+  unsigned const select_wait_time_secs{1U};
+  unsigned const max_wait_time_secs{5U};
+}
 
 TEST_CASE( "Interactive_tests/sysfs/0000/initial edge event notifications OK"
          , "Setup for any edge events triggers initial resturn from select"

@@ -15,15 +15,18 @@
 using namespace dibase::rpi::peripherals;
 using namespace dibase::rpi::peripherals::internal;
 
-auto short_wait_time(std::chrono::milliseconds(100U));
-auto long_wait_time(std::chrono::seconds(5U));
-auto wait_timeout_error_time(std::chrono::milliseconds(20));
+namespace
+{
+  auto short_wait_time(std::chrono::milliseconds(100U));
+  auto long_wait_time(std::chrono::seconds(5U));
+  auto wait_timeout_error_time(std::chrono::milliseconds(20));
+}
 
 TEST_CASE( "Interactive_tests/pin_edge_event/0000/wait waits for event"
-         , "wait will wait indefinately for a pin edge event"
+         , "wait will wait indefinitely for a pin edge event"
          )
 {
-  std::cout << "pin_edge_event: Wait indefinately for an edge event:\n"
+  std::cout << "pin_edge_event: Wait indefinitely for an edge event:\n"
                "Connect pin BCM2835 GPIO" << test::in_pin_id 
             << " to allow state changing between high voltage and ground "
                "(switch+resistors etc.)\n\n";
@@ -41,7 +44,7 @@ TEST_CASE( "Interactive_tests/pin_edge_event/0000/wait waits for event"
 }
 
 TEST_CASE( "Interactive_tests/pin_edge_event/0010/wait waits for time for event"
-         , "wait will wait orr a pin edge event for uo to a given duration"
+         , "wait will wait for a pin edge event for up to a given duration"
          )
 {
   std::cout << "\n\npin_edge_event: Wait for a duration for an edge event:\n"
@@ -55,7 +58,7 @@ TEST_CASE( "Interactive_tests/pin_edge_event/0010/wait waits for time for event"
   REQUIRE(pin_evt.signalled());
   pin_evt.clear();
   REQUIRE_FALSE(pin_evt.signalled());
-  std::cout << "Waiting 100ms for timeout...\n" 
+  std::cout << "Waiting 100ms for time-out...\n" 
                "If execution blocked try setting BCM2835 GPIO"
             << test::in_pin_id << " high then low... " << std::endl;
   auto start_time(std::chrono::system_clock::now());
@@ -87,7 +90,7 @@ TEST_CASE( "Interactive_tests/pin_edge_event/0020/wait waits until time event"
   REQUIRE(pin_evt.signalled());
   pin_evt.clear();
   REQUIRE_FALSE(pin_evt.signalled());
-  std::cout << "Waiting until now+100ms for timeout...\n" 
+  std::cout << "Waiting until now+100ms for time-out...\n" 
                "If execution blocked try changing BCM2835 GPIO"
             << test::in_pin_id << " state... " << std::endl;
   auto start_time(std::chrono::system_clock::now());

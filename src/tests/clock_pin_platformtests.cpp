@@ -14,7 +14,7 @@
 using namespace dibase::rpi::peripherals;
 
 TEST_CASE( "Platform-tests/clock_pin/0000/create good"
-         , "Creates clock_pin in expected state when passed valid paramters"
+         , "Creates clock_pin in expected state when passed valid parameters"
          )
 {
   clock_pin clk { pin_id{4}
@@ -90,5 +90,23 @@ TEST_CASE( "Platform-tests/clock_pin/0040/create bad: clock in use"
                            , clock_frequency(kilohertz(600), clock_filter::none)
                            )
                  , bad_pin_alloc
+                 );
+}
+
+TEST_CASE( "Platform-tests/clock_pin/0050/create bad: invalid frequencies"
+         , ""
+         )
+{
+  CHECK_THROWS_AS(clock_pin( pin_id{5}
+                           , fixed_oscillator_clock_source(f_megahertz(19.2))
+                           , clock_frequency(kilohertz(1), clock_filter::none)
+                           )
+                 , std::invalid_argument
+                 );
+  CHECK_THROWS_AS(clock_pin( pin_id{5}
+                           , fixed_oscillator_clock_source(megahertz(24))
+                           , clock_frequency(megahertz(16), clock_filter::minimum)
+                           )
+                 , std::range_error
                  );
 }

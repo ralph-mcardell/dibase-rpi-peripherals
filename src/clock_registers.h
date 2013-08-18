@@ -331,8 +331,8 @@ namespace dibase { namespace rpi {
       };
     public:
     /// @brief Physical address of start of BCM2835 clock control registers
-      constexpr static auto 
-        physical_address = physical_address_t{peripheral_base_address+0x101000};
+      constexpr static physical_address_t 
+                            physical_address = peripheral_base_address+0x101000;
 
       register_t reserved_do_not_use_0[gp_offset];///< Reserved, currently unused
       clock_record gp0_clk; ///< General purpose clock 0
@@ -522,10 +522,10 @@ namespace dibase { namespace rpi {
       }
     };
 
-    clock_id const gp0_clk_id{&clock_registers::gp0_clk};
-    clock_id const gp1_clk_id{&clock_registers::gp1_clk};
-    clock_id const gp2_clk_id{&clock_registers::gp2_clk};
-    clock_id const pwm_clk_id{&clock_registers::pwm_clk};
+    constexpr clock_id gp0_clk_id{&clock_registers::gp0_clk};
+    constexpr clock_id gp1_clk_id{&clock_registers::gp1_clk};
+    constexpr clock_id gp2_clk_id{&clock_registers::gp2_clk};
+    constexpr clock_id pwm_clk_id{&clock_registers::pwm_clk};
   }
 }}
 #endif // DIBASE_RPI_PERIPHERALS_CLOCK_REGISTERS_H

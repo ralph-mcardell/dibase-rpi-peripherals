@@ -173,8 +173,8 @@ namespace dibase { namespace rpi {
     struct gpio_registers
     {
     /// @brief Physical address of start of BCM2835 GPIO control registers
-      static const physical_address_t physical_address
-                                          = peripheral_base_address + 0x200000;
+      constexpr static physical_address_t 
+                            physical_address = peripheral_base_address+0x200000;
 
       register_t gpfsel[6];         ///< GPIO pins function select (R/W)
       register_t reserved_do_not_use_0;     ///< Reserved, currently unused

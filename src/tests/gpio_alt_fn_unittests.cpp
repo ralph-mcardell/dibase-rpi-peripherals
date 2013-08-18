@@ -13,8 +13,9 @@
 using namespace dibase::rpi::peripherals;
 using namespace dibase::rpi::peripherals::pin_alt_fn;
 
-TEST_CASE( "Unit-tests/pin_alt_fn_descriptor/0000/construct valid arguments"
-         , ""
+TEST_CASE( "Unit-tests/pin_alt_fn::descriptor/0000/construct valid arguments"
+         , "Can create pin_alt_fn_descriptor from valid pin id, gpio_pin_fn, "
+           " and gpio_special_fn"
          )
 {
   descriptor pafd{pin_id{4}, gpio_pin_fn::alt5, gpio_special_fn::gpclk2};
@@ -23,8 +24,9 @@ TEST_CASE( "Unit-tests/pin_alt_fn_descriptor/0000/construct valid arguments"
   CHECK(pafd.special_fn()==gpio_special_fn::gpclk2);
 }
 
-TEST_CASE( "Unit-tests/descriptor/0010/construct invalid arguments"
-         , ""
+TEST_CASE( "Unit-tests/pin_alt_fn::descriptor/0010/construct invalid arguments"
+         , "Exception thrown if descriptor constructor passed a non-alt "
+           "function gpio_pin_fn value"
          )
 {
   CHECK_THROWS_AS( descriptor
@@ -37,8 +39,8 @@ TEST_CASE( "Unit-tests/descriptor/0010/construct invalid arguments"
                  );
 }
 
-TEST_CASE( "Unit-tests/descriptor/0020/copy and assignemnt"
-         , ""
+TEST_CASE( "Unit-tests/pin_alt_fn::descriptor/0020/copy and assignment"
+         , "pin_alt_fn::descriptors can be assigned and copied."
          )
 {
   descriptor pafd{pin_id{4}, gpio_pin_fn::alt5, gpio_special_fn::gpclk2};
@@ -57,8 +59,8 @@ TEST_CASE( "Unit-tests/descriptor/0020/copy and assignemnt"
   CHECK(pafd_assign.special_fn()==gpio_special_fn::gpclk2);
 }
 
-TEST_CASE( "Unit-tests/result_set_builder/0000/default construct empty"
-         , ""
+TEST_CASE( "Unit-tests/pin_alt_fn::result_set_builder/0000/default construct empty"
+         , "pin_alt_fn::result_set_builder objects created empty"
          )
 {
   result_set_builder pafrsb;
@@ -66,8 +68,9 @@ TEST_CASE( "Unit-tests/result_set_builder/0000/default construct empty"
   CHECK(pafrsb.empty());
 }
 
-TEST_CASE( "Unit-tests/result_set_builder/0010/add item"
-         , "Add one descriptor"
+TEST_CASE( "Unit-tests/pin_alt_fn::result_set_builder/0010/add item"
+         , "Empty pin_alt_fn::result_set_builder having one descriptor added "
+           "is not empty and has size of 1"
          )
 {
   result_set_builder pafrsb;
@@ -77,8 +80,9 @@ TEST_CASE( "Unit-tests/result_set_builder/0010/add item"
   CHECK_FALSE(pafrsb.empty());
 }
 
-TEST_CASE( "Unit-tests/result_set_builder/0020/emplace add item"
-         , "Add one descriptor constructing it in place"
+TEST_CASE( "Unit-tests/pin_alt_fn::result_set_builder/0020/emplace add item"
+         , "A descriptor can be added by constructing it in place from "
+           " construction arguments"
          )
 {
   result_set_builder pafrsb;
@@ -87,8 +91,8 @@ TEST_CASE( "Unit-tests/result_set_builder/0020/emplace add item"
   CHECK_FALSE(pafrsb.empty());
 }
 
-TEST_CASE( "Unit-tests/result_set_builder/0030/drain items"
-         , "Drain added items into vector leaving an empty builder"
+TEST_CASE( "Unit-tests/pin_alt_fn::result_set_builder/0030/drain items"
+         , "Draining items into vector leaves an empty builder"
          )
 {
   result_set_builder pafrsb;
@@ -111,7 +115,7 @@ TEST_CASE( "Unit-tests/result_set_builder/0030/drain items"
   CHECK(items.back().special_fn()==gpio_special_fn::gpclk1);
 }
 
-TEST_CASE( "Unit-tests/result_set/0000/construct from empty builder"
+TEST_CASE( "Unit-tests/pin_alt_fn::result_set/0000/construct from empty builder"
          , "Constructing from an empty builder yields an empty result set"
          )
 {
@@ -122,8 +126,8 @@ TEST_CASE( "Unit-tests/result_set/0000/construct from empty builder"
   CHECK(pafrs.empty());
 }
 
-TEST_CASE( "Unit-tests/result_set/0010/construct from 2 item builder"
-         , "Constructing from an non-empty builder yields a similarly "
+TEST_CASE( "Unit-tests/pin_alt_fn::result_set/0010/construct from 2 item builder"
+         , "Constructing from a non-empty builder yields a similarly "
            "non-empty result set and an empty builder"
          )
 {
@@ -148,8 +152,8 @@ TEST_CASE( "Unit-tests/result_set/0010/construct from 2 item builder"
   CHECK_THROWS_AS(pafrs.at(pafrs.size()),std::out_of_range);
 }
 
-TEST_CASE( "Unit-tests/result_set/0020/begin / end iterator support"
-         , "Using begin and end for const_iterator access to results"
+TEST_CASE( "Unit-tests/pin_alt_fn::result_set/0020/begin / end iterator support"
+         , "begin and end provide const_iterator access to result descriptors"
          )
 {
   result_set_builder pafrsb;
@@ -169,8 +173,8 @@ TEST_CASE( "Unit-tests/result_set/0020/begin / end iterator support"
   CHECK(pafrs.size()==2U); // access did not change size
 }
 
-TEST_CASE( "Unit-tests/result_set/0020/cbegin/cend iterator support"
-         , "Using cbegin and cend for const_iterator access to results"
+TEST_CASE( "Unit-tests/pin_alt_fn::result_set/0030/cbegin/cend iterator support"
+         , "cbegin & cend provide const_iterator access to result descriptors"
          )
 {
   result_set_builder pafrsb;
@@ -192,10 +196,9 @@ TEST_CASE( "Unit-tests/result_set/0020/cbegin/cend iterator support"
   CHECK(pafrs.size()==2U); // access did not change size
 }
 
-
 // Values in BCM2835 ARM Peripheral datasheet PDF table 6-31 columns
 // ALT0 to ALT6 that are _not_ blank, <reserved> or <Internal>
-// The values were calcutated by scanning each ALTn row of the table
+// The values were calculated by scanning each ALTn row of the table
 // and subtracting the count of each block of cells which were blank, 
 // <reserved> or <Internal> - noting that all pins numbered above 45 have no
 // (published) special functions.
@@ -213,10 +216,10 @@ constexpr unsigned cnt_pins_alt_fn_with_specl_fns
                     + cnt_pins_alt4_specl_fn
                     + cnt_pins_alt5_specl_fn
                     };
-TEST_CASE( "Unit-tests/select/0000/select all less no_fn"
-         , "Calling select with no parameters the returned "
-           "result_set should have result items for all "
-           "pins alt functions that have a specific special function"
+
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0000/select all less no_fn"
+         , "Calling select with no parameters returns result_set with items "
+           "for all pins' alt functions that have a specific special function"
          )
 {
   auto pafrs = result_set(select());
@@ -232,10 +235,9 @@ TEST_CASE( "Unit-tests/select/0000/select all less no_fn"
     }
 }
 
-TEST_CASE( "Unit-tests/select/0010/select all with no_fn"
-         , "Calling select just specifying include_no_fn the "
-           "returned result_set should have result items for all "
-           "pins' alt function 'slots'"
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0010/select all with no_fn"
+         , "Calling select just specifying include_no_fn returns a result_set "
+           "with items for all pins' alt function 'slots'"
          )
 {
   auto pafrs = result_set(select(select_options::include_no_fn) );
@@ -248,10 +250,9 @@ TEST_CASE( "Unit-tests/select/0010/select all with no_fn"
   CHECK(pafrs[pafrs.size()-1].alt_fn()==gpio_pin_fn::alt5);
 }
 
-TEST_CASE( "Unit-tests/select/0020/1 pin: select not no_fn"
-         , "Calling select with a single pin_id the returned "
-           "result_set should have result items for pin's alt "
-           "functions that have a specific special function"
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0020/1 pin: select not no_fn"
+         , "Calling select with a single pin_id returns a result_set with "
+           "items for the pin's alt functions with a specific special function"
          )
 {
   auto pafrs = result_set(select(pin_id{18}));
@@ -276,10 +277,9 @@ TEST_CASE( "Unit-tests/select/0020/1 pin: select not no_fn"
 }
 
 
-TEST_CASE( "Unit-tests/select/0030/1 pin: select with no_fn"
-         , "Calling select with a single pin_id the returned "
-           "result_set should have result items for pin's alt "
-           "functions."
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0030/1 pin: select with no_fn"
+         , "Calling select with a single pin_id & specifying include_no_fn "
+           "returns a result_set with items for all the pin's alt functions."
          )
 {
   auto pafrs = result_set( select(pin_id{18},select_options::include_no_fn) );
@@ -306,10 +306,9 @@ TEST_CASE( "Unit-tests/select/0030/1 pin: select with no_fn"
   CHECK(pafrs[5].special_fn()==gpio_special_fn::pwm0);
 }
 
-TEST_CASE( "Unit-tests/select/0040/select specific special fn"
-         , "Calling select with a single special function the "
-           "returned result_set should have result items for all "
-           "pin-alt functions having that function."
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0040/select specific special fn"
+         , "Calling select with a single special function returns a result_set "
+           "with items for all pin-alt functions having that function."
          )
 {
   auto pafrs=result_set(select(gpio_special_fn::gpclk0));
@@ -330,10 +329,9 @@ TEST_CASE( "Unit-tests/select/0040/select specific special fn"
   CHECK(pafrs[3].special_fn()==gpio_special_fn::gpclk0);
 }
 
-TEST_CASE( "Unit-tests/select/0050/select specific special fn for specific pin"
-         , "Calling select with a single pin & a special "
-           "function the returned result_set should have either an "
-           "empty result or result with a single item"
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0050/select specific special fn for specific pin"
+         , "Calling select with a single pin & a special function returns a "
+           "result_set with either an empty set or a set with a single item"
          )
 {
 // Pin 11 has no GPCLK0 function....
@@ -350,10 +348,9 @@ TEST_CASE( "Unit-tests/select/0050/select specific special fn for specific pin"
   CHECK(pafrs[0].special_fn()==gpio_special_fn::gpclk0);
 }
 
-TEST_CASE( "Unit-tests/select/0060/pin list: select not no_fn"
-         , "Calling select with a pin_id list the returned "
-           "a result_set should have result items for all listed "
-           "pins' alt functions that have a specific special function"
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0060/pin list: select not no_fn"
+         , "Calling select with a pin_id list returns a result_set with items "
+           "for all listed pins' alt functions with a specific special function"
          )
 {
   auto pafrs = result_set(select({pin_id{1}, pin_id{0}}));
@@ -374,10 +371,9 @@ TEST_CASE( "Unit-tests/select/0060/pin list: select not no_fn"
   CHECK(pafrs[3].special_fn()==gpio_special_fn::sa5);
 }
 
-TEST_CASE( "Unit-tests/select/0070/pin list: select with no_fn"
-         , "Calling select with a pin_id list the returned"
-           "a result_set should have result items for all listed "
-           "pins' alt functions"
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0070/pin list: select with no_fn"
+         , "Calling select with a pin_id list & specifying include_no_fn "
+           "returns a result_set with items for all listed pins' alt functions"
          )
 {
   auto pafrs = result_set( select( {pin_id{1}, pin_id{0}}
@@ -401,10 +397,9 @@ TEST_CASE( "Unit-tests/select/0070/pin list: select with no_fn"
   CHECK(pafrs[7].special_fn()==gpio_special_fn::sa5);
 }
 
-TEST_CASE( "Unit-tests/select/0080/select some specific special fns"
-         , "Calling select with a special function list the "
-           "returned result_set should have result items for all "
-           "pin-alt functions having any of those functions."
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0080/select some specific special fns"
+         , "Calling select with a special function list returns a result_set "
+           "with items for all pin-alt functions having any of those functions."
          )
 {
   auto pafrs=result_set( select( { gpio_special_fn::gpclk1
@@ -435,10 +430,10 @@ TEST_CASE( "Unit-tests/select/0080/select some specific special fns"
   CHECK(pafrs[5].special_fn()==gpio_special_fn::gpclk1);
 }
 
-TEST_CASE( "Unit-tests/select/0090/select some specific special fns for some specific pins"
-         , "returned  with lists for pins & special functions the returned "
-           "result_set should have result items for any listed "
-           "pin's alt functions having any of the listed special functions."
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0090/select some specific special fns for some specific pins"
+         , "Calling select with lists for pins & special functions returns a "
+           "result_set with items for any listed pin's alt functions having "
+           "any of the listed special functions."
          )
 {
   auto pafrs=result_set(select( { pin_id{4}, pin_id{5}, pin_id{6}
@@ -463,10 +458,10 @@ TEST_CASE( "Unit-tests/select/0090/select some specific special fns for some spe
   CHECK(pafrs[2].special_fn()==gpio_special_fn::gpclk1);
 }
 
-TEST_CASE( "Unit-tests/select/0100/select some specific special fns for a specific pin"
-         , "returned  with pin & list of special functions the returned "
-           "result_set should have result items for any of the "
-           "pin's alt functions having any of the listed special functions."
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0100/select some specific special fns for a specific pin"
+         , "Calling select with pin & list of special functions returns a "
+           "result_set with items for any of the pin's alt functions having "
+           "any of the listed special functions."
          )
 {
   auto pafrs=result_set( select( pin_id{5}
@@ -483,10 +478,10 @@ TEST_CASE( "Unit-tests/select/0100/select some specific special fns for a specif
   CHECK(pafrs[0].special_fn()==gpio_special_fn::gpclk1);
 }
 
-TEST_CASE( "Unit-tests/select/0110/select some specific special fn for some specific pins"
-         , "functions & constructing a with list for pins & a special function "
-           "the returned result_set should have result items "
-           "for any listed pin's alt functions having the special function."
+TEST_CASE( "Unit-tests/pin_alt_fn::select/0110/select some specific special fn for some specific pins"
+         , "Calling select with list of pins & a special function returns a "
+           "returned result_set with items for any listed pin's alt functions "
+           "having the special function."
          )
 {
   auto pafrs=result_set( select( { pin_id{4}, pin_id{5}, pin_id{6}

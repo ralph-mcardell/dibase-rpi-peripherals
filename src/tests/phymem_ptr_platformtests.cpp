@@ -32,7 +32,9 @@ typedef unsigned int volatile PeripheralAccessType;
 
 using namespace dibase::rpi::peripherals;
 
-TEST_CASE( "Platform_tests/phymem_ptr/lifetime-and-access", "Sucessful creation should allow R/W acccess only until deleted" )
+TEST_CASE( "Platform_tests/phymem_ptr/lifetime-and-access"
+         , "Successful creation should allow R/W access only until deleted" 
+         )
 { 
   PeripheralAccessType * raw_peripheral_ptr(nullptr);
   PeripheralAccessType * null_peripheral_ptr(nullptr);
@@ -65,7 +67,9 @@ TEST_CASE( "Platform_tests/phymem_ptr/lifetime-and-access", "Sucessful creation 
   REQUIRE( errno == ENOMEM );
 }
 
-TEST_CASE( "Platform_tests/phymem_ptr/dereference", "Access to block via operator*() same as via *p.get()" )
+TEST_CASE( "Platform_tests/phymem_ptr/dereference"
+         , "Access to block via operator*() same as via *p.get()"
+         )
 {
   PeripheralAccessType * null_peripheral_ptr(nullptr);
 
@@ -90,7 +94,9 @@ struct gpio_function_select
 
 typedef gpio_function_select volatile GPIOFunctionSelectType;
 
-TEST_CASE( "Platform_tests/phymem_ptr/first_member_access", "Access to 1st member in block via operator->() same as via get()" )
+TEST_CASE( "Platform_tests/phymem_ptr/first_member_access"
+         , "Access to 1st member in block via operator->() same as via get()" 
+         )
 {
   GPIOFunctionSelectType * null_gpiofnsel_ptr(nullptr);
 
@@ -101,7 +107,9 @@ TEST_CASE( "Platform_tests/phymem_ptr/first_member_access", "Access to 1st membe
   REQUIRE( &smart_gpiofsel_ptr->gpfsel0 == (unsigned*)smart_gpiofsel_ptr.get() );
 }
 
-TEST_CASE( "Platform_tests/phymem_ptr/indexed-get-zero-index", "Access to block via p.get(0) same as via p.get()" )
+TEST_CASE( "Platform_tests/phymem_ptr/indexed-get-zero-index"
+         , "Access to block via p.get(0) same as via p.get()"
+         )
 {
   PeripheralAccessType * null_peripheral_ptr(nullptr);
 
@@ -112,7 +120,9 @@ TEST_CASE( "Platform_tests/phymem_ptr/indexed-get-zero-index", "Access to block 
   REQUIRE( smart_peripheral_ptr.get(0) == smart_peripheral_ptr.get() );
 }
 
-TEST_CASE( "Platform_tests/phymem_ptr/subscript-zero", "Access to block via operator[](0) same as via *p.get()" )
+TEST_CASE( "Platform_tests/phymem_ptr/subscript-zero"
+         , "Access to block via operator[](0) same as via *p.get()"
+         )
 {
   PeripheralAccessType * null_peripheral_ptr(nullptr);
 
@@ -123,7 +133,9 @@ TEST_CASE( "Platform_tests/phymem_ptr/subscript-zero", "Access to block via oper
   REQUIRE( smart_peripheral_ptr[0] == *(smart_peripheral_ptr.get()) );
 }
 
-TEST_CASE("Platform_tests/phymem_ptr/sixth_member_access", "Using operator->() to access to non-1st member same as get()+offset")
+TEST_CASE( "Platform_tests/phymem_ptr/sixth_member_access"
+         , "Using operator->() to access to non-1st member same as get()+offset"
+         )
 {
   GPIOFunctionSelectType * null_gpiofnsel_ptr(nullptr);
 
@@ -134,7 +146,9 @@ TEST_CASE("Platform_tests/phymem_ptr/sixth_member_access", "Using operator->() t
   REQUIRE(&smart_gpiofsel_ptr->gpfsel5==((unsigned*)smart_gpiofsel_ptr.get())+5);
 }
 
-TEST_CASE( "Platform_tests/phymem_ptr/indexed-get-index-1", "Access to block via p.get(1) same as via p.get()+1" )
+TEST_CASE( "Platform_tests/phymem_ptr/indexed-get-index-1"
+         , "Access to block via p.get(1) same as via p.get()+1"
+         )
 {
   PeripheralAccessType * null_peripheral_ptr(nullptr);
 
@@ -145,7 +159,9 @@ TEST_CASE( "Platform_tests/phymem_ptr/indexed-get-index-1", "Access to block via
   REQUIRE( smart_peripheral_ptr.get(1) == (smart_peripheral_ptr.get()+1) );
 }
 
-TEST_CASE( "Platform_tests/phymem_ptr/subscript-1", "Access to block via operator[](1) same as via *(p.get()+1)" )
+TEST_CASE( "Platform_tests/phymem_ptr/subscript-1"
+         , "Access to block via operator[](1) same as via *(p.get()+1)"
+         )
 {
   PeripheralAccessType * null_peripheral_ptr(nullptr);
 

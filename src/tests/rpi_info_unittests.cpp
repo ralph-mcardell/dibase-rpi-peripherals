@@ -48,7 +48,7 @@ private:
 };
 
 TEST_CASE( "Unit_tests/rpi_info/major_version"
-         , "rpi_info().major_version() should return a 1 based positive integer"
+         , "rpi_info().major_version() returns a 1 based positive integer"
          )
 {
   test_init setup;
@@ -56,7 +56,8 @@ TEST_CASE( "Unit_tests/rpi_info/major_version"
 }
 
 TEST_CASE( "Unit_tests/rpi_info/index_version"
-         , "rpi_info().index_version() should return a 0 based positive integer, one less than major_version"
+         , "rpi_info().index_version() returns a 0 based positive integer, "
+           "one less than major_version"
          )
 {
   test_init setup;

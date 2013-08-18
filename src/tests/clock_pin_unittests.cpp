@@ -12,7 +12,7 @@
 using namespace dibase::rpi::peripherals;
 
 TEST_CASE( "Unit-tests/frequency/0010/default construct"
-         , ""
+         , "Default constructed frequency objects possible & have zero counts"
          )
 {
   CHECK((frequency<float, std::mega>{}.count())==0.0f);
@@ -25,7 +25,7 @@ TEST_CASE( "Unit-tests/frequency/0010/default construct"
 }
 
 TEST_CASE( "Unit-tests/frequency/0010/create_misc_scale_and_rep_frequencies"
-         , ""
+         , "Objects of various frequency types can be created from count value"
          )
 {
   frequency<float, std::mega> NineteenPointTwoMhz{19.2};
@@ -53,7 +53,8 @@ TEST_CASE( "Unit-tests/frequency/0010/create_misc_scale_and_rep_frequencies"
 }
 
 TEST_CASE( "Unit-tests/frequency/0020/create fails for inappropriate ctor values"
-         , ""
+         , "Compile will fail if built with COMPILE_FAIL_TESTS #defined for "
+           "two objects constructed from inappropriate values"
          )
 {
   f_kilohertz flt_KHzFrom_flt{1.1f};  // Compiles OK
@@ -74,14 +75,14 @@ TEST_CASE( "Unit-tests/frequency/0020/create fails for inappropriate ctor values
 
 #ifdef COMPILE_FAIL_TESTS
   
-  i_kilohertz int_KHzFrom_flt{1.1f};  // Compile FAIL
-  i_kilohertz int_KHzFrom_dbl{1.1};   // Compile FAIL
+  i_kilohertz int_KHzFrom_flt = 1.1f;  // Compile FAIL
+  i_kilohertz int_KHzFrom_dbl = 1.1;   // Compile FAIL
 
 #endif
 }
 
 TEST_CASE( "Unit-tests/frequency/0030/conversions"
-         , ""
+         , "frequency_cast can convert between frequencies of different types"
          )
 {
   CHECK(frequency_cast<hertz>(kilohertz(600)).count()==600000);
@@ -91,7 +92,7 @@ TEST_CASE( "Unit-tests/frequency/0030/conversions"
 }
 
 TEST_CASE( "Unit-tests/frequency/0030/comparisons - same frequency type"
-         , ""
+         , "Can compare frequencies of SAME type with == != < > <= >= "
          )
 {
   CHECK( hertz(123)==hertz(123) );
@@ -113,8 +114,8 @@ TEST_CASE( "Unit-tests/frequency/0030/comparisons - same frequency type"
   CHECK_FALSE( hertz(123)>=hertz(124) );
 }
 
-TEST_CASE( "Unit-tests/fixed_oscillator_clock_source/0000/"
-         , ""
+TEST_CASE( "Unit-tests/fixed_oscillator_clock_source/0000/create"
+         , "fixed_oscillator_clock_source can be created from a frequency"
          )
 {
   fixed_oscillator_clock_source osc_19_3MHz(f_megahertz(19.3));
@@ -123,7 +124,8 @@ TEST_CASE( "Unit-tests/fixed_oscillator_clock_source/0000/"
 }
 
 TEST_CASE( "Unit-tests/clock_frequency/0000/create with default filter"
-         , ""
+         , "clock_frequency can be created from just a frequency with the "
+           "filter type defaulting to none."
          )
 {
   clock_frequency clk_600KHz(kilohertz(600));
@@ -131,8 +133,9 @@ TEST_CASE( "Unit-tests/clock_frequency/0000/create with default filter"
   CHECK(clk_600KHz.average_frequency().count()==600000);
 }
 
-TEST_CASE( "Unit-tests/clock_frequency/0000/create with explicit filter"
-         , ""
+TEST_CASE( "Unit-tests/clock_frequency/0010/create with explicit filter"
+         , "clock_frequency can be created from frequency & an explicit "
+           "filter type"
          )
 {
   clock_frequency clk_600KHz(f_kilohertz(18.33), clock_filter::medium);

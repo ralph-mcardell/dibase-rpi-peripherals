@@ -14,7 +14,7 @@ pin_id_int_t const min_gpio_number(0);
 pin_id_int_t const max_gpio_number(53);
 
 TEST_CASE( "Unit_tests/pin_id/create_valid_converts_to_integer"
-         , "pin_id created from valid value convertable to that value"
+         , "pin_id created from valid value convertible to that value"
          )
 {
   for (pin_id_int_t id=min_gpio_number; id<=max_gpio_number; ++id)
@@ -53,7 +53,7 @@ TEST_CASE( "Unit_tests/pin_id/pin_id_in_exprn_with_volatile_data"
   CHECK( (volatile_value |= 1U<<(pin_id(1)%32))==3 );
 }
 
-// Additional test scafolding to allow mocking Raspberry Pi version information
+// Additional test scaffolding to allow mocking Raspberry Pi version information
 #include "rpi_info.h"
 #include "rpi_init.h"
 
@@ -129,7 +129,7 @@ TEST_CASE( "Unit_tests/pin_id/rpi_version_mapped_pin_id_returns_pin_id_via_mappi
 }
 
 TEST_CASE( "Unit_tests/pin_id/bad_mapped_pin_id_key_throws"
-         , "Passing rpi_version_mapped_pin_id an invalid key throws std::invalid_argument"
+         , "Passing rpi_version_mapped_pin_id an invalid key throws exception"
          )
 {
   test_rpi_version_init setup;
@@ -141,7 +141,7 @@ TEST_CASE( "Unit_tests/pin_id/bad_mapped_pin_id_key_throws"
 }
 
 TEST_CASE( "Unit_tests/pin_id/bad_mapped_pin_id_value_throws"
-         , "rpi_version_mapped_pin_id mapping results in bad pin id throws std::invalid_argument"
+         , "rpi_version_mapped_pin_id mapping gives bad pin id throws exception"
          )
 {
   test_rpi_version_init setup;
@@ -281,7 +281,7 @@ TEST_CASE( "Unit_tests/pin_id/good_p1_pin_arguments_produce_expected_pin-ids"
 }
 
 TEST_CASE( "Unit_tests/pin_id/bad_p1_pin_arguments_throws"
-         , "Bad and non-GPIO p1_pin pin numbers should throw std::invalid_argument"
+         , "Bad and non-GPIO p1_pin pin numbers throws exception"
          )
 {
   test_rpi_version_init setup;
@@ -302,7 +302,7 @@ TEST_CASE( "Unit_tests/pin_id/bad_p1_pin_arguments_throws"
 }
 
 TEST_CASE( "Unit_tests/pin_id/good_p5_pin_arguments_produce_expected_pin-ids"
-         , "p5_pin GPIO pin numbers should produce correct mapped pin_id value"
+         , "p5_pin GPIO pin numbers produce correct mapped pin_id value"
          )
 {
   test_rpi_version_init setup;
@@ -314,7 +314,7 @@ TEST_CASE( "Unit_tests/pin_id/good_p5_pin_arguments_produce_expected_pin-ids"
 }
 
 TEST_CASE( "Unit_tests/pin_id/bad_p5_pin_arguments_throws"
-         , "Bad and non-GPIO p5_pin pin numbers should throw std::invalid_argument"
+         , "Bad and non-GPIO p5_pin pin numbers throws exception"
          )
 {
   test_rpi_version_init setup;

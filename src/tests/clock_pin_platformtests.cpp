@@ -53,7 +53,7 @@ TEST_CASE( "Platform-tests/clock_pin/0010/destruction releases resources"
 }
 
 TEST_CASE( "Platform-tests/clock_pin/0020/create bad: pin has no clock function"
-         , ""
+         , "Exception thrown creating clock_pin for pin with no clock function"
          )
 {
   CHECK_THROWS_AS(clock_pin( pin_id{3}
@@ -65,7 +65,7 @@ TEST_CASE( "Platform-tests/clock_pin/0020/create bad: pin has no clock function"
 }
 
 TEST_CASE( "Platform-tests/clock_pin/0030/create bad: pin in use"
-         , ""
+         , "Exception thrown creating clock_pin for pin already used elsewhere"
          )
 {
   ipin pin4{pin_id{4}};
@@ -78,7 +78,7 @@ TEST_CASE( "Platform-tests/clock_pin/0030/create bad: pin in use"
 }
 
 TEST_CASE( "Platform-tests/clock_pin/0040/create bad: clock in use"
-         , ""
+         , "Exception thrown creating clock_pin for clock already in use"
          )
 {
   clock_pin clk { pin_id{4} // Supports GPCLK0
@@ -94,7 +94,7 @@ TEST_CASE( "Platform-tests/clock_pin/0040/create bad: clock in use"
 }
 
 TEST_CASE( "Platform-tests/clock_pin/0050/create bad: invalid frequencies"
-         , ""
+         , "Exception thrown creating clock_pin for bad clock frequencies"
          )
 {
   CHECK_THROWS_AS(clock_pin( pin_id{5}

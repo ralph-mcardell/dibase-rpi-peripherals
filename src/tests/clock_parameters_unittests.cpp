@@ -13,7 +13,9 @@ using namespace dibase::rpi::peripherals;
 using namespace dibase::rpi::peripherals::internal;
 
 TEST_CASE( "Unit-tests/clock_parameters/0000/create no filter"
-         , ""
+         , "A clock_parameters object created with no filtering specified "
+           "should have the same min, average and max frequencies and have "
+           "only integer division clock parameter values"
          )
 {
   fixed_oscillator_clock_source src{megahertz{650}};
@@ -31,7 +33,9 @@ TEST_CASE( "Unit-tests/clock_parameters/0000/create no filter"
 }
 
 TEST_CASE( "Unit-tests/clock_parameters/0010/create minimum filter"
-         , ""
+         , "A clock_parameters object created with minimum filtering specified "
+           "should have the a range of min, average and max frequencies and "
+           "have integer and fractional division clock parameter values"
          )
 {
   fixed_oscillator_clock_source src{megahertz{650}};
@@ -49,7 +53,9 @@ TEST_CASE( "Unit-tests/clock_parameters/0010/create minimum filter"
 }
 
 TEST_CASE( "Unit-tests/clock_parameters/0020/create medium filter"
-         , ""
+         , "A clock_parameters object created with medium filtering specified "
+           "should have the a range of min, average and max frequencies and "
+           "have integer and fractional division clock parameter values"
          )
 {
   fixed_oscillator_clock_source src{megahertz{650}};
@@ -67,7 +73,9 @@ TEST_CASE( "Unit-tests/clock_parameters/0020/create medium filter"
 }
 
 TEST_CASE( "Unit-tests/clock_parameters/0030/create maximum filter"
-         , ""
+         , "A clock_parameters object created with maximum filtering specified "
+           "should have the a range of min, average and max frequencies and "
+           "have integer and fractional division clock parameter values"
          )
 {
   fixed_oscillator_clock_source src{megahertz{650}};

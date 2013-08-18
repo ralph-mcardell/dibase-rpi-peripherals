@@ -15,12 +15,6 @@ using namespace dibase::rpi::peripherals::internal;
 
 pin_id const available_pin_id{21}; // P1 pin GPIO_GEN2
 
-
-#include "gpio_ctrl.h"
-#include <unistd.h>
-#include <fcntl.h>
-#include <fstream>
-
 TEST_CASE( "Platform_tests/pin_edge_event/000/create from closed ipin fails"
          , "Creating a pin_edge_event from an ipin that is closed throws"
          )
@@ -55,7 +49,7 @@ TEST_CASE( "Platform_tests/pin_edge_event/020/create with bad edge mode fails"
 }
 
 TEST_CASE( "Platform_tests/pin_edge_event/030/ipin create cleans up on destruction"
-         , "Sucessfully creating from an ipin cleans up on destruction"
+         , "Successfully creating from an ipin cleans up on destruction"
          )
 {
   int pin_evt_fd{::dup(0)};

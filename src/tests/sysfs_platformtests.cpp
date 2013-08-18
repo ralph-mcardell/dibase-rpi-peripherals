@@ -34,8 +34,8 @@ TEST_CASE( "Platform_tests/0010/sysfs/export_pin_exported_unexported_not"
 }
 
 TEST_CASE( "Platform_tests/0020/sysfs/exporting_exported_pin_OK"
-         , "Re-exporting a pin WORKS - check is_exported to check if this is"
-           " not what is required."
+         , "Re-exporting a pin supported - check exported  state with "
+           "is_exported if this is not what is required."
          )
 {
   export_pin(available_pin_id);
@@ -47,8 +47,8 @@ TEST_CASE( "Platform_tests/0020/sysfs/exporting_exported_pin_OK"
 }
 
 TEST_CASE( "Platform_tests/0030/sysfs/unexporting an unexported pin OK"
-         , "Unexporting a pin that is not exported OK - use is_exported to"
-           " check if this is not what is required"
+         , "A pin that is not exported can be unexported - use is_exported to"
+           " check exported state if this is not what is required"
          )
 {
   REQUIRE(is_exported(available_pin_id)==false);
@@ -84,7 +84,7 @@ TEST_CASE( "Platform_tests/0050/sysfs/opening pin for events with bad mode fails
 }
 
 TEST_CASE( "Platform_tests/0060/sysfs/closing non-open pin for events fd fails"
-         , "Closing a pin for edge event file dscriptor that is not open fails"
+         , "Closing a pin for edge event file descriptor that is not open fails"
          )
 {
   CHECK(close_ipin_for_edge_events(-1)==false);
@@ -98,7 +98,7 @@ TEST_CASE( "Platform_tests/0060/sysfs/closing non-open pin for events fd fails"
 
 TEST_CASE( "Platform_tests/0070/sysfs/open/close exported pin for events OK"
          , "Passing a valid argument values to open_ipin_for_edge_events "
-           "is sucessful"
+           "is successful"
          )
 {
   export_pin(available_pin_id);

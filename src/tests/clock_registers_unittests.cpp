@@ -277,10 +277,10 @@ TEST_CASE( "Unit-tests/clock_record/0400/set_enable for busy clocks"
   clock_record cr{128U,0}; // control bit 7 is BUSY flag.
   CHECK_FALSE(cr.set_enable(true));
   CHECK_FALSE(cr.get_enable());
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(cr.set_enable(false));
   CHECK_FALSE(cr.get_enable());
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
 
   CHECK(cr.set_enable(true, busy_override::yes));
   CHECK(cr.get_enable());
@@ -297,10 +297,10 @@ TEST_CASE( "Unit-tests/clock_record/0410/set_flip for busy clocks"
   clock_record cr{128U,0};
   CHECK_FALSE(cr.set_flip(true));
   CHECK_FALSE(cr.get_flip());
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(cr.set_flip(false));
   CHECK_FALSE(cr.get_flip());
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
 
   CHECK(cr.set_flip(true, busy_override::yes));
   CHECK(cr.get_flip());
@@ -317,17 +317,17 @@ TEST_CASE( "Unit-tests/clock_record/0420/set_mash for busy clocks"
   clock_record cr{128U,0};
   CHECK_FALSE(cr.set_mash(clock_mash_mode::mash_3_stage));
   CHECK(cr.get_mash()==clock_mash_mode::integer_division);//integer_division=0
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(cr.set_mash(clock_mash_mode::mash_2_stage));
   CHECK(cr.get_mash()==clock_mash_mode::integer_division);//integer_division=0
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(cr.set_mash(clock_mash_mode::mash_1_stage));
   CHECK(cr.get_mash()==clock_mash_mode::integer_division);//integer_division=0
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   cr.control |= 512U; // set lower MASH field bit
   CHECK_FALSE(cr.set_mash(clock_mash_mode::integer_division));
   CHECK(cr.get_mash()==clock_mash_mode::mash_1_stage);
-  CHECK(cr.control==(128U|512U));// BUSY and not forced: no write occured
+  CHECK(cr.control==(128U|512U));// BUSY and not forced: no write occurred
 
   CHECK(cr.set_mash(clock_mash_mode::mash_3_stage, busy_override::yes));
   CHECK(cr.get_mash()==clock_mash_mode::mash_3_stage);
@@ -350,29 +350,29 @@ TEST_CASE( "Unit-tests/clock_record/0430/set_source for busy clocks"
   clock_record cr{128U,0};
   CHECK_FALSE(cr.set_source(clock_src::hdmi_aux));
   CHECK(cr.get_source()==clock_src::gnd); //gnd=0
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(cr.set_source(clock_src::plld));
   CHECK(cr.get_source()==clock_src::gnd); //gnd=0
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(cr.set_source(clock_src::pllc));
   CHECK(cr.get_source()==clock_src::gnd); //gnd=0
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(cr.set_source(clock_src::plla));
   CHECK(cr.get_source()==clock_src::gnd); //gnd=0
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(cr.set_source(clock_src::testdebug1));
   CHECK(cr.get_source()==clock_src::gnd); //gnd=0
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(cr.set_source(clock_src::testdebug0));
   CHECK(cr.get_source()==clock_src::gnd); //gnd=0
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(cr.set_source(clock_src::oscillator));
   CHECK(cr.get_source()==clock_src::gnd); //gnd=0
-  CHECK(cr.control==128U);// BUSY and not forced: no write occured
+  CHECK(cr.control==128U);// BUSY and not forced: no write occurred
   cr.control |= 1U; // Set low bit of SRC field (oscillator)
   CHECK_FALSE(cr.set_source(clock_src::gnd));
   CHECK(cr.get_source()==clock_src::oscillator); //gnd=0
-  CHECK(cr.control==(128U|1U));// BUSY and not forced: no write occured
+  CHECK(cr.control==(128U|1U));// BUSY and not forced: no write occurred
 
   CHECK(cr.set_source(clock_src::hdmi_aux, busy_override::yes));
   CHECK(cr.get_source()==clock_src::hdmi_aux);
@@ -997,10 +997,10 @@ TEST_CASE( "Unit-tests/clock_registers/0400/set_enable for busy clock"
   clk_regs.pwm_clk.control = 128U; // BUSY flag is bit 7
   CHECK_FALSE(clk_regs.set_enable(pwm_clk_id, true));
   CHECK_FALSE(clk_regs.get_enable(pwm_clk_id));
-  CHECK(clk_regs.pwm_clk.control==128U);// BUSY and not forced: no write occured
+  CHECK(clk_regs.pwm_clk.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(clk_regs.set_enable(pwm_clk_id, false));
   CHECK_FALSE(clk_regs.get_enable(pwm_clk_id));
-  CHECK(clk_regs.pwm_clk.control==128U);// BUSY and not forced: no write occured
+  CHECK(clk_regs.pwm_clk.control==128U);// BUSY and not forced: no write occurred
 
   CHECK(clk_regs.set_enable(pwm_clk_id, true, busy_override::yes));
   CHECK(clk_regs.get_enable(pwm_clk_id));
@@ -1020,10 +1020,10 @@ TEST_CASE( "Unit-tests/clock_registers/0410/set_flip for busy clock"
   clk_regs.gp1_clk.control = 128U; // BUSY flag is bit 7
   CHECK_FALSE(clk_regs.set_flip(gp1_clk_id, true));
   CHECK_FALSE(clk_regs.get_flip(gp1_clk_id));
-  CHECK(clk_regs.gp1_clk.control==128U);// BUSY and not forced: no write occured
+  CHECK(clk_regs.gp1_clk.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(clk_regs.set_flip(gp1_clk_id, false));
   CHECK_FALSE(clk_regs.get_flip(gp1_clk_id));
-  CHECK(clk_regs.gp1_clk.control==128U);// BUSY and not forced: no write occured
+  CHECK(clk_regs.gp1_clk.control==128U);// BUSY and not forced: no write occurred
 
   CHECK(clk_regs.set_flip(gp1_clk_id, true, busy_override::yes));
   CHECK(clk_regs.get_flip(gp1_clk_id));
@@ -1043,11 +1043,11 @@ TEST_CASE( "Unit-tests/clock_registers/0420/set_mash for busy clock"
   clk_regs.gp0_clk.control = 128U; // BUSY flag is bit 7
   CHECK_FALSE(clk_regs.set_mash(gp0_clk_id, clock_mash_mode::mash_1_stage));
   CHECK(clk_regs.get_mash(gp0_clk_id)==clock_mash_mode::integer_division);
-  CHECK(clk_regs.gp0_clk.control==128U);// BUSY and not forced: no write occured
+  CHECK(clk_regs.gp0_clk.control==128U);// BUSY and not forced: no write occurred
   clk_regs.gp0_clk.control |= 512U; // set MASH field lower bit
   CHECK_FALSE(clk_regs.set_mash(gp0_clk_id, clock_mash_mode::integer_division));
   CHECK(clk_regs.get_mash(gp0_clk_id)==clock_mash_mode::mash_1_stage);
-  CHECK(clk_regs.gp0_clk.control==(128U|512U));// BUSY and not forced: no write occured
+  CHECK(clk_regs.gp0_clk.control==(128U|512U));// BUSY and not forced: no write occurred
 
   CHECK(clk_regs.set_mash(gp0_clk_id, clock_mash_mode::mash_3_stage, busy_override::yes));
   CHECK(clk_regs.get_mash(gp0_clk_id)==clock_mash_mode::mash_3_stage);
@@ -1067,7 +1067,7 @@ TEST_CASE( "Unit-tests/clock_registers/0430/set_source for busy clock"
   clk_regs.gp0_clk.control = 128U; // BUSY flag is bit 7
   CHECK_FALSE(clk_regs.set_source(gp0_clk_id, clock_src::hdmi_aux));
   CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::gnd); // gnd = 0
-  CHECK(clk_regs.gp0_clk.control==128U);// BUSY and not forced: no write occured
+  CHECK(clk_regs.gp0_clk.control==128U);// BUSY and not forced: no write occurred
   CHECK_FALSE(clk_regs.set_source(gp0_clk_id,clock_src::plld));
   CHECK(clk_regs.get_source(gp0_clk_id)==clock_src::gnd);
   CHECK(clk_regs.gp0_clk.control==128U);

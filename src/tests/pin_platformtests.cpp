@@ -37,7 +37,7 @@ TEST_CASE( "Platform_tests/001/opin/open_close"
 }
 
 TEST_CASE( "Platform_tests/002/opin/RAII_implicit_open_close"
-         , "An opin may be opened on contruction and is closed on destruction"
+         , "An opin may be opened on construction and is closed on destruction"
          )
 {
   {
@@ -90,7 +90,7 @@ TEST_CASE( "Platform_tests/021/ipin/open_close"
 }
 
 TEST_CASE( "Platform_tests/022/ipin/RAII_implicit_open_close"
-         , "An opin may be opened on contruction and is closed on destruction"
+         , "An opin may be opened on construction and is closed on destruction"
          )
 {
   {

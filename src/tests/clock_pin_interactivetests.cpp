@@ -8,8 +8,6 @@
 #include "catch.hpp"
 
 #include "clock_pin.h"
-#include "pin.h"
-#include "pinexcept.h"
 #include <iostream>
 #include <string>
 #include "interactivetests_config.h"

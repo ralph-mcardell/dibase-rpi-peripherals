@@ -14,12 +14,14 @@ struct mock_allocator
 {
   void allocate( pin_id /*pin*/ )
   {
-    if (in_use) throw std::domain_error("Oops - unexpected call to mock_allocator::allocate");
+    if (in_use) throw std::domain_error
+                        ("Oops - unexpected call to mock_allocator::allocate");
     in_use = true;
   }
   void deallocate( pin_id /*pin*/ )
   {
-    if (!in_use) throw std::domain_error("Oops - unexpected call to mock_allocator::deallocate");
+    if (!in_use) throw std::domain_error
+                        ("Oops - unexpected call to mock_allocator::deallocate");
     in_use = false;
   }
   bool is_in_use( pin_id /*pin*/ )
@@ -31,7 +33,7 @@ struct mock_allocator
 bool mock_allocator::in_use{false};
 
 TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_available_pin_marks_as_in_use"
-         , "After allocating an available pin with pin_cache_allocator it is in use"
+         , "Available pin in use after allocating with pin_cache_allocator"
          )
 {
   pin_cache_allocator<mock_allocator> a;
@@ -40,7 +42,7 @@ TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_available_pin_marks_as_in_use"
 }
 
 TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_available_pin_checks_wrapped_allocator"
-         , "When allocating an available pin pin_cache_allocator passes request to wrapped allocator"
+         , "Allocating available pin request passed to wrapped allocator"
          )
 {
   mock_allocator::in_use = false;
@@ -50,7 +52,7 @@ TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_available_pin_checks_wrapped_al
 }
 
 TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_unavailable_pin_throws"
-         , "When allocating an unavailable pin pin_cache_allocator throws a bad_pin_alloc exception"
+         , "Allocating unavailable pin pin_cache_allocator throws exception"
          )
 {
   mock_allocator::in_use = false;
@@ -61,7 +63,8 @@ TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_unavailable_pin_throws"
 }
 
 TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_used_elsewhere_pin_throws_not_locally_in_use"
-         , "When allocating an pin used elsewhere pin_cache_allocator does not mark pin as in use locally"
+         , "Allocating pin used elsewhere throws exception and pin not marked "
+           "as in use locally"
          )
 {
   mock_allocator::in_use = true;
@@ -85,7 +88,7 @@ TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_pins_independent"
 }
 
 TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_min_pin_id_OK"
-         , "Allocating minimum supported pin_id works OK"
+         , "Able to allocate minimum supported pin_id"
          )
 {
   mock_allocator::in_use = false;
@@ -96,7 +99,7 @@ TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_min_pin_id_OK"
 }
 
 TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_max_pin_id_OK"
-         , "Allocating maximum supported pin_id works OK"
+         , "Able to allocate maximum supported pin_id"
          )
 {
   mock_allocator::in_use = false;
@@ -116,7 +119,7 @@ TEST_CASE( "Unit_tests/pin_cache_allocator/dealloc_unused_pin_throws"
 }
 
 TEST_CASE( "Unit_tests/pin_cache_allocator/dealloc_locally_in_use_pin_succeeds"
-         , "Deallocating a pin marked as locally in use should succeed and the pin marked as free"
+         , "OK to deallocate pin locally in use - pin marked as free"
          )
 {
   mock_allocator::in_use = false;
@@ -128,7 +131,7 @@ TEST_CASE( "Unit_tests/pin_cache_allocator/dealloc_locally_in_use_pin_succeeds"
 }
 
 TEST_CASE( "Unit_tests/pin_cache_allocator/dealloc_in_use_pin_does_pass_on_request"
-         , "Deallocating a pin marked as locally in use pass on deallocation request"
+         , "Deallocating pin locally in use pass on deallocation request"
          )
 {
   mock_allocator::in_use = false;
@@ -171,7 +174,8 @@ TEST_CASE( "Unit_tests/pin_cache_allocator/all_pins_initially_free"
 }
 
 TEST_CASE( "Unit_tests/pin_cache_allocator/is_in_use_only_passes_on_request_if_locally_free"
-         , "is_in_use will report cached in use value or contained allocator's is_in_use value if localy free"
+         , "is_in_use will report cached in use value or contained allocator's "
+           "is_in_use value if locally free"
          )
 {
   pin_cache_allocator<mock_allocator> a;

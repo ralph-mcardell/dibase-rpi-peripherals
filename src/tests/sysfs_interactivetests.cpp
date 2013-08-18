@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file sysfs_interactivetests.cpp 
-/// @brief Interactive tests for sys filesystem utilities.
+/// @brief Interactive tests for sys file-system utilities.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
@@ -20,7 +20,7 @@ namespace
 }
 
 TEST_CASE( "Interactive_tests/sysfs/0000/initial edge event notifications OK"
-         , "Setup for any edge events triggers initial resturn from select"
+         , "Set-up for any edge events triggers initial return from select"
          )
 {
   export_pin(test::in_pin_id);

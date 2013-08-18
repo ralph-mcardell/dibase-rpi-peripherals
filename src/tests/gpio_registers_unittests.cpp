@@ -52,7 +52,7 @@ TEST_CASE( "Unit-tests/one_bit_field_register/set_bit"
     {
       r.set_bit(bitnumber);
       RegisterType const BitRegIdx(bitnumber/BitsPerRegister);
-    // All bits upto and including the just set bit should be set
+    // All bits up to and including the just set bit should be set
     // This is 2**(bitposition+1) - 1. i.e. if bitposition were 2 then
     // bits 0,1,2 (==7) would be set which is 2**3 - 1.
       CHECK(r[BitRegIdx]==(1U<<(bitnumber%BitsPerRegister+1))-1);
@@ -71,7 +71,7 @@ TEST_CASE( "Unit-tests/one_bit_field_register/clear_bit"
     {
       r.clear_bit(bitnumber);
       RegisterType const BitRegIdx(bitnumber/BitsPerRegister);
-    // All bits upto and including the just set bit should be cleared
+    // All bits up to and including the just set bit should be cleared
     // This is ~(2**(bitposition+1) - 1). i.e. if bitposition were 2 then
     // bits 0,1,2 would be clear which is ~(2**3 - 1).
       CHECK(r[BitRegIdx]==~((1U<<(bitnumber%BitsPerRegister+1))-1));
@@ -79,7 +79,7 @@ TEST_CASE( "Unit-tests/one_bit_field_register/clear_bit"
 }
 
 TEST_CASE( "Unit-tests/one_bit_field_register/set_just_bit"
-         , "Setting just 1 bit sets only 1 bit in only one register word of a pair"
+         , "Setting 1 bit sets only 1 bit in only one register word of a pair"
          )
 {
   RegisterType const BitsPerRegister(32);
@@ -375,7 +375,7 @@ TEST_CASE( "Unit-tests/gpio_registers/clear_pin_event"
 }
 
 TEST_CASE( "Unit-tests/gpio_registers/pin_rising_edge_detect_enable"
-         , "Enabling rising edge detect for pin sets appropiate bit in gpren"
+         , "Enabling rising edge detect for pin sets appropriate bit in gpren"
          )
 {
   RegisterType const BitsPerRegister(32);
@@ -394,7 +394,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_rising_edge_detect_enable"
 }
 
 TEST_CASE( "Unit-tests/gpio_registers/pin_rising_edge_detect_disable"
-         , "Disabling rising edge detect for pin clears appropiate bit in gpren"
+         , "Disabling rising edge detect for pin clears appropriate bit in gpren"
          )
 {
   RegisterType const BitsPerRegister(32);
@@ -413,7 +413,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_rising_edge_detect_disable"
 }
 
 TEST_CASE( "Unit-tests/gpio_registers/pin_falling_edge_detect_enable"
-         , "Enabling falling edge detect for pin sets appropiate bit in gpfen"
+         , "Enabling falling edge detect for pin sets appropriate bit in gpfen"
          )
 {
   RegisterType const BitsPerRegister(32);
@@ -432,7 +432,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_falling_edge_detect_enable"
 }
 
 TEST_CASE( "Unit-tests/gpio_registers/pin_falling_edge_detect_disable"
-         , "Disabling falling edge detect for pin clears appropiate bit in gpfen"
+         , "Disabling falling edge detect for pin clears appropriate bit in gpfen"
          )
 {
   RegisterType const BitsPerRegister(32);
@@ -451,7 +451,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_falling_edge_detect_disable"
 }
 
 TEST_CASE( "Unit-tests/gpio_registers/pin_high_detect_enable"
-         , "Enabling high detect for pin sets appropiate bit in gphen"
+         , "Enabling high detect for pin sets appropriate bit in gphen"
          )
 {
   RegisterType const BitsPerRegister(32);
@@ -470,7 +470,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_high_detect_enable"
 }
 
 TEST_CASE( "Unit-tests/gpio_registers/pin_high_detect_disable"
-         , "Disabling high detect for pin clears appropiate bit in gphen"
+         , "Disabling high detect for pin clears appropriate bit in gphen"
          )
 {
   RegisterType const BitsPerRegister(32);
@@ -489,7 +489,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_high_detect_disable"
 }
 
 TEST_CASE( "Unit-tests/gpio_registers/pin_low_detect_enable"
-         , "Enabling low detect for pin sets appropiate bit in gplen"
+         , "Enabling low detect for pin sets appropriate bit in gplen"
          )
 {
   RegisterType const BitsPerRegister(32);
@@ -508,7 +508,7 @@ TEST_CASE( "Unit-tests/gpio_registers/pin_low_detect_enable"
 }
 
 TEST_CASE( "Unit-tests/gpio_registers/pin_low_detect_disable"
-         , "Disabling low detect for pin clears appropiate bit in gplen"
+         , "Disabling low detect for pin clears appropriate bit in gplen"
          )
 {
   RegisterType const BitsPerRegister(32);

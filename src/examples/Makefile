@@ -1,4 +1,4 @@
-# rpi-periphals example executables makefile
+# rpi-peripherals example executables makefile
 # Copyright (c) Dibase Limited 2012
 # Author: Ralph E. McArdell
 
@@ -47,7 +47,7 @@ $(EXEC_DIR)/%$(FILE_SUFFIX): $(OBJ_DIR)/%.o $(LIB_DIR)/$(LIB_FILE)
 
 
 $(OBJ_DIR)/%.o: %.cpp
-	$(CC) $(COMPILE_FLAGS) -I./.. -o $@ $< -pthread 
+	$(CC) $(COMPILE_FLAGS) -o $@ $< -pthread 
 
 $(LIB_DIR)/$(LIB_FILE):
 	$(MAKE) -C $(SRC_DIR) BUILD_CONFIG=$(BUILD_CONFIG)

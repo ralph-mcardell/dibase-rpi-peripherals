@@ -25,6 +25,7 @@ PLATTEST_SRC_FILES = phymem_ptr_platformtests.cpp\
                     clock_pin_platformtests.cpp
 UNITTEST_SRC_FILE = gpio_registers_unittests.cpp\
                     clock_registers_unittests.cpp\
+                    pwm_registers_unittests.cpp\
                     pin_id_unittests.cpp\
                     rpi_info_unittests.cpp\
                     pin_alloc_unittests.cpp\

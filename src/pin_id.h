@@ -6,15 +6,17 @@
 /// @author Ralph E. McArdell
 
 #ifndef DIBASE_RPI_PERIPHERALS_PIN_ID_H
- #define DIBASE_RPI_PERIPHERALS_PIN_ID_H
+# define DIBASE_RPI_PERIPHERALS_PIN_ID_H
 
- #include "peridef.h"
- #include <stdexcept>
- #include <iosfwd>
+# include <stdexcept>
+# include <iosfwd>
 
 namespace dibase { namespace rpi {
   namespace peripherals
   {
+  /// @brief Integer type used to represent BCM2835 GPIO pin id numbers
+    typedef std::uint32_t pin_id_int_t;
+
   /// @brief Value class validating and wrapping integer GPIO pin id value.
   ///
   /// A pin_id represents a BCM2835 GPIO pin id number. It wraps a positive

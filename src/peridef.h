@@ -6,11 +6,11 @@
 /// @author Ralph E. McArdell
 
 #ifndef DIBASE_RPI_PERIPHERALS_PERIDEF_H
- #define DIBASE_RPI_PERIPHERALS_PERIDEF_H
+# define DIBASE_RPI_PERIPHERALS_PERIDEF_H
 
- #include <sys/types.h>
- #include <cstdint>
- #include <limits>
+# include <sys/types.h>
+# include <cstdint>
+# include <limits>
 
 /// @brief Namespace for all Dibase / R. E. McArdell entities
 namespace dibase 
@@ -26,9 +26,6 @@ namespace rpi
 
   /// @brief Represents BCM2835 peripheral control registers
     typedef std::uint32_t register_t;
-
-  /// @brief Integer type used to represent BCM2835 GPIO pin id numbers
-    typedef std::uint32_t pin_id_int_t;
 
   /// @brief Number of bits in a BCM2835 peripheral control register.
     std::size_t const register_width{std::numeric_limits<register_t>::digits};

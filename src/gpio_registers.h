@@ -11,10 +11,10 @@
 /// @author Ralph E. McArdell
 
 #ifndef DIBASE_RPI_PERIPHERALS_GPIO_REGISTERS_H
- #define DIBASE_RPI_PERIPHERALS_GPIO_REGISTERS_H
+# define DIBASE_RPI_PERIPHERALS_GPIO_REGISTERS_H
 
- #include "peridef.h"
- #include "pin_id.h"
+# include "peridef.h"
+# include "pin_id.h"
 
 namespace dibase { namespace rpi {
   namespace peripherals

@@ -12,9 +12,9 @@
 /// @author Ralph E. McArdell
 
 #ifndef DIBASE_RPI_PERIPHERALS_CLOCK_REGISTERS_H
- #define DIBASE_RPI_PERIPHERALS_CLOCK_REGISTERS_H
+# define DIBASE_RPI_PERIPHERALS_CLOCK_REGISTERS_H
 
- #include "peridef.h"
+# include "peridef.h"
 
 namespace dibase { namespace rpi {
   namespace peripherals

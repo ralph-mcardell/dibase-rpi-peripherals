@@ -6,7 +6,7 @@
 # --------
 # all (default): build all libraries and examples using 
 #                release and debug configurations
-# release: as all but only  builds using release configuarion
+# release: as all but only  builds using release configuration
 # debug: as all but only builds using debug configuration
 # test: builds test executables using debug configuration
 # check: as test but also executes tests
@@ -50,11 +50,15 @@ tidy: dirs
 	$(MAKE) -C $(SRC_DIR) tidy
 	$(MAKE) -C $(SRC_DIR)/examples tidy
 	$(MAKE) -C $(SRC_DIR)/tests tidy
+	-$(RM) $(BUILD_DIR)/debug/*
+	-$(RM) $(BUILD_DIR)/release/*
 
 clean: dirs
 	$(MAKE) -C $(SRC_DIR) clean
 	$(MAKE) -C $(SRC_DIR)/examples clean
 	$(MAKE) -C $(SRC_DIR)/tests clean
+	-$(RM) $(BUILD_DIR)/debug/*
+	-$(RM) $(BUILD_DIR)/release/*
 
 help:
 	@echo 'Usage: make [target]'
@@ -69,7 +73,7 @@ help:
 	@echo '  tidy            Remove only intermediate targets such as .o files.'
 	@echo '  help            Print this help.'
 
-# The following rules ensure we have the varous end
+# The following rules ensure we have the various end
 # and intermediate target directories available:
 $(EXEC_DIR):
 	mkdir $@

@@ -185,7 +185,7 @@ namespace dibase { namespace rpi {
 
   /// @brief Clock frequency jitter reducing filtering values
   /// Jitter can be reduced by applying a number of MASH filtering stages to
-  /// the fequency of a clock so that its average frequency is close to the
+  /// the frequency of a clock so that its average frequency is close to the
   /// requested frequency but the frequency varies between a maximum and
   /// minimum value. There is a limit on the maximum clock frequency of 25Mhz
   /// for BCM2835 MASH filtered clocks.
@@ -210,7 +210,7 @@ namespace dibase { namespace rpi {
   ///
   /// Note that the filtering value is used as a suggestion and maps to a MASH
   /// filtering mode starting point. A less severe mode may be used if the 
-  /// frequency range would exceed the maximum permissable frequency.
+  /// frequency range would exceed the maximum permissible frequency.
     class clock_frequency
     {
       hertz         avg_freq;     ///< The average frequency, in Hertz
@@ -252,8 +252,8 @@ namespace dibase { namespace rpi {
   /// pin alternative function to use. 
   /// If the pin supports a GPCLK function and the source and frequency
   /// parameters are valid and the clock not already in use locally within
-  ///  the same process then the clock is setup and the pin allocated and
-  /// set to the relevant alt-fn. Note: no attmpt is made to see if the clock
+  ///  the same process then the clock is set-up and the pin allocated and
+  /// set to the relevant alt-fn. Note: no attempt is made to see if the clock
   /// is in use externally by other processes.
   ///
   /// Once constructed the clock can be started and stopped.
@@ -332,8 +332,8 @@ namespace dibase { namespace rpi {
     /// @brief Stop clock running (disable clock)
       void  stop() const;
 
-    /// @brief Return enabaled (running) state of clock
-    /// @returns true if clock is running (ebabled), false if not.
+    /// @brief Return enabled (running) state of clock
+    /// @returns true if clock is running (enabled), false if not.
       bool is_running() const;
 
     /// @brief Return creation calculated clock minimum frequency

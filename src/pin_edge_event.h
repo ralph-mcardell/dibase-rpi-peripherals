@@ -8,7 +8,6 @@
 #ifndef DIBASE_RPI_PERIPHERALS_PIN_EDGE_EVENT_H
 # define DIBASE_RPI_PERIPHERALS_PIN_EDGE_EVENT_H
 
-# include "pin_id.h"
 # include "pin.h"
 # include <chrono>
 
@@ -32,15 +31,15 @@ namespace dibase { namespace rpi {
     /// @brief Internal non-templated member function to perform timed waits.
     /// @param t_rel_secs  Seconds portion of relative time to wait.
     /// @param t_rel_secs  Nano seconds portion of relative time to wait.
-    /// @returns true if an event occured or false if no event occured and the
-    ///          call timed out.
+    /// @returns true if an event occurred or false if no event occurred and
+    ///          the call timed out.
     /// @throws std::system_error if any system function call returns failure.
      bool     wait_(long t_rel_secs, long t_rel_ns) const;
 
     public:
     /// @brief Enumeration of edge transitions to monitor.
       enum edge_mode
-      { rising    ///< Rising edge trasitions.
+      { rising    ///< Rising edge transitions.
       , falling   ///< Falling edge transitions.
       , both      ///< Both rising and falling edge transitions.
       };
@@ -50,11 +49,11 @@ namespace dibase { namespace rpi {
     /// in GPIO part of the sys file system - which is so if using the provided
     /// pinallocator.
     /// @param in   Open ipin to monitor for edge transitions.
-    /// @param mode Which edge trasitions raise events.
+    /// @param mode Which edge transitions raise events.
     /// @throws std::invalid_argument if in not open or mode is invalid.
     /// @throws std::runtime_error on failure to open a pin mode setup file.
     /// @throws std::ios_base::failure on failure or error writing pin
-    ///         setup information.
+    ///         set-up information.
     /// @throws std::system_error if error obtaining watchable file descriptor.
     /// @throws bad_pin_alloc if the pin represented by in already has a
     ///         pin_edge_event object associated with it.
@@ -68,7 +67,7 @@ namespace dibase { namespace rpi {
     /// @brief Destroy, closing watchable file descriptor.
       ~pin_edge_event();
 
-    /// @brief Check if a monitored edge event occured on the associated pin.
+    /// @brief Check if a monitored edge event occurred on the associated pin.
     /// @returns true if an event has been signalled, false if not.
     /// @throws std::system_error if any system function call returns failure.
       bool signalled() const;
@@ -88,8 +87,8 @@ namespace dibase { namespace rpi {
     ///                           section 20.11.5.
     /// @param rel_time   Amount of time to wait for a monitored edge event
     ///                   to occur on the associated pin.
-    /// @returns true if an event occured or false if no event occured and the
-    ///          call timed out.
+    /// @returns true if an event occurred or false if no event occurred and
+    ///          the call timed out.
     /// @throws std::system_error if any system function call returns failure.
       template <class Rep, class Period>
       bool wait_for(const std::chrono::duration<Rep, Period>& rel_time) const
@@ -109,8 +108,8 @@ namespace dibase { namespace rpi {
     ///                             standard section 20.11.6.
     /// @param abs_time   Point in time to wait until for a monitored edge
     ///                   event to occur on the associated pin.
-    /// @returns true if an event occured or false if no event occured and the
-    ///          call timed out.
+    /// @returns true if an event occurred or false if no event occurred and
+    ///          the call timed out.
     /// @throws std::system_error if any system function call returns failure.
       template <class Clock, class Duration>
       bool

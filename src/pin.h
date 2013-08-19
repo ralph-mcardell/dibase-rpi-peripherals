@@ -6,9 +6,9 @@
 /// @author Ralph E. McArdell
 
 #ifndef DIBASE_RPI_PERIPHERALS_PIN_H
- #define DIBASE_RPI_PERIPHERALS_PIN_H
+# define DIBASE_RPI_PERIPHERALS_PIN_H
 
- #include "pin_id.h"
+# include "pin_id.h"
 
 namespace dibase { namespace rpi {
   namespace peripherals

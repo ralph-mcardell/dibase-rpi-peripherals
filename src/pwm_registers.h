@@ -29,6 +29,13 @@ namespace dibase { namespace rpi {
     , pwm_ch1 = 0     ///< PWM channel nomenclature for first PWM channel
     , pwm_ch2 = 1     ///< PWM channel nomenclature for second PWM channel
     };
+
+  /// @brief Strong enumeration type for PWM modes
+  /// The PWM controller supports two main modes: PWM and serialiser.
+    enum class pwm_mode : register_t
+    { pwm = 0         ///< PWM controller PWM mode
+    , serialiser = 1  ///< PWM controller serialiser mode
+    };
     
   /// @brief Represents layout of PWM control registers with operations.
   ///
@@ -65,6 +72,11 @@ namespace dibase { namespace rpi {
       , ctl_ch2_shift = 8   ///< Shift for control bits for PWM1 / channel 2
       };
 
+      constexpr static register_t ch_shift(pwm_channel ch, register_t v)
+      { 
+        return ch==pwm_channel::pwm_ch2 ? (v<<ctl_ch2_shift) : v;
+      }
+
     public:
     /// @brief Physical address of start of BCM2835 PWM control registers
       constexpr static physical_address_t 
@@ -79,6 +91,70 @@ namespace dibase { namespace rpi {
       register_t reserved_do_not_use_1; ///< Reserved, currently unused
       register_t range2;      ///< PWM1 (channel 2) range register, RNG2
       register_t data2;       ///< PWM1 (channel 2) data register, DAT2
+
+    /// @brief Return value of control register PWENi bit for specified channel.
+    /// @param ch  PWM channel id to return enable state for
+    /// @returns true if channel control register PWEN bit set, false if not.
+      bool get_enable(pwm_channel ch) volatile const
+      {
+        return control & ch_shift(ch,ctl_enable);
+      }
+
+    /// @brief Return value of control register PWENi bit for specified channel.
+    /// @param ch  PWM channel id to return mode for
+    /// @returns pwm_mode::pwm if channel is in PWM mode or
+    ///          pwm_mode::serialiser if the channel is in serialiser mode.
+      pwm_mode get_mode(pwm_channel ch) volatile const
+      {
+        return (control & ch_shift(ch,ctl_mode_ser))  ? pwm_mode::serialiser 
+                                                      : pwm_mode::pwm;
+      }
+
+    /// @brief Return value of control register RPTLi bit for specified channel.
+    /// @param ch  PWM channel id to return repeat last data state for
+    /// @returns true if channel control register RPTL bit set, false if not.
+      bool get_repeat_last_data(pwm_channel ch) volatile const
+      {
+        return control & ch_shift(ch,ctl_rptl);
+      }
+
+    /// @brief Return value of control register SBITi bit for specified channel.
+    /// @param ch  PWM channel id to return silence (no transmission) state for
+    /// @returns true if channel control register SBIT bit set, false if not.
+      bool get_silence(pwm_channel ch) volatile const
+      {
+        return control & ch_shift(ch,ctl_sbit);
+      }
+
+    /// @brief Return value of control register POLAi bit for specified channel.
+    /// @param ch  PWM channel id to return polarity inverted state
+    /// @returns true if channel control register POLA bit set, false if not.
+      bool get_polarity_inverted(pwm_channel ch) volatile const
+      {
+        return control & ch_shift(ch,ctl_pola);
+      }
+
+    /// @brief Return value of control register USEFi bit for specified channel.
+    /// @param ch  PWM channel id to return using FIFO state
+    /// @returns true if channel control register USEF bit set, false if not.
+      bool get_use_fifo(pwm_channel ch) volatile const
+      {
+        return control & ch_shift(ch,ctl_usef);
+      }
+
+    /// @brief Return value of control register MSENi bit for specified channel.
+    /// @param ch  PWM channel id to return M/S PWM algorithm enabled state
+    /// @returns true if channel control register MSEN bit set, false if not.
+      bool get_ms_enabled(pwm_channel ch) volatile const
+      {
+        return control & ch_shift(ch,ctl_msen);
+      }
+
+    /// @brief Clear the FIFO. There is only 1 FIFO, no channel parameter needed
+      void clear_fifo() volatile
+      {
+        control |= ctl_clrf;
+      }
     };
   }
 }}

@@ -66,14 +66,14 @@ TEST_CASE( "Unit-tests/pwm_registers/0010/get_enable"
 {
   pwm_registers pwm_regs;
   std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
-  pwm_regs.control |= 1U;       // bit 0==1: PWEN1 true
+  pwm_regs.control = 1U;       // bit 0==1: PWEN1 true
   CHECK(pwm_regs.get_enable(pwm_channel::gpio_pwm0));
-  pwm_regs.control &= ~1U;      // bit 0==0: PWEN1 false
+  pwm_regs.control = ~1U;      // bit 0==0: PWEN1 false
   CHECK_FALSE(pwm_regs.get_enable(pwm_channel::pwm_ch1));
 
-  pwm_regs.control |= 0x100U;   // bit 8==1: PWEN2 true
+  pwm_regs.control = 0x100U;   // bit 8==1: PWEN2 true
   CHECK(pwm_regs.get_enable(pwm_channel::gpio_pwm1));
-  pwm_regs.control &= ~0x100U;  // bit 8==0: PWEN2 false
+  pwm_regs.control = ~0x100U;  // bit 8==0: PWEN2 false
   CHECK_FALSE(pwm_regs.get_enable(pwm_channel::pwm_ch2));
 }
 
@@ -83,14 +83,14 @@ TEST_CASE( "Unit-tests/pwm_registers/0020/get_mode"
 {
   pwm_registers pwm_regs;
   std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
-  pwm_regs.control |= 2U;       // bit 1==1: MODE1 true
+  pwm_regs.control = 2U;       // bit 1==1: MODE1 true
   CHECK(pwm_regs.get_mode(pwm_channel::gpio_pwm0)==pwm_mode::serialiser);
-  pwm_regs.control &= ~2U;      // bit 1==0: MODE1 false
+  pwm_regs.control = ~2U;      // bit 1==0: MODE1 false
   CHECK(pwm_regs.get_mode(pwm_channel::pwm_ch1)==pwm_mode::pwm);
 
-  pwm_regs.control |= 0x200U;   // bit 9==1: MODE2 true
+  pwm_regs.control = 0x200U;   // bit 9==1: MODE2 true
   CHECK(pwm_regs.get_mode(pwm_channel::gpio_pwm1)==pwm_mode::serialiser);
-  pwm_regs.control &= ~0x200U;  // bit 9==0: MODE2 false
+  pwm_regs.control = ~0x200U;  // bit 9==0: MODE2 false
   CHECK(pwm_regs.get_mode(pwm_channel::pwm_ch2)==pwm_mode::pwm);
 }
 
@@ -101,14 +101,14 @@ TEST_CASE( "Unit-tests/pwm_registers/0030/get_repeat_last_data"
 {
   pwm_registers pwm_regs;
   std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
-  pwm_regs.control |= 4U;       // bit 2==1: RPTL1 true
+  pwm_regs.control = 4U;       // bit 2==1: RPTL1 true
   CHECK(pwm_regs.get_repeat_last_data(pwm_channel::gpio_pwm0));
-  pwm_regs.control &= ~4U;      // bit 2==0: RPTL1 false
+  pwm_regs.control = ~4U;      // bit 2==0: RPTL1 false
   CHECK_FALSE(pwm_regs.get_repeat_last_data(pwm_channel::pwm_ch1));
 
-  pwm_regs.control |= 0x400U;   // bit 10==1: RPTL2 true
+  pwm_regs.control = 0x400U;   // bit 10==1: RPTL2 true
   CHECK(pwm_regs.get_repeat_last_data(pwm_channel::gpio_pwm1));
-  pwm_regs.control &= ~0x400U;  // bit 10==0: RPTL2 false
+  pwm_regs.control = ~0x400U;  // bit 10==0: RPTL2 false
   CHECK_FALSE(pwm_regs.get_repeat_last_data(pwm_channel::pwm_ch2));
 }
 
@@ -119,14 +119,14 @@ TEST_CASE( "Unit-tests/pwm_registers/0040/get_silence"
 {
   pwm_registers pwm_regs;
   std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
-  pwm_regs.control |= 8U;       // bit 3==1: SBIT1 true
+  pwm_regs.control = 8U;       // bit 3==1: SBIT1 true
   CHECK(pwm_regs.get_silence(pwm_channel::gpio_pwm0));
-  pwm_regs.control &= ~8U;      // bit 3==0: SBIT1 false
+  pwm_regs.control = ~8U;      // bit 3==0: SBIT1 false
   CHECK_FALSE(pwm_regs.get_silence(pwm_channel::pwm_ch1));
 
-  pwm_regs.control |= 0x800U;   // bit 11==1: SBIT2 true
+  pwm_regs.control = 0x800U;   // bit 11==1: SBIT2 true
   CHECK(pwm_regs.get_silence(pwm_channel::gpio_pwm1));
-  pwm_regs.control &= ~0x800U;  // bit 11==0: SBIT2 false
+  pwm_regs.control = ~0x800U;  // bit 11==0: SBIT2 false
   CHECK_FALSE(pwm_regs.get_silence(pwm_channel::pwm_ch2));
 }
 
@@ -137,14 +137,14 @@ TEST_CASE( "Unit-tests/pwm_registers/0050/get_polarity_inverted"
 {
   pwm_registers pwm_regs;
   std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
-  pwm_regs.control |= 0x10U;    // bit 4==1: POLA1 true
+  pwm_regs.control = 0x10U;    // bit 4==1: POLA1 true
   CHECK(pwm_regs.get_polarity_inverted(pwm_channel::gpio_pwm0));
-  pwm_regs.control &= ~0x10U;   // bit 4==0: POLA1 false
+  pwm_regs.control = ~0x10U;   // bit 4==0: POLA1 false
   CHECK_FALSE(pwm_regs.get_polarity_inverted(pwm_channel::pwm_ch1));
 
-  pwm_regs.control |= 0x1000U;  // bit 12==1: POLA2 true
+  pwm_regs.control = 0x1000U;  // bit 12==1: POLA2 true
   CHECK(pwm_regs.get_polarity_inverted(pwm_channel::gpio_pwm1));
-  pwm_regs.control &= ~0x1000U; // bit 12==0: POLA2 false
+  pwm_regs.control = ~0x1000U; // bit 12==0: POLA2 false
   CHECK_FALSE(pwm_regs.get_polarity_inverted(pwm_channel::pwm_ch2));
 }
 
@@ -155,14 +155,14 @@ TEST_CASE( "Unit-tests/pwm_registers/0050/get_use_fifo"
 {
   pwm_registers pwm_regs;
   std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
-  pwm_regs.control |= 0x20U;    // bit 5==1: USEF1 true
+  pwm_regs.control = 0x20U;    // bit 5==1: USEF1 true
   CHECK(pwm_regs.get_use_fifo(pwm_channel::gpio_pwm0));
-  pwm_regs.control &= ~0x20U;   // bit 5==0: USEF1 false
+  pwm_regs.control = ~0x20U;   // bit 5==0: USEF1 false
   CHECK_FALSE(pwm_regs.get_use_fifo(pwm_channel::pwm_ch1));
 
-  pwm_regs.control |= 0x2000U;  // bit 13==1: USEF2 true
+  pwm_regs.control = 0x2000U;  // bit 13==1: USEF2 true
   CHECK(pwm_regs.get_use_fifo(pwm_channel::gpio_pwm1));
-  pwm_regs.control &= ~0x2000U; // bit 13==0: USEF2 false
+  pwm_regs.control = ~0x2000U; // bit 13==0: USEF2 false
   CHECK_FALSE(pwm_regs.get_use_fifo(pwm_channel::pwm_ch2));
 }
 
@@ -173,14 +173,14 @@ TEST_CASE( "Unit-tests/pwm_registers/0060/get_ms_enabled"
 {
   pwm_registers pwm_regs;
   std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
-  pwm_regs.control |= 0x80U;    // bit 7==1: MSEN1 true
+  pwm_regs.control = 0x80U;    // bit 7==1: MSEN1 true
   CHECK(pwm_regs.get_ms_enabled(pwm_channel::gpio_pwm0));
-  pwm_regs.control &= ~0x80U;   // bit 7==0: MSEN1 false
+  pwm_regs.control = ~0x80U;   // bit 7==0: MSEN1 false
   CHECK_FALSE(pwm_regs.get_ms_enabled(pwm_channel::pwm_ch1));
 
-  pwm_regs.control |= 0x8000U;  // bit 15==1: MSEN2 true
+  pwm_regs.control = 0x8000U;  // bit 15==1: MSEN2 true
   CHECK(pwm_regs.get_ms_enabled(pwm_channel::gpio_pwm1));
-  pwm_regs.control &= ~0x8000U; // bit 15==0: MSEN2 false
+  pwm_regs.control = ~0x8000U; // bit 15==0: MSEN2 false
   CHECK_FALSE(pwm_regs.get_ms_enabled(pwm_channel::pwm_ch2));
 }
 
@@ -192,4 +192,130 @@ TEST_CASE( "Unit-tests/pwm_registers/0070/clear_fifo"
   std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
   pwm_regs.clear_fifo();
   CHECK(pwm_regs.control==0x40);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0080/set_enable"
+         , "set_enable sets correct state in control register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_enable(pwm_channel::gpio_pwm0, true);
+  CHECK(pwm_regs.control==0x1U);
+  pwm_regs.set_enable(pwm_channel::pwm_ch1, false);
+  CHECK(pwm_regs.control==0U);
+
+  pwm_regs.set_enable(pwm_channel::gpio_pwm1, true);
+  CHECK(pwm_regs.control==0x100U);
+  pwm_regs.set_enable(pwm_channel::pwm_ch2, false);
+  CHECK(pwm_regs.control==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0090/set_mode"
+         , "set_mode sets correct bits in control register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_mode(pwm_channel::gpio_pwm0, pwm_mode::serialiser);
+  CHECK(pwm_regs.control==0x2U);
+  pwm_regs.set_mode(pwm_channel::pwm_ch1, pwm_mode::pwm);
+  CHECK(pwm_regs.control==0U);
+
+  pwm_regs.set_mode(pwm_channel::gpio_pwm1, pwm_mode::serialiser);
+  CHECK(pwm_regs.control==0x200U);
+  pwm_regs.set_mode(pwm_channel::pwm_ch2, pwm_mode::pwm);
+  CHECK(pwm_regs.control==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0100/set_repeat_last_data"
+         , "set_repeat_last_data sets correct bits in control register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_repeat_last_data(pwm_channel::gpio_pwm0, true);
+  CHECK(pwm_regs.control==0x4U);
+  pwm_regs.set_repeat_last_data(pwm_channel::pwm_ch1, false);
+  CHECK(pwm_regs.control==0U);
+
+  pwm_regs.set_repeat_last_data(pwm_channel::gpio_pwm1, true);
+  CHECK(pwm_regs.control==0x400U);
+  pwm_regs.set_repeat_last_data(pwm_channel::pwm_ch2, false);
+  CHECK(pwm_regs.control==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0110/set_silence"
+         , "set_silence sets correct bits in control register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_silence(pwm_channel::gpio_pwm0, true);
+  CHECK(pwm_regs.control==0x8U);
+  pwm_regs.set_silence(pwm_channel::pwm_ch1, false);
+  CHECK(pwm_regs.control==0U);
+
+  pwm_regs.set_silence(pwm_channel::gpio_pwm1, true);
+  CHECK(pwm_regs.control==0x800U);
+  pwm_regs.set_silence(pwm_channel::pwm_ch2, false);
+  CHECK(pwm_regs.control==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0120/set_polarity_inverted"
+         , "set_polarity_inverted sets correct bits in control register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_polarity_inverted(pwm_channel::gpio_pwm0, true);
+  CHECK(pwm_regs.control==0x10U);
+  pwm_regs.set_polarity_inverted(pwm_channel::pwm_ch1, false);
+  CHECK(pwm_regs.control==0U);
+
+  pwm_regs.set_polarity_inverted(pwm_channel::gpio_pwm1, true);
+  CHECK(pwm_regs.control==0x1000U);
+  pwm_regs.set_polarity_inverted(pwm_channel::pwm_ch2, false);
+  CHECK(pwm_regs.control==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0130/set_use_fifo"
+         , "set_use_fifo sets correct bits in control register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_use_fifo(pwm_channel::gpio_pwm0, true);
+  CHECK(pwm_regs.control==0x20U);
+  pwm_regs.set_use_fifo(pwm_channel::pwm_ch1, false);
+  CHECK(pwm_regs.control==0U);
+
+  pwm_regs.set_use_fifo(pwm_channel::gpio_pwm1, true);
+  CHECK(pwm_regs.control==0x2000U);
+  pwm_regs.set_use_fifo(pwm_channel::pwm_ch2, false);
+  CHECK(pwm_regs.control==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0140/set_ms_enabled"
+         , "set_ms_enabled sets correct bits in control register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_ms_enabled(pwm_channel::gpio_pwm0, true);
+  CHECK(pwm_regs.control==0x80U);
+  pwm_regs.set_ms_enabled(pwm_channel::pwm_ch1, false);
+  CHECK(pwm_regs.control==0U);
+
+  pwm_regs.set_ms_enabled(pwm_channel::gpio_pwm1, true);
+  CHECK(pwm_regs.control==0x8000U);
+  pwm_regs.set_ms_enabled(pwm_channel::pwm_ch2, false);
+  CHECK(pwm_regs.control==0U);
 }

@@ -155,6 +155,70 @@ namespace dibase { namespace rpi {
       {
         control |= ctl_clrf;
       }
+
+    /// @brief Set value of control register PWENi bit for specified channel.
+    /// @param ch     PWM channel id to set enable state for
+    /// @param state  Enable state to set: true : enabled; false : disabled
+      void set_enable(pwm_channel ch, bool state) volatile
+      {
+        control = state ? control | ch_shift(ch,ctl_enable)
+                        : control & ~ch_shift(ch,ctl_enable);
+      }
+
+    /// @brief Set value of control register PWENi bit for specified channel.
+    /// @param ch     PWM channel id to set mode for
+    /// @param mode   Mode to set channel to
+      void set_mode(pwm_channel ch, pwm_mode mode) volatile
+      {
+        control = mode==pwm_mode::serialiser?control|ch_shift(ch,ctl_mode_ser)
+                                            :control&~ch_shift(ch,ctl_mode_ser);
+      }
+
+    /// @brief Set value of control register RPTLi bit for specified channel.
+    /// @param ch     PWM channel id to set repeat last data for
+    /// @param state  Repeat last data state to set. true: on; false: off
+      void set_repeat_last_data(pwm_channel ch, bool state) volatile
+      {
+        control = state ? control | ch_shift(ch,ctl_rptl)
+                        : control & ~ch_shift(ch,ctl_rptl);
+      }
+
+    /// @brief Set value of control register SBITi bit for specified channel.
+    /// @param ch     PWM channel id to set silence bits state for
+    /// @param state  Silence bit state: true: 1; false: 0
+      void set_silence(pwm_channel ch, bool state) volatile
+      {
+        control = state ? control | ch_shift(ch,ctl_sbit)
+                        : control & ~ch_shift(ch,ctl_sbit);
+      }
+
+    /// @brief Set value of control register POLAi bit for specified channel.
+    /// @param ch     PWM channel id to set polarity invert state for
+    /// @param state  Polarity invert state: true: invert bits; false: do not
+      void set_polarity_inverted(pwm_channel ch, bool state) volatile
+      {
+        control = state ? control | ch_shift(ch,ctl_pola)
+                        : control & ~ch_shift(ch,ctl_pola);
+      }
+
+    /// @brief Set value of control register USEFi bit for specified channel.
+    /// @param ch     PWM channel id to set use-FIFO for transmission state
+    /// @param state  Use FIFO state: true: use FIFO; false: use data register 
+      void set_use_fifo(pwm_channel ch, bool state) volatile
+      {
+        control = state ? control | ch_shift(ch,ctl_usef)
+                        : control & ~ch_shift(ch,ctl_usef);
+      }
+
+    /// @brief Set value of control register MSENi bit for specified channel.
+    /// @param ch     PWM channel id to set M/S algorithm enabled state for
+    /// @param state  M/S enabled state: true: use M/S algorithm; 
+    ///                                  false: use PWM algorithm
+      void set_ms_enabled(pwm_channel ch, bool state) volatile
+      {
+        control = state ? control | ch_shift(ch,ctl_msen)
+                        : control & ~ch_shift(ch,ctl_msen);
+      }
     };
   }
 }}

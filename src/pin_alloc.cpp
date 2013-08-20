@@ -21,9 +21,9 @@ namespace dibase { namespace rpi {
     {
       if (internal::is_exported(pin))
         {
-          throw bad_pin_alloc{"GPIO pin allocate: "
-                                "pin is in use by another process"
-                             };
+          throw bad_peripheral_alloc{"GPIO pin allocate: "
+                                     "pin is in use by another process"
+                                    };
         }
       if (!internal::export_pin(pin))
         {

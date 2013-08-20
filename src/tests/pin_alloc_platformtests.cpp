@@ -39,7 +39,7 @@ TEST_CASE( "Platform_tests/002/pin_export_allocator/alloc_in_use_pin_throws"
   pin_export_allocator a;
   a.allocate(available_pin_id);
   REQUIRE(a.is_in_use(available_pin_id)==true);
-  REQUIRE_THROWS_AS(a.allocate(available_pin_id), bad_pin_alloc);
+  REQUIRE_THROWS_AS(a.allocate(available_pin_id), bad_peripheral_alloc);
   a.deallocate(available_pin_id);
   CHECK(a.is_in_use(available_pin_id)==false);
 }
@@ -80,7 +80,7 @@ TEST_CASE( "Platform_tests/102/pin_allocator/alloc_in_use_pin_throws"
   pin_allocator a;
   a.allocate(available_pin_id);
   REQUIRE(a.is_in_use(available_pin_id)==true);
-  REQUIRE_THROWS_AS(a.allocate(available_pin_id), bad_pin_alloc);
+  REQUIRE_THROWS_AS(a.allocate(available_pin_id), bad_peripheral_alloc);
   a.deallocate(available_pin_id);
   CHECK(a.is_in_use(available_pin_id)==false);
 }

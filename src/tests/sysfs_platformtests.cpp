@@ -8,7 +8,7 @@
 #include "catch.hpp"
 #include "sysfs.h"
 #include <stdio.h>
-#include "pinexcept.h"
+#include "periexcept.h"
 
 using namespace dibase::rpi::peripherals;
 using namespace dibase::rpi::peripherals::internal;

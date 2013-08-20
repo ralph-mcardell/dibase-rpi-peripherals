@@ -8,7 +8,7 @@
 #include "catch.hpp"
 #include "pin_edge_event.h"
 #include "sysfs.h"
-#include "pinexcept.h"
+#include "periexcept.h"
 
 using namespace dibase::rpi::peripherals;
 using namespace dibase::rpi::peripherals::internal;
@@ -78,7 +78,7 @@ TEST_CASE( "Platform_tests/pin_edge_event/040/only 1 pin_edge_evet per pin at a 
     REQUIRE(is_exported(available_pin_id)==true);
     pin_edge_event pin_evt(in_pin,pin_edge_event::rising);
     REQUIRE_THROWS_AS(pin_edge_event(in_pin,pin_edge_event::falling)
-                     ,bad_pin_alloc);
+                     ,bad_peripheral_alloc);
    }
   ipin in_pin{available_pin_id};
   REQUIRE(in_pin.is_open()==true);

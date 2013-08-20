@@ -9,7 +9,7 @@
 
 #include "clock_pin.h"
 #include "pin.h"
-#include "pinexcept.h"
+#include "periexcept.h"
 
 using namespace dibase::rpi::peripherals;
 
@@ -73,7 +73,7 @@ TEST_CASE( "Platform-tests/clock_pin/0030/create bad: pin in use"
                            , fixed_oscillator_clock_source(f_megahertz(19.2))
                            , clock_frequency(kilohertz(600), clock_filter::none)
                            )
-                 , bad_pin_alloc
+                 , bad_peripheral_alloc
                  );
 }
 
@@ -89,7 +89,7 @@ TEST_CASE( "Platform-tests/clock_pin/0040/create bad: clock in use"
                            , fixed_oscillator_clock_source(f_megahertz(19.2))
                            , clock_frequency(kilohertz(600), clock_filter::none)
                            )
-                 , bad_pin_alloc
+                 , bad_peripheral_alloc
                  );
 }
 

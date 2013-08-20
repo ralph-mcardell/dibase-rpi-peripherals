@@ -8,7 +8,7 @@
 #include "catch.hpp"
 #include "pin_edge_event.h"
 #include "sysfs.h"
-#include "pinexcept.h"
+#include "periexcept.h"
 #include "interactivetests_config.h"
 #include <iostream>
 

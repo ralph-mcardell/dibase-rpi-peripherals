@@ -164,9 +164,9 @@ namespace dibase { namespace rpi {
         clock_id clk_id{index_to_clock_id(clk_idx)};
         if ( !the_clock_allocator().allocate(clk_idx) )
           {
-            throw bad_pin_alloc( "initialise_clock: clock is already being "
-                                 "used locally."
-                               );
+            throw bad_peripheral_alloc( "initialise_clock: clock is already "
+                                        "being used locally."
+                                      );
           }
         initialise_clock(clk_id, cp);
         freq_min = cp.frequency_min();

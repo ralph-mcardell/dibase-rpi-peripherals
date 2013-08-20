@@ -55,7 +55,7 @@ TEST_CASE( "Platform_tests/003/opin/open_same_pin_twice_throws"
 {
   opin o{available_out_pin_id};
   CHECK(o.is_open()==true);
-  REQUIRE_THROWS_AS(o.open(available_out_pin_id), bad_pin_alloc);
+  REQUIRE_THROWS_AS(o.open(available_out_pin_id), bad_peripheral_alloc);
 }
 
 TEST_CASE( "Platform_tests/004/opin/put_to_closed_pin_ignored"
@@ -108,7 +108,7 @@ TEST_CASE( "Platform_tests/023/ipin/open_same_pin_twice_throws"
 {
   ipin i{available_in_pin_id};
   CHECK(i.is_open()==true);
-  REQUIRE_THROWS_AS(i.open(available_in_pin_id), bad_pin_alloc);
+  REQUIRE_THROWS_AS(i.open(available_in_pin_id), bad_peripheral_alloc);
 }
 
 TEST_CASE( "Platform_tests/004/ipin/get_from_closed_pin_false"

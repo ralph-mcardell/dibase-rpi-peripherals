@@ -7,7 +7,6 @@
 
 #include "pin_edge_event.h"
 #include "sysfs.h"
-#include "pinexcept.h"
 #include "pin_alloc.h"
 #include <system_error>
 #include <unistd.h>
@@ -38,10 +37,10 @@ namespace dibase { namespace rpi {
           {
             allocator().allocate(id);
           }
-        catch (bad_pin_alloc const &)
+        catch (bad_peripheral_alloc const &)
           {
-            throw bad_pin_alloc{"pin_edge_event: pin already has "
-                                "pin_edge_event."};
+            throw bad_peripheral_alloc{"pin_edge_event: pin already has "
+                                       "pin_edge_event."};
           }
         try
           {

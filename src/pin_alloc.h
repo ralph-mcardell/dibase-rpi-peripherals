@@ -6,7 +6,7 @@
 /// exclusive to one use in one process at a time with the possible exception
 /// of reading of GPIO pins in input mode. Many GPIO pins have alternate
 /// functions and the overloaded relationships between functions and GPIO
-/// pins could lead users to accidentially over-subscribe a pin by mistake.
+/// pins could lead users to accidentally over-subscribe a pin by mistake.
 ///
 /// Additionally, other processes might be running that use some GPIO pins.
 /// Unfortunately there is no fool-proof way to determine if this is so or
@@ -31,7 +31,7 @@
 /// implementation is split into two parts:
 ///   - a class template that implements the intra-process allocation logic
 ///   - a separate allocation class that performs the inter-process sys file
-///     system chacking which is used as a type passed to the intra-process
+///     system checking which is used as a type passed to the intra-process
 ///     allocator template to provide the inter-process logic.
 ///
 /// This allows the intra-process allocation logic to be tested on its own
@@ -39,12 +39,13 @@
 ///
 /// GPIO pin allocator types should provide the following three functions:
 ///
-///   void allocate( pin_id pin )   : allocate a pin or throw a bad_pin_alloc
-///                                   exception if the pin is in use. Inter
-///                                   process pin allocators may throw other
-///                                   exceptions such as std::runtime_error.
+///   void allocate( pin_id pin )   : allocate a pin or throw a
+///                                   bad_peripheral_alloc exception if the pin
+///                                   is in use. Inter process pin allocators
+///                                   may throw other exceptions such as
+///                                   std::runtime_error.
 ///   void deallocate( pin_id pin ) : deallocate a previously allocated pin.
-///                                   Thow a std::logic error if the pin is
+///                                   Throw a std::logic error if the pin is
 ///                                   not allocated locally or some other 
 ///                                   exception such as std::runtime_error if 
 ///                                   a pin is not allocated globally or its
@@ -60,7 +61,7 @@
 # define DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H
 
 # include "pin_id.h"
-# include "pinexcept.h"
+# include "periexcept.h"
 # include <cstring>
 
 namespace dibase { namespace rpi {
@@ -99,14 +100,14 @@ namespace dibase { namespace rpi {
     /// @brief allocate a GPIO pin for use
     ///
     /// If a pin has already been allocated using this allocator then throws
-    /// a bad_pin_alloc exception, otherwise passes the pin_id to the allocate
-    /// member function of the contained allocator, which is assumed to also
-    /// throw on allocation failure. If the call returns then the pin is marked
-    /// as in use in the per-instance Pin Allocation Table.
+    /// a bad_peripheral_alloc exception, otherwise passes the pin_id to the
+    /// allocate member function of the contained allocator, which is assumed
+    /// to also throw on allocation failure. If the call returns then the pin
+    /// is marked as in use in the per-instance Pin Allocation Table.
     ///
     /// @param[in]  pin   GPIO pin id for the GPIO pin to allocate for use.
-    /// @exception  bad_pin_alloc is raised if the requested pin is already in
-    ///             use.
+    /// @exception  bad_peripheral_alloc is raised if the requested pin is
+    ///             already in use.
     /// @exception  std::runtime_error (or other exception) is rasied if
     ///             a passed on allocation request should fail.
     void allocate( pin_id pin );
@@ -150,9 +151,9 @@ namespace dibase { namespace rpi {
     {
       if (pat[pin])
         {
-          throw bad_pin_alloc( "GPIO pin allocate: pin is already being "
-                               "used locally."
-                             );
+          throw bad_peripheral_alloc( "GPIO pin allocate: pin is already being "
+                                      "used locally."
+                                    );
         }
       allocator.allocate( pin );
       pat[pin] = true;
@@ -195,8 +196,8 @@ namespace dibase { namespace rpi {
     /// @brief Allocates a GPIO pin by exporting it in the sys filesystem
     ///
     /// @param[in]  pin   GPIO pin id for the GPIO pin to allocate for use.
-    /// @exception  bad_pin_alloc is raised if the requested pin is already
-    ///             exported.
+    /// @exception  bad_peripheral_alloc is raised if the requested pin is
+    ///             already exported.
     /// @exception  std::runtime_error is raised if the export file cannot
     ///             be opened.
       void allocate( pin_id pin );

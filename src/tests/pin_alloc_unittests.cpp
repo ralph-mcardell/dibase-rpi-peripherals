@@ -59,7 +59,7 @@ TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_unavailable_pin_throws"
   pin_cache_allocator<mock_allocator> a;
   a.allocate(pin_id(3));
   REQUIRE(a.is_in_use(pin_id(3))==true);
-  REQUIRE_THROWS_AS(a.allocate(pin_id(3)), bad_pin_alloc);
+  REQUIRE_THROWS_AS(a.allocate(pin_id(3)), bad_peripheral_alloc);
 }
 
 TEST_CASE( "Unit_tests/pin_cache_allocator/alloc_used_elsewhere_pin_throws_not_locally_in_use"

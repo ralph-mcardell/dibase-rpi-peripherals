@@ -319,3 +319,146 @@ TEST_CASE( "Unit-tests/pwm_registers/0140/set_ms_enabled"
   pwm_regs.set_ms_enabled(pwm_channel::pwm_ch2, false);
   CHECK(pwm_regs.control==0U);
 }
+
+TEST_CASE( "Unit-tests/pwm_registers/0200/get_fifo_full"
+         , "get_fifo_full returns correct state for status register FULL1 flag"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.status = 1U;       // bit 0==1: FULL1 true
+  CHECK(pwm_regs.get_fifo_full());
+  pwm_regs.status = ~1U;      // bit 0==0: FULL1 false
+  CHECK_FALSE(pwm_regs.get_fifo_full());
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0210/get_fifo_empty"
+         , "get_fifo_empty returns correct state for status register EMPT1 flag"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.status = 2U;       // bit 1==1: EMPT1 true
+  CHECK(pwm_regs.get_fifo_empty());
+  pwm_regs.status = ~2U;      // bit 1==0: EMPT1 false
+  CHECK_FALSE(pwm_regs.get_fifo_empty());
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0220/get_fifo_write_error"
+         , "get_fifo_write_error returns correct state for status register "
+           "WERR1 flag"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.status = 4U;       // bit 2==1: WERR1 true
+  CHECK(pwm_regs.get_fifo_write_error());
+  pwm_regs.status = ~4U;      // bit 2==0: WERR1 false
+  CHECK_FALSE(pwm_regs.get_fifo_write_error());
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0230/get_fifo_read_error"
+         , "get_fifo_read_error returns correct state for status register "
+           "RERR1 flag"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.status = 8U;       // bit 3==1: RERR1 true
+  CHECK(pwm_regs.get_fifo_read_error());
+  pwm_regs.status = ~8U;      // bit 3==0: RERR1 false
+  CHECK_FALSE(pwm_regs.get_fifo_read_error());
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0230/get_bus_error"
+         , "get_bus_error returns correct state for status register BERR1 flag"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.status = 0x100U;       // bit 8==1: BERR1 true
+  CHECK(pwm_regs.get_bus_error());
+  pwm_regs.status = ~0x100U;      // bit 8==0: BERR1 false
+  CHECK_FALSE(pwm_regs.get_bus_error());
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0240/get_gap_occurred"
+         , "get_gap_occurred returns correct state for status register GAPOi flags"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.status = 0x10U;       // bit 4==1: GAPO1 true
+  CHECK(pwm_regs.get_gap_occurred(pwm_channel::gpio_pwm0));
+  pwm_regs.status = ~ 0x10U;     // bit 4==0: GAPO1 false
+  CHECK_FALSE(pwm_regs.get_gap_occurred(pwm_channel::pwm_ch1));
+
+  pwm_regs.status =  0x20U;      // bit 5==1: GAPO2 true
+  CHECK(pwm_regs.get_gap_occurred(pwm_channel::gpio_pwm1));
+  pwm_regs.status = ~0x20U;;     // bit 5==0: GAPO2 false
+  CHECK_FALSE(pwm_regs.get_gap_occurred(pwm_channel::pwm_ch2));
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0250/get_txd_state"
+         , "get_txd_state returns correct state for status register STAi flags"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.status = 0x200U;      // bit 9==1: STA1 true
+  CHECK(pwm_regs.get_txd_state(pwm_channel::gpio_pwm0));
+  pwm_regs.status = ~ 0x200U;    // bit 9==0: STA1 false
+  CHECK_FALSE(pwm_regs.get_txd_state(pwm_channel::pwm_ch1));
+
+  pwm_regs.status =  0x400U;     // bit 10==1: STA2 true
+  CHECK(pwm_regs.get_txd_state(pwm_channel::gpio_pwm1));
+  pwm_regs.status = ~0x400U;;    // bit 10==0: STA2 false
+  CHECK_FALSE(pwm_regs.get_txd_state(pwm_channel::pwm_ch2));
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0260/clear_fifo_write_error"
+         , "clear_fifo_write_error should set the WERR1 bit (bit 2) of the "
+           "status register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.clear_fifo_write_error();
+  CHECK(pwm_regs.status==0x4);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0270/clear_fifo_read_error"
+         , "clear_fifo_read_error should set the RERR1 bit (bit 3) of the "
+           "status register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.clear_fifo_read_error();
+  CHECK(pwm_regs.status==0x8);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0280/clear_bus_error"
+         , "clear_bus_error should set the BERR bit (bit 8) of the "
+           "status register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.clear_bus_error();
+  CHECK(pwm_regs.status==0x100);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0280/clear_gap_occurred"
+         , "clear_gap_occurred should set the GAPOi bits (bits 4 & 5) of the "
+           "status register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.clear_gap_occurred(pwm_channel::gpio_pwm0);
+  CHECK(pwm_regs.status==0x10);
+  pwm_regs.status = 0U;
+  pwm_regs.clear_gap_occurred(pwm_channel::pwm_ch2);
+  CHECK(pwm_regs.status==0x20);
+}

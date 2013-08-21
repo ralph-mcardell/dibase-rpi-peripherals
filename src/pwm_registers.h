@@ -70,11 +70,24 @@ namespace dibase { namespace rpi {
       , ctl_clrf    = 0x40  ///< Control register: Clear FIFO
       , ctl_msen    = 0x80  ///< Control register: Use M/S algorithm
       , ctl_ch2_shift = 8   ///< Shift for control bits for PWM1 / channel 2
+      , sta_fifo_full = 0x1 ///< Status register: FIFO full flag
+      , sta_fifo_empt = 0x2 ///< Status register: FIFO empty flag
+      , sta_fifo_werr = 0x4 ///< Status register: FIFO write full error flag
+      , sta_fifo_rerr = 0x8 ///< Status register: FIFO read empty error flag
+      , sta_berr   = 0x100  ///< Status register: Bus error flag
+      , sta_gapo   = 0x10   ///< Status register: Channel gap occurred flag
+      , sta_state  = 0x200  ///< Status register: Channel state flag
+      , sta_ch2_shift = 1   ///< Shift for status bits for PWM1 / channel 2
       };
 
-      constexpr static register_t ch_shift(pwm_channel ch, register_t v)
+      constexpr static register_t ctl_ch_shift(pwm_channel ch, register_t v)
       { 
         return ch==pwm_channel::pwm_ch2 ? (v<<ctl_ch2_shift) : v;
+      }
+
+      constexpr static register_t sta_ch_shift(pwm_channel ch, register_t v)
+      { 
+        return ch==pwm_channel::pwm_ch2 ? (v<<sta_ch2_shift) : v;
       }
 
     public:
@@ -97,7 +110,7 @@ namespace dibase { namespace rpi {
     /// @returns true if channel control register PWEN bit set, false if not.
       bool get_enable(pwm_channel ch) volatile const
       {
-        return control & ch_shift(ch,ctl_enable);
+        return control & ctl_ch_shift(ch,ctl_enable);
       }
 
     /// @brief Return value of control register PWENi bit for specified channel.
@@ -106,7 +119,7 @@ namespace dibase { namespace rpi {
     ///          pwm_mode::serialiser if the channel is in serialiser mode.
       pwm_mode get_mode(pwm_channel ch) volatile const
       {
-        return (control & ch_shift(ch,ctl_mode_ser))  ? pwm_mode::serialiser 
+        return (control & ctl_ch_shift(ch,ctl_mode_ser))  ? pwm_mode::serialiser 
                                                       : pwm_mode::pwm;
       }
 
@@ -115,7 +128,7 @@ namespace dibase { namespace rpi {
     /// @returns true if channel control register RPTL bit set, false if not.
       bool get_repeat_last_data(pwm_channel ch) volatile const
       {
-        return control & ch_shift(ch,ctl_rptl);
+        return control & ctl_ch_shift(ch,ctl_rptl);
       }
 
     /// @brief Return value of control register SBITi bit for specified channel.
@@ -123,7 +136,7 @@ namespace dibase { namespace rpi {
     /// @returns true if channel control register SBIT bit set, false if not.
       bool get_silence(pwm_channel ch) volatile const
       {
-        return control & ch_shift(ch,ctl_sbit);
+        return control & ctl_ch_shift(ch,ctl_sbit);
       }
 
     /// @brief Return value of control register POLAi bit for specified channel.
@@ -131,7 +144,7 @@ namespace dibase { namespace rpi {
     /// @returns true if channel control register POLA bit set, false if not.
       bool get_polarity_inverted(pwm_channel ch) volatile const
       {
-        return control & ch_shift(ch,ctl_pola);
+        return control & ctl_ch_shift(ch,ctl_pola);
       }
 
     /// @brief Return value of control register USEFi bit for specified channel.
@@ -139,7 +152,7 @@ namespace dibase { namespace rpi {
     /// @returns true if channel control register USEF bit set, false if not.
       bool get_use_fifo(pwm_channel ch) volatile const
       {
-        return control & ch_shift(ch,ctl_usef);
+        return control & ctl_ch_shift(ch,ctl_usef);
       }
 
     /// @brief Return value of control register MSENi bit for specified channel.
@@ -147,7 +160,7 @@ namespace dibase { namespace rpi {
     /// @returns true if channel control register MSEN bit set, false if not.
       bool get_ms_enabled(pwm_channel ch) volatile const
       {
-        return control & ch_shift(ch,ctl_msen);
+        return control & ctl_ch_shift(ch,ctl_msen);
       }
 
     /// @brief Clear the FIFO. There is only 1 FIFO, no channel parameter needed
@@ -161,8 +174,8 @@ namespace dibase { namespace rpi {
     /// @param state  Enable state to set: true : enabled; false : disabled
       void set_enable(pwm_channel ch, bool state) volatile
       {
-        control = state ? control | ch_shift(ch,ctl_enable)
-                        : control & ~ch_shift(ch,ctl_enable);
+        control = state ? control | ctl_ch_shift(ch,ctl_enable)
+                        : control & ~ctl_ch_shift(ch,ctl_enable);
       }
 
     /// @brief Set value of control register PWENi bit for specified channel.
@@ -170,8 +183,9 @@ namespace dibase { namespace rpi {
     /// @param mode   Mode to set channel to
       void set_mode(pwm_channel ch, pwm_mode mode) volatile
       {
-        control = mode==pwm_mode::serialiser?control|ch_shift(ch,ctl_mode_ser)
-                                            :control&~ch_shift(ch,ctl_mode_ser);
+        control = mode==pwm_mode::serialiser
+                                      ? control|ctl_ch_shift(ch,ctl_mode_ser)
+                                      : control&~ctl_ch_shift(ch,ctl_mode_ser);
       }
 
     /// @brief Set value of control register RPTLi bit for specified channel.
@@ -179,8 +193,8 @@ namespace dibase { namespace rpi {
     /// @param state  Repeat last data state to set. true: on; false: off
       void set_repeat_last_data(pwm_channel ch, bool state) volatile
       {
-        control = state ? control | ch_shift(ch,ctl_rptl)
-                        : control & ~ch_shift(ch,ctl_rptl);
+        control = state ? control | ctl_ch_shift(ch,ctl_rptl)
+                        : control & ~ctl_ch_shift(ch,ctl_rptl);
       }
 
     /// @brief Set value of control register SBITi bit for specified channel.
@@ -188,8 +202,8 @@ namespace dibase { namespace rpi {
     /// @param state  Silence bit state: true: 1; false: 0
       void set_silence(pwm_channel ch, bool state) volatile
       {
-        control = state ? control | ch_shift(ch,ctl_sbit)
-                        : control & ~ch_shift(ch,ctl_sbit);
+        control = state ? control | ctl_ch_shift(ch,ctl_sbit)
+                        : control & ~ctl_ch_shift(ch,ctl_sbit);
       }
 
     /// @brief Set value of control register POLAi bit for specified channel.
@@ -197,8 +211,8 @@ namespace dibase { namespace rpi {
     /// @param state  Polarity invert state: true: invert bits; false: do not
       void set_polarity_inverted(pwm_channel ch, bool state) volatile
       {
-        control = state ? control | ch_shift(ch,ctl_pola)
-                        : control & ~ch_shift(ch,ctl_pola);
+        control = state ? control | ctl_ch_shift(ch,ctl_pola)
+                        : control & ~ctl_ch_shift(ch,ctl_pola);
       }
 
     /// @brief Set value of control register USEFi bit for specified channel.
@@ -206,8 +220,8 @@ namespace dibase { namespace rpi {
     /// @param state  Use FIFO state: true: use FIFO; false: use data register 
       void set_use_fifo(pwm_channel ch, bool state) volatile
       {
-        control = state ? control | ch_shift(ch,ctl_usef)
-                        : control & ~ch_shift(ch,ctl_usef);
+        control = state ? control | ctl_ch_shift(ch,ctl_usef)
+                        : control & ~ctl_ch_shift(ch,ctl_usef);
       }
 
     /// @brief Set value of control register MSENi bit for specified channel.
@@ -216,8 +230,85 @@ namespace dibase { namespace rpi {
     ///                                  false: use PWM algorithm
       void set_ms_enabled(pwm_channel ch, bool state) volatile
       {
-        control = state ? control | ch_shift(ch,ctl_msen)
-                        : control & ~ch_shift(ch,ctl_msen);
+        control = state ? control | ctl_ch_shift(ch,ctl_msen)
+                        : control & ~ctl_ch_shift(ch,ctl_msen);
+      }
+
+
+    /// @brief Returns state of status register FULL1 flag
+    /// @returns true if FIFO full; false if not
+      bool get_fifo_full() volatile const
+      {
+        return status & sta_fifo_full;
+      }
+
+    /// @brief Returns state of status register EMPT1 flag
+    /// @returns true if FIFO empty; false if not
+      bool get_fifo_empty() volatile const
+      {
+        return status & sta_fifo_empt;
+      }
+
+    /// @brief Returns state of status register WERR1 flag
+    /// @returns true if error writing to FIFO; false if no such error
+      bool get_fifo_write_error() volatile const
+      {
+        return status & sta_fifo_werr;
+      }
+
+    /// @brief Returns state of status register RERR1 flag
+    /// @returns true if error reading from FIFO; false if no such error
+      bool get_fifo_read_error() volatile const
+      {
+        return status & sta_fifo_rerr;
+      }
+
+    /// @brief Returns state of status register BERR1 flag
+    /// @returns true if error writing to registers via APB; false if not
+      bool get_bus_error() volatile const
+      {
+        return status & sta_berr;
+      }
+
+    /// @brief Return value of status register GAPOi flag for specified channel.
+    /// @param ch  PWM channel id to return gap occurred flag for
+    /// @returns true if gap in transmission occurred; false if not 
+      bool get_gap_occurred(pwm_channel ch) volatile const
+      {
+        return status & sta_ch_shift(ch,sta_gapo);
+      }
+
+    /// @brief Return value of status register STAi flag for specified channel.
+    /// @param ch  PWM channel id to return transmitting data state flag for
+    /// @returns true if channel transmitting data; false if it is not 
+      bool get_txd_state(pwm_channel ch) volatile const
+      {
+        return status & sta_ch_shift(ch,sta_state);
+      }
+
+    /// @brief Clear a FIFO write error state (get_fifo_write_error()==true)
+      void clear_fifo_write_error() volatile
+      {
+        status |= sta_fifo_werr;
+      }
+
+    /// @brief Clear a FIFO read error state (get_fifo_read_error()==true)
+      void clear_fifo_read_error() volatile
+      {
+        status |= sta_fifo_rerr;
+      }
+
+    /// @brief Clear a bus error state (get_bus_error()==true)
+      void clear_bus_error() volatile
+      {
+        status |= sta_berr;
+      }
+
+    /// @brief Clear a channel gap occurred state (get_gap_occurred(ch)==true)
+    /// @param ch  PWM channel id to clear gap occurred flag for
+      void clear_gap_occurred(pwm_channel ch) volatile
+      {
+        status |= sta_ch_shift(ch,sta_gapo);
       }
     };
   }

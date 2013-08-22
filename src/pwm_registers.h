@@ -372,6 +372,60 @@ namespace dibase { namespace rpi {
         dma_config = (dma_config & ~dma_panic_mask)|(value<<dma_panic_shift);
         return true;
       }
+
+
+    /// @brief Return rangei register value PWM_RNGi field for specified channel
+    /// @param ch  PWM channel id to return range register value for
+    /// @returns Value of rangei PWM_RNGi field (0-0xffffffff)
+      register_t get_range(pwm_channel ch) volatile const
+      {
+        return ch==pwm_channel::pwm_ch1 ? range1 : range2;
+      }
+
+    /// @brief Return datai register value PWM_DATi field for specified channel
+    /// @param ch  PWM channel id to return data register value for
+    /// @returns Value of datai PWM_DATi field (0-0xffffffff)
+      register_t get_data(pwm_channel ch) volatile const
+      {
+        return ch==pwm_channel::pwm_ch1 ? data1 : data2;
+      }
+
+    /// @brief Set value of the FIFO input register FIF1 single PWM_FIFO field
+    /// @param value  Value to set FIFO input register to (0...0xffffffff)
+      void set_fifo_input(register_t value) volatile
+      {
+        fifo_in = value;
+      }
+
+    /// @brief Set value of the channel range registers RNGi
+    /// @param ch     PWM channel id to set range register value for
+    /// @param value  Value to set channel range register to (0...0xffffffff)
+      void set_range(pwm_channel ch, register_t value) volatile
+      {
+        if (ch==pwm_channel::pwm_ch1)
+          {
+            range1 = value;
+          }
+        else
+          {
+            range2 = value;
+          }
+      }
+
+    /// @brief Set value of the channel data registers DATi
+    /// @param ch     PWM channel id to set data register value for
+    /// @param value  Value to set channel data register to (0...0xffffffff)
+      void set_data(pwm_channel ch, register_t value) volatile
+      {
+        if (ch==pwm_channel::pwm_ch1)
+          {
+            data1 = value;
+          }
+        else
+          {
+            data2 = value;
+          }
+      }
     };
   }
 }}

@@ -545,3 +545,88 @@ TEST_CASE( "Unit-tests/pwm_registers/0450/set_dma_panic_threshold"
   CHECK(pwm_regs.dma_config==~0xff00U);
   CHECK_FALSE(pwm_regs.set_dma_panic_threshold(0x100));
 }
+
+TEST_CASE( "Unit-tests/pwm_registers/0500/get_range"
+         , "get_range returns correct values in the rangei registers"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.range1 = ~0U;
+  CHECK(pwm_regs.get_range(pwm_channel::pwm_ch1)==0xffffffffU);
+  pwm_regs.range1 = 0U;
+  CHECK(pwm_regs.get_range(pwm_channel::gpio_pwm0)==0U);
+
+  pwm_regs.range2 = ~0U;
+  CHECK(pwm_regs.get_range(pwm_channel::pwm_ch2)==0xffffffffU);
+  pwm_regs.range2 = 0U;
+  CHECK(pwm_regs.get_range(pwm_channel::gpio_pwm1)==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0510/get_data"
+         , "get_data returns correct values in the datai registers"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.data1 = ~0U;
+  CHECK(pwm_regs.get_data(pwm_channel::pwm_ch1)==0xffffffffU);
+  pwm_regs.data1 = 0U;
+  CHECK(pwm_regs.get_data(pwm_channel::gpio_pwm0)==0U);
+
+  pwm_regs.data2 = ~0U;
+  CHECK(pwm_regs.get_data(pwm_channel::pwm_ch2)==0xffffffffU);
+  pwm_regs.data2 = 0U;
+  CHECK(pwm_regs.get_data(pwm_channel::gpio_pwm1)==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0520/set_fifo_input"
+         , "set_fifo_input sets correct values in the fifo_in register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_fifo_input(~0U);
+  CHECK(pwm_regs.fifo_in==0xffffffffU);
+  pwm_regs.set_fifo_input(0U);
+  CHECK(pwm_regs.fifo_in==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0530/set_range"
+         , "set_range sets correct values in PW<M channel rangei registers"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_range(pwm_channel::pwm_ch1, ~0U);
+  CHECK(pwm_regs.range1==0xffffffffU);
+  pwm_regs.set_range(pwm_channel::gpio_pwm0, 0U);
+  CHECK(pwm_regs.range1==0U);
+
+  pwm_regs.set_range(pwm_channel::pwm_ch2, ~0U);
+  CHECK(pwm_regs.range2==0xffffffffU);
+  pwm_regs.set_range(pwm_channel::gpio_pwm1, 0U);
+  CHECK(pwm_regs.range2==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0540/set_data"
+         , "set_data sets correct values in PW<M channel datai registers"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_data(pwm_channel::pwm_ch1, ~0U);
+  CHECK(pwm_regs.data1==0xffffffffU);
+  pwm_regs.set_data(pwm_channel::gpio_pwm0, 0U);
+  CHECK(pwm_regs.data1==0U);
+
+  pwm_regs.set_data(pwm_channel::pwm_ch2, ~0U);
+  CHECK(pwm_regs.data2==0xffffffffU);
+  pwm_regs.set_data(pwm_channel::gpio_pwm1, 0U);
+  CHECK(pwm_regs.data2==0U);
+}

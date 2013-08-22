@@ -370,7 +370,7 @@ TEST_CASE( "Unit-tests/pwm_registers/0230/get_fifo_read_error"
   CHECK_FALSE(pwm_regs.get_fifo_read_error());
 }
 
-TEST_CASE( "Unit-tests/pwm_registers/0230/get_bus_error"
+TEST_CASE( "Unit-tests/pwm_registers/0240/get_bus_error"
          , "get_bus_error returns correct state for status register BERR1 flag"
          )
 {
@@ -382,7 +382,7 @@ TEST_CASE( "Unit-tests/pwm_registers/0230/get_bus_error"
   CHECK_FALSE(pwm_regs.get_bus_error());
 }
 
-TEST_CASE( "Unit-tests/pwm_registers/0240/get_gap_occurred"
+TEST_CASE( "Unit-tests/pwm_registers/0250/get_gap_occurred"
          , "get_gap_occurred returns correct state for status register GAPOi flags"
          )
 {
@@ -399,7 +399,7 @@ TEST_CASE( "Unit-tests/pwm_registers/0240/get_gap_occurred"
   CHECK_FALSE(pwm_regs.get_gap_occurred(pwm_channel::pwm_ch2));
 }
 
-TEST_CASE( "Unit-tests/pwm_registers/0250/get_txd_state"
+TEST_CASE( "Unit-tests/pwm_registers/0260/get_txd_state"
          , "get_txd_state returns correct state for status register STAi flags"
          )
 {
@@ -416,7 +416,7 @@ TEST_CASE( "Unit-tests/pwm_registers/0250/get_txd_state"
   CHECK_FALSE(pwm_regs.get_txd_state(pwm_channel::pwm_ch2));
 }
 
-TEST_CASE( "Unit-tests/pwm_registers/0260/clear_fifo_write_error"
+TEST_CASE( "Unit-tests/pwm_registers/0270/clear_fifo_write_error"
          , "clear_fifo_write_error should set the WERR1 bit (bit 2) of the "
            "status register"
          )
@@ -427,7 +427,7 @@ TEST_CASE( "Unit-tests/pwm_registers/0260/clear_fifo_write_error"
   CHECK(pwm_regs.status==0x4);
 }
 
-TEST_CASE( "Unit-tests/pwm_registers/0270/clear_fifo_read_error"
+TEST_CASE( "Unit-tests/pwm_registers/0280/clear_fifo_read_error"
          , "clear_fifo_read_error should set the RERR1 bit (bit 3) of the "
            "status register"
          )
@@ -438,7 +438,7 @@ TEST_CASE( "Unit-tests/pwm_registers/0270/clear_fifo_read_error"
   CHECK(pwm_regs.status==0x8);
 }
 
-TEST_CASE( "Unit-tests/pwm_registers/0280/clear_bus_error"
+TEST_CASE( "Unit-tests/pwm_registers/0290/clear_bus_error"
          , "clear_bus_error should set the BERR bit (bit 8) of the "
            "status register"
          )
@@ -449,7 +449,7 @@ TEST_CASE( "Unit-tests/pwm_registers/0280/clear_bus_error"
   CHECK(pwm_regs.status==0x100);
 }
 
-TEST_CASE( "Unit-tests/pwm_registers/0280/clear_gap_occurred"
+TEST_CASE( "Unit-tests/pwm_registers/0300/clear_gap_occurred"
          , "clear_gap_occurred should set the GAPOi bits (bits 4 & 5) of the "
            "status register"
          )
@@ -461,4 +461,87 @@ TEST_CASE( "Unit-tests/pwm_registers/0280/clear_gap_occurred"
   pwm_regs.status = 0U;
   pwm_regs.clear_gap_occurred(pwm_channel::pwm_ch2);
   CHECK(pwm_regs.status==0x20);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0400/get_dma_enable"
+         , "get_dma_enable returns correct state for dma_config reg. ENAB flag"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.dma_config = 0x80000000U;       // bit 31==1: ENAB true
+  CHECK(pwm_regs.get_dma_enable());
+  pwm_regs.dma_config = ~0x80000000U;      // bit 31==0: ENAB false
+  CHECK_FALSE(pwm_regs.get_dma_enable());
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0410/get_dma_data_req_threshold"
+         , "get_dma_data_req_threshold returns correct state for dma_config "
+           "register DREQ flag"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.dma_config = 0xffU;       // bits 0-7  all==1: DREQ value 255
+  CHECK(pwm_regs.get_dma_data_req_threshold()==0xffU);
+  pwm_regs.dma_config = ~0xffU;      // bit 0-7 all==0: DREQ value 0
+  CHECK(pwm_regs.get_dma_data_req_threshold()==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0420/get_dma_panic_threshold"
+         , "get_dma_panic_threshold returns correct state for dma_config "
+           "register PANIC flag"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+  pwm_regs.dma_config = 0xff00U;     // bits 8-15  all==1: PANIC value 255
+  CHECK(pwm_regs.get_dma_panic_threshold()==0xffU);
+  pwm_regs.dma_config = ~0xff00U;    // bit 8-15 all==0: PANIC value 0
+  CHECK(pwm_regs.get_dma_panic_threshold()==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0430/set_dma_enable"
+         , "set_dma_enable sets correct state in dma_config register"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_dma_enable(true);
+  CHECK(pwm_regs.dma_config==0x80000000U);
+  pwm_regs.set_dma_enable(false);
+  CHECK(pwm_regs.dma_config==0U);
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0440/set_dma_data_req_threshold"
+         , "set_dma_data_req_threshold sets correct values in dma_config "
+           "register and fails for out of range values"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_dma_data_req_threshold(0xff);
+  CHECK(pwm_regs.dma_config==0xffU);
+  pwm_regs.dma_config = ~0U;
+  pwm_regs.set_dma_data_req_threshold(0U);
+  CHECK(pwm_regs.dma_config==~0xffU);
+  CHECK_FALSE(pwm_regs.set_dma_data_req_threshold(0x100));
+}
+
+TEST_CASE( "Unit-tests/pwm_registers/0450/set_dma_panic_threshold"
+         , "set_dma_panic_threshold sets correct values in dma_config "
+           "register and fails for out of range values"
+         )
+{
+  pwm_registers pwm_regs;
+  std::memset(&pwm_regs, 0x00U, sizeof(pwm_regs));
+
+  pwm_regs.set_dma_panic_threshold(0xff);
+  CHECK(pwm_regs.dma_config==0xff00U);
+  pwm_regs.dma_config = ~0U;
+  pwm_regs.set_dma_panic_threshold(0U);
+  CHECK(pwm_regs.dma_config==~0xff00U);
+  CHECK_FALSE(pwm_regs.set_dma_panic_threshold(0x100));
 }

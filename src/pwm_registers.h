@@ -61,23 +61,29 @@ namespace dibase { namespace rpi {
     {
     private:
       enum
-      { ctl_enable  = 0x1   ///< Control register: PWM channel enable
-      , ctl_mode_ser= 0x2   ///< Control register: serialiser mode
-      , ctl_rptl    = 0x4   ///< Control register: repeat last data
-      , ctl_sbit    = 0x8   ///< Control register: silence state 1s
-      , ctl_pola    = 0x10  ///< Control register: reverse polarity
-      , ctl_usef    = 0x20  ///< Control register: Use FIFO
-      , ctl_clrf    = 0x40  ///< Control register: Clear FIFO
-      , ctl_msen    = 0x80  ///< Control register: Use M/S algorithm
-      , ctl_ch2_shift = 8   ///< Shift for control bits for PWM1 / channel 2
-      , sta_fifo_full = 0x1 ///< Status register: FIFO full flag
-      , sta_fifo_empt = 0x2 ///< Status register: FIFO empty flag
-      , sta_fifo_werr = 0x4 ///< Status register: FIFO write full error flag
-      , sta_fifo_rerr = 0x8 ///< Status register: FIFO read empty error flag
-      , sta_berr   = 0x100  ///< Status register: Bus error flag
-      , sta_gapo   = 0x10   ///< Status register: Channel gap occurred flag
-      , sta_state  = 0x200  ///< Status register: Channel state flag
-      , sta_ch2_shift = 1   ///< Shift for status bits for PWM1 / channel 2
+      { ctl_enable    = 0x1   ///< Control register: PWM channel enable
+      , ctl_mode_ser  = 0x2   ///< Control register: serialiser mode
+      , ctl_rptl      = 0x4   ///< Control register: repeat last data
+      , ctl_sbit      = 0x8   ///< Control register: silence state 1s
+      , ctl_pola      = 0x10  ///< Control register: reverse polarity
+      , ctl_usef      = 0x20  ///< Control register: Use FIFO
+      , ctl_clrf      = 0x40  ///< Control register: Clear FIFO
+      , ctl_msen      = 0x80  ///< Control register: Use M/S algorithm
+      , ctl_ch2_shift = 8U    ///< Shift for control bits for PWM1 / channel 2
+      , sta_fifo_full = 0x1   ///< Status register: FIFO full flag
+      , sta_fifo_empt = 0x2   ///< Status register: FIFO empty flag
+      , sta_fifo_werr = 0x4   ///< Status register: FIFO write full error flag
+      , sta_fifo_rerr = 0x8   ///< Status register: FIFO read empty error flag
+      , sta_berr      = 0x100 ///< Status register: Bus error flag
+      , sta_gapo      = 0x10  ///< Status register: Channel gap occurred flag
+      , sta_state     = 0x200 ///< Status register: Channel state flag
+      , sta_ch2_shift = 1U    ///< Shift for status bits for PWM1 / channel 2
+      , dma_enable = (1U<<31U)///< PWM DMA (DMA channel 5) enable flag
+      , dma_dreq_mask = 0xff  ///< PWM DMA data request threshold field mask
+      , dma_dreq_max  = 0xff  ///< PWM DMA data request threshold field maximum
+      , dma_panic_mask= 0xff00///< PWM DMA panic threshold field mask
+      , dma_panic_max = 0xff  ///< PWM DMA panic threshold field maximum
+      , dma_panic_shift = 8U  ///< PWM DMA panic threshold field bits-shift
       };
 
       constexpr static register_t ctl_ch_shift(pwm_channel ch, register_t v)
@@ -309,6 +315,62 @@ namespace dibase { namespace rpi {
       void clear_gap_occurred(pwm_channel ch) volatile
       {
         status |= sta_ch_shift(ch,sta_gapo);
+      }
+
+
+    /// @brief Returns state of DMA configuration register ENAB flag
+    /// @returns true if PWM DMA enabled; false if not
+      bool get_dma_enable() volatile const
+      {
+        return dma_config & dma_enable;
+      }
+
+    /// @brief Returns value of DMA configuration DREQ field
+    /// @returns DMA threshold for data request signal (0-255)
+      register_t get_dma_data_req_threshold() volatile const
+      {
+        return dma_config & dma_dreq_mask;
+      }
+
+    /// @brief Returns value of DMA configuration PANIC field
+    /// @returns DMA threshold for panic signal (0-255)
+      register_t get_dma_panic_threshold() volatile const
+      {
+        return (dma_config & dma_panic_mask)>>dma_panic_shift;
+      }
+
+    /// @brief Set value of DMA configuration ENAB flag.
+    /// @param state  DMA enable state to set: true: enabled; false: disabled
+      void set_dma_enable(bool state) volatile
+      {
+        dma_config = state  ? dma_config | dma_enable
+                            : dma_config & ~dma_enable;
+      }
+
+    /// @brief Set value of DMA configuration DREQ field.
+    /// @param value  PWM DMA data request signal threshold value to set (0-255)
+    /// @returns true if value in range and operation performed, false otherwise
+      bool set_dma_data_req_threshold(register_t value) volatile
+      {
+        if (value>dma_dreq_max)
+          {
+            return false;
+          }
+        dma_config = (dma_config & ~dma_dreq_mask)|value;
+        return true;
+      }
+
+    /// @brief Set value of DMA configuration PANIC field.
+    /// @param value  PWM DMA panic signal threshold value to set (0-255)
+    /// @returns true if value in range and operation performed, false otherwise
+      bool set_dma_panic_threshold(register_t value) volatile
+      {
+        if (value>dma_panic_max)
+          {
+            return false;
+          }
+        dma_config = (dma_config & ~dma_panic_mask)|(value<<dma_panic_shift);
+        return true;
       }
     };
   }

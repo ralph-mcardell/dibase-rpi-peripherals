@@ -19,52 +19,6 @@ namespace dibase { namespace rpi {
     using internal::gpclk2;
     using internal::index_to_clock_id;
 
-    namespace
-    {
-      constexpr std::size_t number_of_clocks{4U};
-
-
-      class clock_allocator
-      {
-        unsigned allocated;
-
-      public:
-        clock_allocator() : allocated{0U} {}
-
-        bool is_in_use(unsigned clock_idx)
-        {
-          return (clock_idx<number_of_clocks) && (allocated&(1<<clock_idx));
-        }
-
-        bool allocate(unsigned clock_idx)
-        {
-          if ( (clock_idx<number_of_clocks) && !is_in_use(clock_idx) )
-            {
-              allocated |= (1<<clock_idx);
-              return true;
-            }
-          return false;
-        }
-
-        bool deallocate(unsigned clock_idx)
-        {
-          if ( is_in_use(clock_idx) )
-            {
-              allocated &= ~(1<<clock_idx);
-              return true;
-            }
-          return false;
-        }
-
-      };
-
-      static clock_allocator & the_clock_allocator()
-      {
-        static clock_allocator a;
-        return a;
-      }
-    }
-
     bool clock_pin::is_running() const
     {
       return clock_ctrl::instance().regs->is_busy(index_to_clock_id(clk));
@@ -92,7 +46,7 @@ namespace dibase { namespace rpi {
     {
       stop();
       gpio_ctrl::instance().alloc.deallocate(pin);
-      the_clock_allocator().deallocate(clk);
+      clock_ctrl::instance().alloc.deallocate(clk);
     }
 
     unsigned clock_pin::construct
@@ -144,7 +98,7 @@ namespace dibase { namespace rpi {
         using internal::clock_parameters;
         clock_parameters cp(src_type, src_freq, freq); // CAN THROW!!!
         clock_id clk_id{index_to_clock_id(clk_idx)};
-        if ( !the_clock_allocator().allocate(clk_idx) )
+        if ( !clock_ctrl::instance().alloc.allocate(clk_idx) )
           {
             throw bad_peripheral_alloc( "initialise_clock: clock is already "
                                         "being used locally."

@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file clock_ctrl.cpp 
-/// @brief Internal GPIO clock control type implentation and definition.
+/// @brief Internal GPIO clock control type implantation and definition.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell

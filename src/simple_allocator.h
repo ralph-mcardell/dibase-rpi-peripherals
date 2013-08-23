@@ -15,7 +15,7 @@ namespace dibase { namespace rpi {
   namespace peripherals
   { namespace internal
     {
-     /// @brief Simple resource allocation class template.
+      /// @brief Simple resource allocation class template.
       ///
       /// Supports allocate, de-allocate and in_use operations for resources
       /// specified using resource index values

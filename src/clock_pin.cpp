@@ -13,23 +13,16 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
-    
     using internal::clock_ctrl;
+    using internal::gpclk0;
+    using internal::gpclk1;
+    using internal::gpclk2;
+    using internal::index_to_clock_id;
+
     namespace
     {
       constexpr std::size_t number_of_clocks{4U};
-      constexpr unsigned gpclk0{0U};
-      constexpr unsigned gpclk1{1U};
-      constexpr unsigned gpclk2{2U};
-      constexpr unsigned pwmclk{3U};
 
-      static clock_id index_to_clock_id(unsigned i)
-      {
-        static clock_id clocks[number_of_clocks] = { gp0_clk_id, gp1_clk_id
-                                                   , gp2_clk_id, pwm_clk_id
-                                                   };
-        return clocks[i];
-      }
 
       class clock_allocator
       {
@@ -69,17 +62,6 @@ namespace dibase { namespace rpi {
       {
         static clock_allocator a;
         return a;
-      }
-
-      static void initialise_clock
-      ( clock_id clk
-      , internal::clock_parameters const & cp
-      )
-      {
-        clock_ctrl::instance().regs->set_source(clk,cp.clk_source());
-        clock_ctrl::instance().regs->set_mash(clk,cp.clk_mash());
-        clock_ctrl::instance().regs->set_divi(clk,cp.clk_divi());
-        clock_ctrl::instance().regs->set_divf(clk,cp.clk_divf());
       }
     }
 
@@ -168,7 +150,7 @@ namespace dibase { namespace rpi {
                                         "being used locally."
                                       );
           }
-        initialise_clock(clk_id, cp);
+        clock_ctrl::instance().initialise_clock(clk_id, cp);
         freq_min = cp.frequency_min();
         freq_avg = cp.frequency_avg();
         freq_max = cp.frequency_max();

@@ -6,6 +6,7 @@
 /// @author Ralph E. McArdell
 
 #include "clock_ctrl.h"
+#include "clock_parameters.h"
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -20,6 +21,25 @@ namespace dibase { namespace rpi {
         static clock_ctrl clock_control_area;
         return clock_control_area;
       }
+ 
+      void clock_ctrl::initialise_clock
+      ( clock_id clk
+      , clock_parameters const & cp
+      )
+      {
+        instance().regs->set_source(clk,cp.clk_source());
+        instance().regs->set_mash(clk,cp.clk_mash());
+        instance().regs->set_divi(clk,cp.clk_divi());
+        instance().regs->set_divf(clk,cp.clk_divf());      
+      }
+
+      clock_id index_to_clock_id(unsigned i)
+      {
+        static clock_id clocks[] = { gp0_clk_id, gp1_clk_id
+                                   , gp2_clk_id, pwm_clk_id
+                                   };
+        return clocks[i];
+      }     
     }
   }
 }}

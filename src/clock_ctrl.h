@@ -33,7 +33,6 @@ namespace dibase { namespace rpi {
     /// memory mapped area
       struct clock_ctrl
       {
-
       /// @brief Simple clock allocation class.
       ///
       /// Supports allocate, de-allocate and in_use operations for clocks

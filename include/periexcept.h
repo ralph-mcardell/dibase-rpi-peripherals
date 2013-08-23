@@ -45,6 +45,22 @@ namespace dibase { namespace rpi {
       {}
     };
 
+  /// @brief Exception type raised if required free peripherals are is in use
+    struct peripheral_in_use : peripheral_exception
+    {
+    /// @brief Construct from an explanatory std::string.
+    /// @param[in]  what_arg  std::string explaining in use conditions
+      peripheral_in_use(std::string const & what_arg)
+      : peripheral_exception{what_arg}
+      {}
+
+    /// @brief Construct from an explanatory C string.
+    /// @param[in]  what_arg  C string explaining in use conditions
+      peripheral_in_use(char const * what_arg)
+      : peripheral_exception{what_arg}
+      {}
+    };
+
   /// @brief Exception type raised when expecting a pin to be (un)exported
   /// Some functionality relies on sys filesystem GPIO support and expects
   /// pins to be either exported or unexported.

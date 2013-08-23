@@ -31,7 +31,8 @@ namespace dibase { namespace rpi {
 
     /// @brief GPIO clock control type. There is only 1 (yes it's a singleton!)
     /// Maps BCM2708/2835 GPIO clock registers into the requisite physical
-    /// memory mapped area
+    /// memory mapped area, provides simple allocator for in-process clock
+    /// resource use tracking and helper to allocate and initialise a clock.
       struct clock_ctrl
       {
       /// @brief Pointer to BCM2708 / BCM2835 clock control registers instance

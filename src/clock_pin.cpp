@@ -5,6 +5,7 @@
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
 
+#include "clock_pin.h"
 #include "clock_parameters.h"
 #include "clock_ctrl.h"
 #include "gpio_ctrl.h"

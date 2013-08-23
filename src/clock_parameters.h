@@ -7,7 +7,7 @@
 
 #ifndef DIBASE_RPI_PERIPHERALS_CLOCK_PARAMETERS_H
 # define DIBASE_RPI_PERIPHERALS_CLOCK_PARAMETERS_H
-# include "clock_pin.h"
+# include "clockdefs.h"
 # include "clock_registers.h"
 
 namespace dibase { namespace rpi {

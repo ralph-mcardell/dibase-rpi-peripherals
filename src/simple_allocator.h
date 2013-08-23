@@ -41,6 +41,13 @@ namespace dibase { namespace rpi {
             return (res_idx<NumRes) && (allocated&(1<<res_idx));
           }
 
+        /// @brief Return whether any resource is marked as in use
+        /// @returns true if any resource marked as allocated; false if none are
+          bool any_in_use()
+          {
+            return allocated!=0U;
+          }
+
         /// @brief Allocate a resource marking it as in use
         /// @param res_idx    Resource index value of resource to allocate.
         ///                   Range checked.

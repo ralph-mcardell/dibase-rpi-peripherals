@@ -100,9 +100,14 @@ namespace dibase { namespace rpi {
         static clock_ctrl & instance();
 
       /// @brief Initialise a clock with passed parameters
-      /// @param clk  id of clock to initialise
-      /// @param cp   Parameters to use for clock.
-        static void initialise_clock(clock_id clk, clock_parameters const & cp);
+      /// @param clk_idx  Internal index value of clock to initialise NOT range
+      ///                 checked
+      /// @param cp       Parameters to use for clock.
+      /// @thorws bad_peripheral_alloc if clock is in use
+        static void allocate_and_initialise_clock
+        ( unsigned clk_idx
+        , clock_parameters const & cp
+        );
 
       private:
       /// @brief Construct: initialise regs with correct physical address & size 

@@ -97,14 +97,7 @@ namespace dibase { namespace rpi {
       {
         using internal::clock_parameters;
         clock_parameters cp(src_type, src_freq, freq); // CAN THROW!!!
-        clock_id clk_id{index_to_clock_id(clk_idx)};
-        if ( !clock_ctrl::instance().alloc.allocate(clk_idx) )
-          {
-            throw bad_peripheral_alloc( "initialise_clock: clock is already "
-                                        "being used locally."
-                                      );
-          }
-        clock_ctrl::instance().initialise_clock(clk_id, cp);
+        clock_ctrl::instance().allocate_and_initialise_clock(clk_idx, cp); // CAN THROW!!!
         freq_min = cp.frequency_min();
         freq_avg = cp.frequency_avg();
         freq_max = cp.frequency_max();

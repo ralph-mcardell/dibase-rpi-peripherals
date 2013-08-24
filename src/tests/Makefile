@@ -30,7 +30,7 @@ UNITTEST_SRC_FILE = gpio_registers_unittests.cpp\
                     rpi_info_unittests.cpp\
                     pin_alloc_unittests.cpp\
                     gpio_alt_fn_unittests.cpp\
-                    clock_pin_unittests.cpp\
+                    clockdefs_unittests.cpp\
                     clock_parameters_unittests.cpp
 ALL_SRC_FILES = $(COMMON_SRC_FILES) $(INTERACTIVETEST_SRC_FILES) \
           $(PLATTEST_SRC_FILES) $(UNITTEST_SRC_FILE)

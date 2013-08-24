@@ -90,7 +90,7 @@ TEST_CASE( "Unit-tests/simple_allocator/0040/de-allocate unallocated pin fails"
   CHECK_FALSE(simple_alloc.any_in_use());
 }
 
-TEST_CASE( "Unit-tests/simple_allocator/0040/de-allocate out of range pin fails"
+TEST_CASE( "Unit-tests/simple_allocator/0050/de-allocate out of range pin fails"
          , "De-allocating pin with out of range index fails leaving state as was"
          )
 {

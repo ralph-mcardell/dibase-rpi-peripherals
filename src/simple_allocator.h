@@ -32,7 +32,7 @@ namespace dibase { namespace rpi {
           simple_allocator() : allocated{0U} {}
 
         /// @brief Return whether a resource is marked as in use or not
-        /// @param res_idx    Resource index value of resource to check
+        /// @param res_idx    0 based resource index value of resource to check
         ///                   allocation state of. Partially range checked.
         /// @returns true if resource marked as allocated; false if it is not
         ///               OR res_idx is out of range.
@@ -49,7 +49,7 @@ namespace dibase { namespace rpi {
           }
 
         /// @brief Allocate a resource marking it as in use
-        /// @param res_idx    Resource index value of resource to allocate.
+        /// @param res_idx    0 based resource index of resource to allocate.
         ///                   Range checked.
         /// @returns true if resource was allocated by call; false if it was
         ///               not as already allocated or res_idx out of range.
@@ -64,7 +64,7 @@ namespace dibase { namespace rpi {
           }
 
         /// @brief De-allocate a resource marking it as free for use
-        /// @param res_idx    Resource index of resource to de-allocate.
+        /// @param res_idx    0 based resource index of resource to de-allocate.
         ///                   Range checked.
         /// @returns true if resource was de-allocated by call; false if it
         ///               was not as already free or res_idx out of range.

@@ -17,6 +17,7 @@ namespace dibase { namespace rpi {
   namespace peripherals
   { namespace internal
     {
+      class clock_parameters;
       constexpr std::size_t number_of_pwm_channels{2};
 
     /// @brief GPIO PWM control type. There is only 1 (yes it's a singleton!)
@@ -38,22 +39,10 @@ namespace dibase { namespace rpi {
       /// @brief set source and frequency of the common PWM clock
       /// Note that the clock is common to all (both) PWM channels. The
       /// clock should only be set when no PWM channels are in use.
-      /// @param src_freq   Clock source frequency in Hertz
-      /// @param src_type   Clock source type
-      /// @param freq       Clock requested frequency characteristics
-      /// @throws std::invalid_argument the clock frequency is out of range
-      ///         for the filtering mode requested or the source and requested
-      ///         frequencies are not in the valid range of ratios:
-      ///         1<=(requested frequency)/(source frequency)<=0xfff
-      /// @throws std::range_error if the clock divisor DIVI field value is
-      ///         too small for the selected MASH mode.
+      /// @param cp   Clock set-up an frequency parameters
       /// @throws peripheral_in_use if any PWM channel is in use (as reported
       ///         by the alloc allocator member) at the time of the call.
-        void set_clock
-        ( hertz src_freq
-        , clock_source src_type
-        , clock_frequency const & freq
-        );
+        void set_clock(clock_parameters const & cp);
 
 
       private:

@@ -7,7 +7,6 @@
 
 #include "pwm_ctrl.h"
 #include "clock_ctrl.h"
-#include "clock_parameters.h"
 #include "periexcept.h"
 #include <thread>
 
@@ -25,11 +24,7 @@ namespace dibase { namespace rpi {
         return pwm_control_area;
       }
 
-      void pwm_ctrl::set_clock
-      ( hertz src_freq
-      , clock_source src_type
-      , clock_frequency const & freq
-      )
+      void pwm_ctrl::set_clock(clock_parameters const & cp)
       {
         if (alloc.any_in_use())
           {
@@ -38,7 +33,6 @@ namespace dibase { namespace rpi {
                     "while one or more PWM channels is in use."
                   };
           }
-        clock_parameters cp(src_type, src_freq, freq); // CAN THROW!!!
         clock_ctrl & clk_ctrl(clock_ctrl::instance());
         if (clk_ctrl.alloc.is_in_use(pwmclk))
           { // If clock in use (stop) and deallocate it

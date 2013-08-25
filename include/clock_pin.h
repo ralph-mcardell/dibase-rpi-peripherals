@@ -68,11 +68,12 @@ namespace dibase { namespace rpi {
     /// Calculates and sets clock frequency values and sets clock manager
     /// control and divisor fields for associated clock.
     /// Allocates GPIO pin.
+    /// Note: clock is initially disabled - i.e. not running.
     /// @param (template) Source Clock source type supporting frequency()
     ///                   member function returning source frequency in Hertz
     ///                   and source() member function returning a clock_source
     ///                   value.
-    /// @para, p          Pin id of GPIO pin to use with clock
+    /// @param p          Pin id of GPIO pin to use with clock
     /// @param src        Instance of Source specifying clock source parameters
     /// @param freq       Clock requested frequency characteristics
     /// @throws std::invalid_argument if the requested pin has no clock

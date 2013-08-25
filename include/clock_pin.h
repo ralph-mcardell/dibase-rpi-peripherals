@@ -24,7 +24,7 @@ namespace dibase { namespace rpi {
   /// pin alternative function to use. 
   /// If the pin supports a GPCLK function and the source and frequency
   /// parameters are valid and the clock not already in use locally within
-  ///  the same process then the clock is set-up and the pin allocated and
+  /// the same process then the clock is set-up and the pin allocated and
   /// set to the relevant alt-fn. Note: no attempt is made to see if the clock
   /// is in use externally by other processes.
   ///
@@ -90,7 +90,7 @@ namespace dibase { namespace rpi {
       , pin{p}
       {}
 
-    /// @brief Destroy: stop the clock and de-allocate the GPIO pin.
+    /// @brief Destroy: stop the clock and de-allocate clock and GPIO pin.
       ~clock_pin();
 
       clock_pin(clock_pin const &) = delete;
@@ -99,10 +99,10 @@ namespace dibase { namespace rpi {
       clock_pin& operator=(clock_pin &&) = delete;
 
     /// @brief Start clock running (enable clock)
-      void  start() const;
+      void start() const;
 
     /// @brief Stop clock running (disable clock)
-      void  stop() const;
+      void stop() const;
 
     /// @brief Return enabled (running) state of clock
     /// @returns true if clock is running (enabled), false if not.

@@ -21,7 +21,8 @@ SRC_FILES = phymem_ptr.cpp\
             clock_parameters.cpp\
             pin.cpp\
             pin_edge_event.cpp\
-            clock_pin.cpp
+            clock_pin.cpp\
+            pwm_pin.cpp
 TGT_FILE = $(LIB_DIR)/$(LIB_FILE)
 OBJ_FILES = $(SRC_FILES:%.cpp=$(OBJ_DIR)/%.o)
 OBJ_FILENAMES = $(SRC_FILES:%.cpp=%.o)

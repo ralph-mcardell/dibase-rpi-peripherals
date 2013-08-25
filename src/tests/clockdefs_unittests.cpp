@@ -114,6 +114,17 @@ TEST_CASE( "Unit-tests/frequency/0030/comparisons - same frequency type"
   CHECK_FALSE( hertz(123)>=hertz(124) );
 }
 
+TEST_CASE( "Unit-tests/frequency/0040/create from different frequency type"
+         , "Implicit frequency_cast should be applied correctly using "
+           "converting constructor"
+         )
+{
+  CHECK(hertz(kilohertz(600)).count()==600000);
+  CHECK(kilohertz(megahertz(25)).count()==25000);
+  CHECK(kilohertz(f_megahertz(19.2)).count()==19200);
+  CHECK(hertz(f_megahertz(800.123456)).count()==800123456);
+}
+
 TEST_CASE( "Unit-tests/fixed_oscillator_clock_source/0000/create"
          , "fixed_oscillator_clock_source can be created from a frequency"
          )

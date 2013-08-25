@@ -67,7 +67,7 @@ namespace dibase { namespace rpi {
     public:
       typedef Rep         rep;          ///< Count representation type
       typedef Multiplier  multiplier;   ///< Multiplier std::ratio type
-      
+      typedef frequency<rep,multiplier> self; ///< self type
     private:
         rep rep_;     ///< Oscillation count
 
@@ -80,11 +80,20 @@ namespace dibase { namespace rpi {
     /// @param r  count of oscillations per second divided by Multiplier
       constexpr frequency(rep const & r) : rep_{r} {}
 
-    /// @brief Returns the count of oscillations per 1/Multipler seconds
-    /// @returns Count of oscillations per 1/Multipler seconds
+
+    /// @brief Construct from instance of other frequency type
+    /// @param (template) Rep2        Rep type of other frequency type
+    /// @param (template) Multiplier2 Multiplier type of other frequency
+    /// @param f  Other frequency type instance
+      template <typename Rep2, typename Multiplier2>
+      constexpr frequency(frequency<Rep2,Multiplier2> const & f) 
+      : rep_{frequency_cast<self>(f).count()} {}
+
+    /// @brief Returns the count of oscillations per 1/Multiplier seconds
+    /// @returns Count of oscillations per 1/Multiplier seconds
       constexpr rep count() const {return rep_;}
 
-    /// @brief Compare two frequncies of the SAME TYPE for equality
+    /// @brief Compare two frequencies of the SAME TYPE for equality
     /// @param rhs  Frequency of the SAME TYPE to compare this frequency to 
     /// @returns true of this frequency count equals rhs frequency count
       constexpr bool operator==(frequency const & rhs) const 
@@ -92,7 +101,7 @@ namespace dibase { namespace rpi {
         return rep_==rhs.rep_;
       }
 
-    /// @brief Compare this frequncy being less than other of the SAME TYPE
+    /// @brief Compare this frequency being less than other of the SAME TYPE
     /// @param rhs  Frequency of the SAME TYPE to compare this frequency to 
     /// @returns true if this frequency count less than rhs frequency count
       constexpr bool operator<(frequency const & rhs) const 
@@ -166,11 +175,13 @@ namespace dibase { namespace rpi {
 
     public:
     /// @brief Construct from a frequency value.
-    /// @param (template) Frequency  frequency type to construct from
+    /// @param (template) R Rep parameter for frequency type to construct from
+    /// @param (template) M Multiplier parameter for frequency type to
+    ///                     construct from
     /// @param f  Frequency value for clock
-      template <typename Freqency>
-      constexpr explicit fixed_oscillator_clock_source(Freqency const & f)
-      : freq{frequency_cast<hertz>(f)}
+      template <typename R, typename M>
+      constexpr explicit fixed_oscillator_clock_source(frequency<R,M> const & f)
+      : freq{f}
       {}
 
     /// @brief Observer. Result is the frequency value in Hertz

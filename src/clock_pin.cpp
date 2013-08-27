@@ -56,7 +56,7 @@ namespace dibase { namespace rpi {
     , clock_source src_type
     , clock_frequency const & freq
     )
-    { // Select alt function decsriptors for pin for GPCLKn special functions
+    { // Select alt function descriptors for pin for GPCLKn special functions
       using pin_alt_fn::result_set;
       using pin_alt_fn::select;
       using pin_alt_fn::gpio_special_fn;

@@ -18,6 +18,7 @@ namespace dibase { namespace rpi {
       pin_id const out_pin_id(gpio_gen3); // Gertboard GP22 (GPIO22)
       pin_id const in_pin_id(gpio_gen2);  // Gertboard GP21 (GPIO21 or 27)
       pin_id const clk_pin_id(gpio_gclk); // Gertboard GP4 (GPIO4)
+      pin_id const pwm_pin_id(gpio_gen1); // Gertboard GP18 (GPI018)
     }
   }
 }}

@@ -46,9 +46,9 @@ TEST_CASE( "Interactive_tests/clock_pin/0000/create start, stop 600KHz clock"
 {
   std::cout << "\nClock output test:\n"
                "Connect pin BCM2835 GPIO" << available_clk_pin_id 
-            << " to a waveform monitoring device (oscilloscope etc.)."
-            << " Expect a 600KHz square waveform.\n\n";
-  clock_pin clk { pin_id{4}
+            << " to a waveform monitoring device (oscilloscope etc.).\n"
+            << "Expect a 600KHz square waveform.\n\n";
+  clock_pin clk { available_clk_pin_id
                 , fixed_oscillator_clock_source{f_megahertz{19.2}}
                 , clock_frequency{kilohertz{600}, clock_filter::none}
                 };

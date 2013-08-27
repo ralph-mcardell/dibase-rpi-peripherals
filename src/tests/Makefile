@@ -15,7 +15,8 @@ COMMON_SRC_FILES = test_main.cpp
 INTERACTIVETEST_SRC_FILES = pin_interactivetests.cpp\
                             sysfs_interactivetests.cpp\
                             pin_edge_event_interactivetests.cpp\
-                            clock_pin_interactivetests.cpp
+                            clock_pin_interactivetests.cpp\
+                            pwm_pin_interactivetests.cpp
 PLATTEST_SRC_FILES = phymem_ptr_platformtests.cpp\
                     rpi_info_platformtests.cpp \
                     sysfs_platformtests.cpp\

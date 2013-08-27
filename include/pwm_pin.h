@@ -83,14 +83,21 @@ namespace dibase { namespace rpi {
       , clock_frequency const & freq
       );
 
+    /// @brief Private helper: Set PWM channel's data value
+    /// @param data   Value of PWM channel's data to set (no checking)
+      void set_data(unsigned data);
+
       static hertz    freq_min; ///< Minimum frequency of PWM clock
       static hertz    freq_avg; ///< Average frequency of PWM clock
       static hertz    freq_max; ///< Maximum frequency of PWM clock
-      unsigned const  pwm;      ///< Value indicating pin's PWM function
+      unsigned        pwm;      ///< Value indicating pin's PWM function
       pin_id const    pin;      ///< Id of GPIO pin clock signal output to
       unsigned const  range;    ///< PWM channel range value
 
     public:
+      constexpr static unsigned range_default = 2400U;///< Default range
+      constexpr static unsigned range_minimum = 2U;  ///< Smallest allowed range
+
     /// @brief static class-operation: set common PWM clock source & frequency
     /// Calculates and sets clock frequency values and sets clock manager
     /// control and divisor fields for the common PWM clock.
@@ -128,21 +135,22 @@ namespace dibase { namespace rpi {
 
     /// @brief construct from GPIO pin id and optional PWM range value.
     /// Checks GPIO pin supports a PWM function. 
-    /// The optional range value, defaulting to 2400, is used as the PWM clock
-    /// cycle range over which the requested PWM high-to-low ratio is
-    /// produced. The cycle repeats every range PWM clock cycles. Although not
-    /// mentioned in the data sheet a minimum value of 2 is imposed for
-    /// clock_pin objects, being the lowest value giving any degree of control.
+    /// The optional range value, defaulting to pwm_pin::range_default,
+    /// is used as the PWM clock cycle range over which the requested PWM
+    /// high-to-low ratio is produced.
+    /// The cycle repeats every range PWM clock cycles. Although not mentioned
+    /// in the data sheet a minimum value of is imposed for clock_pin objects,
+    /// pwm_pin::range_minimum.
     /// Note: PWM channel is created disabled (not running) and with a high/low
     /// ratio of 0 (i.e. always low).
     /// @param p          Pin id of GPIO pin to use for PWM
-    /// @param range      PWM range value. Should be at least 2.
+    /// @param range      PWM range value: at least pwm_pin::range_minimum.
     /// @throws std::invalid_argument if the requested pin has no PWM function
-    /// @throws std::out_of_range if range is less than 2.
+    /// @throws std::out_of_range if range is less than pwm_pin::range_minimum.
     /// @throws std::range_error if the pin supports more than one PWM function
     ///         or the special function type is not PWM0 or PWM1 (neither of
     ///         which should be possible).
-      explicit pwm_pin(pin_id p, unsigned range=2400);
+      explicit pwm_pin(pin_id p, unsigned range=range_default);
 
     /// @brief Destroy: stop the PWM channel and de-allocate channel & GPIO pin.
       ~pwm_pin();
@@ -177,6 +185,19 @@ namespace dibase { namespace rpi {
       template<typename C, typename R>
       void set_ratio(pwm_ratio<C,R> r);
     };
+    
+    template<typename C, typename R>
+    void pwm_pin::set_ratio(pwm_ratio<C,R> r)
+    {
+      auto count(pwm_ratio<C,R>::num*r.count());
+      if ((count<0) || (count>pwm_ratio<C,R>::den))
+        {
+          throw std::out_of_range{"pwm_pin::set_ratio: r parameter value "
+                                  "represents a negative ratio or ratio > 1"
+                                 };
+        }
+      set_data((range*count+(pwm_ratio<C,R>::den/2))/pwm_ratio<C,R>::den);
+    }
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed
 #endif // DIBASE_RPI_PERIPHERALS_PWM_PIN_H

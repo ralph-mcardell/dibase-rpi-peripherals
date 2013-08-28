@@ -46,9 +46,9 @@ namespace dibase { namespace rpi {
   /// Works in a similar fashion to std::chrono::duration_cast, and in fact
   /// uses std::chrono::duration_cast to do the leg work.
   ///
-  /// @param (template) ToFreq      frequency type to cast to
-  /// @param (template) Rep         Rep type of frequency type to cast from
-  /// @param (template) Multiplier  Multiplier type of frequency to cast from
+  /// @tparam ToFreq      frequency type to cast to
+  /// @tparam Rep         Rep type of frequency type to cast from
+  /// @tparam Multiplier  Multiplier type of frequency to cast from
   /// @param f          Frequency instance to cast from.
     template <class ToFreq, class Rep, class Multiplier>
     constexpr
@@ -82,8 +82,8 @@ namespace dibase { namespace rpi {
 
 
     /// @brief Construct from instance of other frequency type
-    /// @param (template) Rep2        Rep type of other frequency type
-    /// @param (template) Multiplier2 Multiplier type of other frequency
+    /// @tparam Rep2        Rep type of other frequency type
+    /// @tparam Multiplier2 Multiplier type of other frequency
     /// @param f  Other frequency type instance
       template <typename Rep2, typename Multiplier2>
       constexpr frequency(frequency<Rep2,Multiplier2> const & f) 
@@ -175,8 +175,8 @@ namespace dibase { namespace rpi {
 
     public:
     /// @brief Construct from a frequency value.
-    /// @param (template) R Rep parameter for frequency type to construct from
-    /// @param (template) M Multiplier parameter for frequency type to
+    /// @tparam R Rep parameter for frequency type to construct from
+    /// @tparam M Multiplier parameter for frequency type to
     ///                     construct from
     /// @param f  Frequency value for clock
       template <typename R, typename M>
@@ -228,7 +228,7 @@ namespace dibase { namespace rpi {
 
     public:
     /// @brief Construct from a frequency value and filter severity
-    /// @param (template) Frequency  frequency type to construct from
+    /// @tparam Frequency  frequency type to construct from
     /// @param af Average frequency value for clock
     /// @param f  Filter mode value for clock. 
       template <typename Freqency>

@@ -100,6 +100,7 @@ namespace dibase { namespace rpi {
       };
 
     public:
+    /// @brief Maximum value for clocks' DIVISOR DIVI field
       constexpr static auto divisor_divi_max = register_t{div_divi_max};
 
       register_t control; ///< Clock control (XX_CTL) register
@@ -300,6 +301,8 @@ namespace dibase { namespace rpi {
     };
 
     struct clock_registers;
+
+  /// @brief Type used to identify specific clock records in clock_registers  
     typedef clock_record clock_registers::*   clock_id;
 
   /// @brief Represents layout of clock control registers with operations.
@@ -522,9 +525,16 @@ namespace dibase { namespace rpi {
       }
     };
 
+  /// @brief clock_registers id value for general purpose clock 0
     constexpr clock_id gp0_clk_id{&clock_registers::gp0_clk};
+
+  /// @brief clock_registers id value for general purpose clock 1
     constexpr clock_id gp1_clk_id{&clock_registers::gp1_clk};
+
+  /// @brief clock_registers id value for general purpose clock 2
     constexpr clock_id gp2_clk_id{&clock_registers::gp2_clk};
+
+  /// @brief clock_registers id value for the PWM clock
     constexpr clock_id pwm_clk_id{&clock_registers::pwm_clk};
   }
 }}

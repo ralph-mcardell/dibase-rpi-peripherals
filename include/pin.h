@@ -132,6 +132,8 @@ namespace dibase { namespace rpi {
 
     /// @brief Create and open a GPIO pin for input
     /// @param[in]  pin   Id of GPIO pin to open for input.
+    /// @param[in]  mode  Open mode for input pin. Specifies pull up/down
+    ///                   mode, default is pull_disable (no pull).
     /// @exception  bad_pin_alloc if the GPIO pin is in use by this process
     ///             or elsewhere.
       explicit ipin( pin_id pin, unsigned mode=0 )
@@ -144,6 +146,8 @@ namespace dibase { namespace rpi {
 
     /// @brief Open pin for input.
     /// @param[in]  pin   Id of GPIO pin to open for input.
+    /// @param[in]  mode  Open mode for input pin. Specifies pull up/down
+    ///                   mode, default is pull_disable (no pull).
     /// @exception  bad_pin_alloc if the GPIO pin is in use by this process
     ///             or elsewhere.
       void open(pin_id pin, unsigned mode=0);

@@ -18,6 +18,8 @@ namespace dibase { namespace rpi {
   { namespace internal
     {
       class clock_parameters;
+
+    /// @brief Number of channels supported by the BCM2835 PWM peripheral
       constexpr std::size_t number_of_pwm_channels{2};
 
     /// @brief GPIO PWM control type. There is only 1 (yes it's a singleton!)

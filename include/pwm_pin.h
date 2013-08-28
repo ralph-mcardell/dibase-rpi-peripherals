@@ -34,15 +34,15 @@ namespace dibase { namespace rpi {
       constexpr count_type count() const { return cnt;}
     };
 
-    typedef pwm_ratio<unsigned, std::deci>       pwm_tenths;
-    typedef pwm_ratio<unsigned, std::centi>      pwm_hundredths;
-    typedef pwm_ratio<unsigned, std::milli>      pwm_thousandths;
-    typedef pwm_ratio<unsigned, std::micro>      pwm_millionths;
+    typedef pwm_ratio<unsigned, std::deci>  pwm_tenths;     ///< Quantities in 1/10ths
+    typedef pwm_ratio<unsigned, std::centi> pwm_hundredths; ///< Quantities in 1/100ths
+    typedef pwm_ratio<unsigned, std::milli> pwm_thousandths;///< Quantities in 1/1000ths
+    typedef pwm_ratio<unsigned, std::micro> pwm_millionths; ///< Quantities in 1/1000000ths
 
   /// @brief Use a GPIO pin for pulse width modulation
   /// PWM channels 1 and 2 PWM signal may be output to GPIO pins as function 
   /// pwm0 and pwm1 when set to the appropriate alternate pin function. See
-  /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+  /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf"\>
   /// table 6-31 to see which pin/alt function combinations support the PWM0
   /// PWM1 functions.
   ///
@@ -101,7 +101,7 @@ namespace dibase { namespace rpi {
     /// @brief static class-operation: set common PWM clock source & frequency
     /// Calculates and sets clock frequency values and sets clock manager
     /// control and divisor fields for the common PWM clock.
-    /// @param (template) Source Clock source type supporting frequency()
+    /// @tparam Source    Clock source type supporting frequency()
     ///                   member function returning source frequency in Hertz
     ///                   and source() member function returning a clock_source
     ///                   value.
@@ -178,8 +178,8 @@ namespace dibase { namespace rpi {
     /// @brief Set the PWM ratio of high to low output.
     /// Can be used like so: 
     ///   set_ratio(pwm_hundredths(10))
-    /// @param (template) C  CntInT parameter of pwm_ratio class template
-    /// @param (template) R  Rat parameter of pwm_ratio class template
+    /// @tparam C  CntInT parameter of pwm_ratio class template
+    /// @tparam R  Rat parameter of pwm_ratio class template
     /// @param r  Ratio value in the range [0,1]
     /// @throws std::out_of_range if r is greater than one or less than zero
       template<typename C, typename R>

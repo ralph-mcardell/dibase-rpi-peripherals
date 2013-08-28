@@ -16,7 +16,7 @@ namespace dibase { namespace rpi {
   /// @brief Use a GPIO pin as general purpose clock.
   /// General purpose clocks 0, 1 and 2 may be output to GPIO pins when set
   /// to the appropriate alternate pin function. See
-  /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+  /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf"\>
   /// table 6-31 to see which pin/alt function combinations support a GPCLK
   /// function.
   /// A clock_pin instance is constructed with a GPIO pin_id which is used to
@@ -69,7 +69,7 @@ namespace dibase { namespace rpi {
     /// control and divisor fields for associated clock.
     /// Allocates GPIO pin.
     /// Note: clock is initially disabled - i.e. not running.
-    /// @param (template) Source Clock source type supporting frequency()
+    /// @tparam Source Clock source type supporting frequency()
     ///                   member function returning source frequency in Hertz
     ///                   and source() member function returning a clock_source
     ///                   value.

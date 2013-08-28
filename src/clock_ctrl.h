@@ -49,7 +49,7 @@ namespace dibase { namespace rpi {
       /// @param clk_idx  Internal index value of clock to initialise NOT range
       ///                 checked
       /// @param cp       Parameters to use for clock.
-      /// @thorws bad_peripheral_alloc if clock is in use
+      /// @throws bad_peripheral_alloc if clock is in use
         static void allocate_and_initialise_clock
         ( unsigned clk_idx
         , clock_parameters const & cp

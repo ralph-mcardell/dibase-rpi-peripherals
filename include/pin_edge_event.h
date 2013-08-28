@@ -81,9 +81,9 @@ namespace dibase { namespace rpi {
       void wait() const;
 
     /// @brief Wait for edge event for a given amount of time.
-    /// @param (template) Rep     std::duration parameter see C++11 standard
+    /// @tparam Rep     std::duration parameter see C++11 standard
     ///                           section 20.11.5.
-    /// @param (template) Period  std::duration parameter see C++11 standard
+    /// @tparam Period  std::duration parameter see C++11 standard
     ///                           section 20.11.5.
     /// @param rel_time   Amount of time to wait for a monitored edge event
     ///                   to occur on the associated pin.
@@ -102,9 +102,9 @@ namespace dibase { namespace rpi {
       }
 
     /// @brief Wait for edge event until a given point in time.
-    /// @param (template) Clock     std::time_point parameter see C++11
+    /// @tparam Clock     std::time_point parameter see C++11
     ///                             standard section 20.11.6.
-    /// @param (template) Duration  std::time_point parameter see C++11
+    /// @tparam Duration  std::time_point parameter see C++11
     ///                             standard section 20.11.6.
     /// @param abs_time   Point in time to wait until for a monitored edge
     ///                   event to occur on the associated pin.

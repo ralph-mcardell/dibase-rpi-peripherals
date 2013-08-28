@@ -27,7 +27,7 @@ namespace dibase { namespace rpi {
     /// @brief Enumeration detailing special functions GPIO pins may support
     ///
     /// Unnumbered table following table 6-31 ("Special function legend") in
-    /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+    /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf"\>
     /// Broadcom BCM2835 ARM Peripherals Datasheet</a> details the various
     /// possible special functions that GPIO pins may support. The enumeration
     /// names are based on the names in this table.
@@ -131,9 +131,9 @@ namespace dibase { namespace rpi {
     ///   - the special function the pin has in the alt function mode
       class descriptor
       {
-        pin_id          pin_;
-        gpio_pin_fn     alt_fn_;
-        gpio_special_fn special_fn_;
+        pin_id          pin_;         ///< Id of GPIO pin in question
+        gpio_pin_fn     alt_fn_;      ///< Alternative function of GPIO pin
+        gpio_special_fn special_fn_;  ///< Special function pin's alt_fn has
 
       public:
       /// @brief Construct from individual values
@@ -180,6 +180,7 @@ namespace dibase { namespace rpi {
         descriptor_container_type     items; ///< result items collection
 
       public:
+      /// @brief Unsigned integral type for result_set_builder size values
         typedef descriptor_container_type::size_type    size_type;
 
       /// @brief Number of result items held
@@ -224,8 +225,13 @@ namespace dibase { namespace rpi {
         descriptor_container_type     items; ///< result items collection
 
       public:
+      /// @brief Unsigned integral type for result_set size values
         typedef descriptor_container_type::size_type        size_type;
+
+      /// @brief Type of references to constant result_set elements
         typedef descriptor_container_type::const_reference  const_reference;
+
+      /// @brief Type of constant iterators into the result_set
         typedef descriptor_container_type::const_iterator   const_iterator;
 
       /// @brief Create from result_set_builder.
@@ -275,35 +281,91 @@ namespace dibase { namespace rpi {
         const_iterator cend() const noexcept { return items.cend(); }
       };
 
+    /// @brief Options used with select function overloads
       enum class select_options
       { exclude_no_fn  ///< Exclude pin/alt fn that have no special function
       , include_no_fn  ///< Include pin/alt fn that have no special function
       };
 
+    /// @brief Select all GPIO pin, alternative function,special function data
+    /// @param opt    Options. Choose whether to include data on pin/alt-fn
+    ///               slots with no special function. Defaults to exclude
+    ///               such slots.
+    /// @returns  result_set of descriptors detailing the selected
+    ///           {GPIO pin,  alternative function, special function} triples.
       result_set select(select_options opt=select_options::exclude_no_fn);
 
+    /// @brief Select alternative function,special function data for a pin
+    /// @param p      GPIO pin to return alternative function special function
+    ///               data for.
+    /// @param opt    Options. Choose whether to include data on pin/alt-fn
+    ///               slots with no special function. Defaults to exclude
+    ///               such slots.
+    /// @returns  result_set of descriptors detailing the selected
+    ///           {GPIO pin,  alternative function, special function} triples.
       result_set select( pin_id p
                        , select_options opt=select_options::exclude_no_fn
                        );
 
+    /// @brief Select pin,alternative function data for a special function
+    /// @param s      Special function to return pin, alternative function
+    ///               data for.
+    /// @returns  result_set of descriptors detailing the selected
+    ///           {GPIO pin, alternative function, special function} triples.
       result_set select(gpio_special_fn s);
 
+    /// @brief Select alt. function data for a pin, special function combination
+    /// @param p      GPIO pin to return alternative function data for.
+    /// @param s      Special function to return alternative function data for.
+    /// @returns  result_set of descriptors detailing the selected
+    ///           {GPIO pin, alternative function, special function} triples.
       result_set select(pin_id p, gpio_special_fn s);
 
+    /// @brief Select alt. function,special function data for a set of pins
+    /// @param ps     GPIO pin list to return alternative function special
+    ///               function data for.
+    /// @param opt    Options. Choose whether to include data on pin/alt-fn
+    ///               slots with no special function. Defaults to exclude
+    ///               such slots.
+    /// @returns  result_set of descriptors detailing the selected
+    ///           {GPIO pin, alternative function, special function} triples.
       result_set select( std::initializer_list<pin_id> ps
                        , select_options opt=select_options::exclude_no_fn
                        );
 
+    /// @brief Select pin, alt. function data for a list of special functions
+    /// @param ss     List of special functions to return pin, alternative
+    ///               function data for.
+    /// @returns  result_set of descriptors detailing the selected
+    ///           {GPIO pin, alternative function, special function} triples.
       result_set select(std::initializer_list<gpio_special_fn> ss);
 
+
+    /// @brief Select alt. function data for a pin, special function list combo
+    /// @param p      GPIO pin to return alternative function  data for.
+    /// @param ss     List of special functions to return alternative
+    ///               function data for.
+    /// @returns  result_set of descriptors detailing the selected
+    ///           {GPIO pin, alternative function, special function} triples.
       result_set select( pin_id p
                        , std::initializer_list<gpio_special_fn> ss
                        );
 
+    /// @brief Select alt. function data for a pin-list, special function combo
+    /// @param ps     GPIO pin list to return alternative function data for.
+    /// @param s      Special function to return alternative function data for.
+    /// @returns  result_set of descriptors detailing the selected
+    ///           {GPIO pin, alternative function, special function} triples.
       result_set select( std::initializer_list<pin_id> ps
                        , gpio_special_fn s
                        );
 
+    /// @brief Select alt. function data for a pin-list, special function list combo
+    /// @param ps     GPIO pin list to return alternative function data for.
+    /// @param ss     List of special functions to return alternative
+    ///               function data for.
+    /// @returns  result_set of descriptors detailing the selected
+    ///           {GPIO pin, alternative function, special function} triples.
       result_set select( std::initializer_list<pin_id> ps
                        , std::initializer_list<gpio_special_fn> ss
                        );

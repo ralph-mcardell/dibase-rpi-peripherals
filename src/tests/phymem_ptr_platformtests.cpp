@@ -30,7 +30,7 @@ off_t  const GpioBaseAddress( PeripheralsBaseAddress+0x200000);
 
 typedef unsigned int volatile PeripheralAccessType;
 
-using namespace dibase::rpi::peripherals;
+using namespace dibase::rpi::peripherals::internal;
 
 TEST_CASE( "Platform_tests/phymem_ptr/lifetime-and-access"
          , "Successful creation should allow R/W access only until deleted" 

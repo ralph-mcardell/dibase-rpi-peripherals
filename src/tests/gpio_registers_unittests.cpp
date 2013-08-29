@@ -17,6 +17,7 @@
 #include <cstring>
 #include <cstdint>
 
+using namespace dibase::rpi::peripherals::internal;
 using namespace dibase::rpi::peripherals;
 
 typedef uint32_t RegisterType;

@@ -428,7 +428,7 @@ namespace dibase { namespace rpi {
             }
         }
       };
-   } // namespace internal closed
+    } // namespace internal closed
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed
 #endif // DIBASE_RPI_PERIPHERALS_INTERNAL_PWM_REGISTERS_H

@@ -8,6 +8,7 @@
 #include "catch.hpp"
 #include "pin_alloc.h"
 
+using namespace dibase::rpi::peripherals::internal;
 using namespace dibase::rpi::peripherals;
 
 // Change if P1 GPIO_GEN0 is in use on your system...

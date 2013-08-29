@@ -8,6 +8,7 @@
 #include "catch.hpp"
 #include "pin_alloc.h"
 
+using namespace dibase::rpi::peripherals::internal;
 using namespace dibase::rpi::peripherals;
 
 struct mock_allocator

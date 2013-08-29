@@ -42,6 +42,7 @@ namespace dibase { namespace rpi {
 
     void pin_base::open(pin_id pin, direction_mode dir)
     {
+      using internal::gpio_pin_fn;
       internal::gpio_ctrl::instance().alloc.allocate(pin);
       internal::gpio_ctrl::instance().regs->set_pin_function
                                             ( pin

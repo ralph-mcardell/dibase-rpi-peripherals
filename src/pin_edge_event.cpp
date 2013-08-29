@@ -23,7 +23,8 @@ namespace dibase { namespace rpi {
         void deallocate(pin_id) {}
       };
 
-      typedef pin_cache_allocator<trivial_pin_allocator> pin_edge_event_allocator;
+      typedef internal::pin_cache_allocator<trivial_pin_allocator> 
+                                                      pin_edge_event_allocator;
 
       static pin_edge_event_allocator & allocator()
       {

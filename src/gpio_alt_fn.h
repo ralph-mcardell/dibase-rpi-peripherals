@@ -22,6 +22,7 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
+    using internal::gpio_pin_fn;
     namespace pin_alt_fn
     {
     /// @brief Enumeration detailing special functions GPIO pins may support

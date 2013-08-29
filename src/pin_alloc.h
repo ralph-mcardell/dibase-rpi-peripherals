@@ -57,8 +57,8 @@
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell
 
-#ifndef DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H
-# define DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H
+#ifndef DIBASE_RPI_PERIPHERALS_INTERNAL_PIN_ALLOC_H
+# define DIBASE_RPI_PERIPHERALS_INTERNAL_PIN_ALLOC_H
 
 # include "pin_id.h"
 # include "periexcept.h"
@@ -66,163 +66,165 @@
 
 namespace dibase { namespace rpi {
   namespace peripherals
-  {
-  /// @brief Passes (de-)allocation requests to other allocator & caches results
-  ///
-  /// Class template providing intra-process allocation logic and taking 
-  /// a pin allocator type parameter used to provide the inter-process pin
-  /// allocation logic.
-  ///
-  /// GPIO pin allocation and deallocation requests are first checked against
-  /// cached results local to the pin_cache_allocator specialisation instance
-  /// and if the cached value indicates a pin is free for allocation or in use
-  /// and may be deallocated the request is passed to the allocate or
-  /// deallocate member function of the contained allocator and the cache
-  /// updated as appropriate. The is_in_use query member function first checks
-  /// the local cache and, if _not_ locally in use, passes the query onto the
-  /// contained allocator.
-  ///
-  /// @param PIN_ALLOC_T  Type of pin allocator to pass requests onto if 
-  ///                     cached results indicate so. Dictates inter-process
-  ///                     pin allocation policy.
-    template <class PIN_ALLOC_T>
-    class pin_cache_allocator
+  { namespace internal
     {
-      bool pat[pin_id::number_of_pins]; ///< GPIO Pin Availability Table
-      PIN_ALLOC_T allocator;            ///< Contained pin allocator
-
-    public:
-      pin_cache_allocator()
+    /// @brief Passes allocator requests to other allocator & caches results
+    ///
+    /// Class template providing intra-process allocation logic and taking 
+    /// a pin allocator type parameter used to provide the inter-process pin
+    /// allocation logic.
+    ///
+    /// GPIO pin allocation and deallocation requests are first checked against
+    /// cached results local to the pin_cache_allocator specialisation instance
+    /// and if the cached value indicates a pin is free for allocation or in use
+    /// and may be deallocated the request is passed to the allocate or
+    /// deallocate member function of the contained allocator and the cache
+    /// updated as appropriate. The is_in_use query member function first checks
+    /// the local cache and, if _not_ locally in use, passes the query onto the
+    /// contained allocator.
+    ///
+    /// @param PIN_ALLOC_T  Type of pin allocator to pass requests onto if 
+    ///                     cached results indicate so. Dictates inter-process
+    ///                     pin allocation policy.
+      template <class PIN_ALLOC_T>
+      class pin_cache_allocator
       {
-        std::memset(pat, 0, sizeof(pat));
-      }
+        bool pat[pin_id::number_of_pins]; ///< GPIO Pin Availability Table
+        PIN_ALLOC_T allocator;            ///< Contained pin allocator
 
-    /// @brief allocate a GPIO pin for use
-    ///
-    /// If a pin has already been allocated using this allocator then throws
-    /// a bad_peripheral_alloc exception, otherwise passes the pin_id to the
-    /// allocate member function of the contained allocator, which is assumed
-    /// to also throw on allocation failure. If the call returns then the pin
-    /// is marked as in use in the per-instance Pin Allocation Table.
-    ///
-    /// @param[in]  pin   GPIO pin id for the GPIO pin to allocate for use.
-    /// @exception  bad_peripheral_alloc is raised if the requested pin is
-    ///             already in use.
-    /// @exception  std::runtime_error (or other exception) is rasied if
-    ///             a passed on allocation request should fail.
-    void allocate( pin_id pin );
-
-    /// @brief deallocate a GPIO pin from use
-    ///
-    /// If a pin has not been allocated using this allocator then throws a
-    /// std::logic_error exception, otherwise passes the pin_id to the
-    /// deallocate member function of the contained allocator, which is assumed
-    /// to also throw on deallocation failure. If the call returns then the pin
-    /// is marked as free in the per-instance Pin Allocation Table.
-    ///
-    /// @param[in]  pin   GPIO pin id for the GPIO pin to deallocate from use.
-    /// @exception  std::logic_error is raised if the requested pin is not in
-    ///             use locally by this process.
-    /// @exception  std::runtime_error (or other exception) is raised if a
-    ///             passed on deallocation request should fail or an attempt
-    ///             is made to deallocate a pin the contained allocator deems 
-    ///             free - which is probably not due to a logic error in the
-    ///             current process' program.
-      void deallocate( pin_id pin );
-
-    /// @brief Returns whether a GPIO pin is availble _now_ for use
-    ///
-    /// If the pin is marked in use in the per-instance Pin Allocation Table
-    /// returns true, otherwise returns the value returned from passing the
-    /// pin_id to the contained allocator's is_in_use member function.
-    ///
-    /// @param[in]  pin     GPIO pin id of GPIO pin to see if it is in use.
-    /// @return true if the pin is in use at this moment or false otherwise
-    /// @exception  std::system_error (or other exception) is raised if a
-    ///             passed on request to the contained allocator should fail.
-      bool is_in_use( pin_id pin )
-      {
-        return pat[pin] ? true : allocator.is_in_use( pin );
-      }
-    };
-
-    template <class PIN_ALLOC_T>
-    void pin_cache_allocator<PIN_ALLOC_T>::allocate( pin_id pin )
-    {
-      if (pat[pin])
+      public:
+        pin_cache_allocator()
         {
-          throw bad_peripheral_alloc( "GPIO pin allocate: pin is already being "
-                                      "used locally."
-                                    );
+          std::memset(pat, 0, sizeof(pat));
         }
-      allocator.allocate( pin );
-      pat[pin] = true;
-    }
 
-    template <class PIN_ALLOC_T>
-    void pin_cache_allocator<PIN_ALLOC_T>::deallocate( pin_id pin )
-    {
-      if (!pat[pin])
-        {
-          throw std::logic_error( "GPIO pin deallocate: pin is not in use "
-                                  "locally."
-                                );
-        }
-      allocator.deallocate( pin );
-      pat[pin] = false;
-    }
-
-  /// @brief Allocator using sys filesystem gpio export / unexport for allocation
-    class pin_export_allocator
-    {
-    public:
-    /// @brief Determines if a GPIO pin is in use possibly externally
-    ///
-    /// Tries to determine if a GPIO pin is in use external to the current
-    /// process by seeing if it is exported in the sys filesystem GPIO support
-    /// area.
-    ///
-    /// Note that this is not an airtight check as proceses can use GPIO
-    /// by methods other than the user space sys filesystem and so are not
-    /// required to export the GPIO pins they use in the sys filesystem. Or
-    /// may export/unexport on an operation by operation basis.
-    ///
-    /// @param[in]  pin     GPIO pin id of GPIO pin to see if it is in use.
-    /// @return true if the pin is in use at this moment or false otherwise
-    /// @exception  std::system_error is raised if an unexpected error is
-    ///             returned from a system call.
-      bool is_in_use( pin_id pin );
-
-    /// @brief Allocates a GPIO pin by exporting it in the sys filesystem
-    ///
-    /// @param[in]  pin   GPIO pin id for the GPIO pin to allocate for use.
-    /// @exception  bad_peripheral_alloc is raised if the requested pin is
-    ///             already exported.
-    /// @exception  std::runtime_error is raised if the export file cannot
-    ///             be opened.
+      /// @brief allocate a GPIO pin for use
+      ///
+      /// If a pin has already been allocated using this allocator then throws
+      /// a bad_peripheral_alloc exception, otherwise passes the pin_id to the
+      /// allocate member function of the contained allocator, which is assumed
+      /// to also throw on allocation failure. If the call returns then the pin
+      /// is marked as in use in the per-instance Pin Allocation Table.
+      ///
+      /// @param[in]  pin   GPIO pin id for the GPIO pin to allocate for use.
+      /// @exception  bad_peripheral_alloc is raised if the requested pin is
+      ///             already in use.
+      /// @exception  std::runtime_error (or other exception) is rasied if
+      ///             a passed on allocation request should fail.
       void allocate( pin_id pin );
 
-    /// @brief Deallocates a GPIO pin by unexporting it in the sys filesystem
-    ///
-    /// @param[in]  pin   GPIO pin id for the GPIO pin to deallocate from use.
-    /// @exception  std::runtime_error is raised if the requested pin is not
-    ///             exported or the unexport file could not be opened.
-      void deallocate( pin_id pin );
-    };
+      /// @brief deallocate a GPIO pin from use
+      ///
+      /// If a pin has not been allocated using this allocator then throws a
+      /// std::logic_error exception, otherwise passes the pin_id to the
+      /// deallocate member function of the contained allocator, which is also
+      /// assumed to throw on deallocation failure. If the call returns then
+      /// the pin is marked as free in the per-instance Pin Allocation Table.
+      ///
+      /// @param[in]  pin   GPIO pin id for the GPIO pin to deallocate from use.
+      /// @exception  std::logic_error is raised if the requested pin is not in
+      ///             use locally by this process.
+      /// @exception  std::runtime_error (or other exception) is raised if a
+      ///             passed on deallocation request should fail or an attempt
+      ///             is made to deallocate a pin the contained allocator deems 
+      ///             free - which is probably not due to a logic error in the
+      ///             current process' program.
+        void deallocate( pin_id pin );
 
-  /// @brief Standard GPIO pin allocator type alias
-  ///
-  /// The standard GPIO pin allocator is a pin_cache_allocator specialised
-  /// with pin_export_allocator as the contained allocator type used to 
-  /// pass on requests to when necessary, that is:
-  ///
-  /// - is_in_use for a pin that is currently free in the local process
-  ///   but might be in use by some other process.
-  /// - allocate if the pin is currently free in the local process then the
-  ///   allocation request is passed on for more global allocation.
-  /// - deallocate if the pin is currently in use locally then it should
-  ///   also be in use globally and so needs to be globally freed.
-    typedef pin_cache_allocator<pin_export_allocator> pin_allocator;
-  }
-}} 
-#endif // DIBASE_RPI_PERIPHERALS_PIN_ALLOC_H
+      /// @brief Returns whether a GPIO pin is availble _now_ for use
+      ///
+      /// If the pin is marked in use in the per-instance Pin Allocation Table
+      /// returns true, otherwise returns the value returned from passing the
+      /// pin_id to the contained allocator's is_in_use member function.
+      ///
+      /// @param[in]  pin     GPIO pin id of GPIO pin to see if it is in use.
+      /// @return true if the pin is in use at this moment or false otherwise
+      /// @exception  std::system_error (or other exception) is raised if a
+      ///             passed on request to the contained allocator should fail.
+        bool is_in_use( pin_id pin )
+        {
+          return pat[pin] ? true : allocator.is_in_use( pin );
+        }
+      };
+
+      template <class PIN_ALLOC_T>
+      void pin_cache_allocator<PIN_ALLOC_T>::allocate( pin_id pin )
+      {
+        if (pat[pin])
+          {
+            throw bad_peripheral_alloc( "GPIO pin allocate: pin is already "
+                                        "being used locally."
+                                      );
+          }
+        allocator.allocate( pin );
+        pat[pin] = true;
+      }
+
+      template <class PIN_ALLOC_T>
+      void pin_cache_allocator<PIN_ALLOC_T>::deallocate( pin_id pin )
+      {
+        if (!pat[pin])
+          {
+            throw std::logic_error( "GPIO pin deallocate: pin is not in use "
+                                    "locally."
+                                  );
+          }
+        allocator.deallocate( pin );
+        pat[pin] = false;
+      }
+
+    /// @brief Allocator using sys filesystem gpio export/unexport for allocation
+      class pin_export_allocator
+      {
+      public:
+      /// @brief Determines if a GPIO pin is in use possibly externally
+      ///
+      /// Tries to determine if a GPIO pin is in use external to the current
+      /// process by seeing if it is exported in the sys filesystem GPIO support
+      /// area.
+      ///
+      /// Note that this is not an airtight check as proceses can use GPIO
+      /// by methods other than the user space sys filesystem and so are not
+      /// required to export the GPIO pins they use in the sys filesystem. Or
+      /// may export/unexport on an operation by operation basis.
+      ///
+      /// @param[in]  pin     GPIO pin id of GPIO pin to see if it is in use.
+      /// @return true if the pin is in use at this moment or false otherwise
+      /// @exception  std::system_error is raised if an unexpected error is
+      ///             returned from a system call.
+        bool is_in_use( pin_id pin );
+
+      /// @brief Allocates a GPIO pin by exporting it in the sys filesystem
+      ///
+      /// @param[in]  pin   GPIO pin id for the GPIO pin to allocate for use.
+      /// @exception  bad_peripheral_alloc is raised if the requested pin is
+      ///             already exported.
+      /// @exception  std::runtime_error is raised if the export file cannot
+      ///             be opened.
+        void allocate( pin_id pin );
+
+      /// @brief Deallocates a GPIO pin by unexporting it in the sys filesystem
+      ///
+      /// @param[in]  pin   GPIO pin id for the GPIO pin to deallocate from use.
+      /// @exception  std::runtime_error is raised if the requested pin is not
+      ///             exported or the unexport file could not be opened.
+        void deallocate( pin_id pin );
+      };
+
+    /// @brief Standard GPIO pin allocator type alias
+    ///
+    /// The standard GPIO pin allocator is a pin_cache_allocator specialised
+    /// with pin_export_allocator as the contained allocator type used to 
+    /// pass on requests to when necessary, that is:
+    ///
+    /// - is_in_use for a pin that is currently free in the local process
+    ///   but might be in use by some other process.
+    /// - allocate if the pin is currently free in the local process then the
+    ///   allocation request is passed on for more global allocation.
+    /// - deallocate if the pin is currently in use locally then it should
+    ///   also be in use globally and so needs to be globally freed.
+      typedef pin_cache_allocator<pin_export_allocator> pin_allocator;
+    } // namespace internal closed
+  } // namespace peripherals closed
+}} // namespaces rpi and dibase closed
+#endif // DIBASE_RPI_PERIPHERALS_INTERNAL_PIN_ALLOC_H

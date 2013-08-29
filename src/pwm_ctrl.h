@@ -46,7 +46,6 @@ namespace dibase { namespace rpi {
       ///         by the alloc allocator member) at the time of the call.
         void set_clock(clock_parameters const & cp);
 
-
       private:
       /// @brief Construct: initialise regs with correct physical address & size 
         pwm_ctrl();

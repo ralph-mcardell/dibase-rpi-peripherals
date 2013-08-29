@@ -49,7 +49,7 @@ TEST_CASE( "Interactive_tests/pwm_pin/0000/create start, vary ratio, stop pwm"
                "Connect pin BCM2835 GPIO" << available_pwm_pin_id 
             << " to a waveform monitoring device (oscilloscope etc.).\n"
             << "Expect PWM output derived from a 600KHz square waveform.\n\n";
-  pwm_pin::set_clock( fixed_oscillator_clock_source{f_megahertz{19.2}}
+  pwm_pin::set_clock( rpi_oscillator
                     , clock_frequency{kilohertz{600}, clock_filter::none}
                     );
   CHECK(pwm_pin::clock_frequency_min()==hertz{600000U});

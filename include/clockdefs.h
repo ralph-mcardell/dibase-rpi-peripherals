@@ -153,46 +153,6 @@ namespace dibase { namespace rpi {
   /// @brief Short alias integer megahertz frequency type 
     typedef i_megahertz                     megahertz;
 
-  /// @brief Strongly typed enumeration of clock sources supported by BCM2835.
-  /// These values map on to the source values for a clock's SRC control
-  /// register field.
-    enum class clock_source
-    { ground = 0      ///< Ground - no source clock (?)
-    , oscillator = 1  ///< External oscillator (probably easiest to use)
-    , testdebug0 = 2  ///< ? no information ?
-    , testdebug1 = 3  ///< ? no information ?
-    , plla = 4        ///< BCM2835 phase locked loop A
-    , pllc = 5        ///< BCM2835 phase locked loop C
-    , plld = 6        ///< BCM2835 phase locked loop D
-    , hdmi_aux = 7    ///< HDMI auxiliary clock (?)
-    };
-
-  /// @brief Type providing a fixed frequency oscillator clock source
-  /// Objects are immutable having a frequency as specified during construction.
-    class fixed_oscillator_clock_source
-    {
-      hertz   freq; ///< The frequency, in Hertz
-
-    public:
-    /// @brief Construct from a frequency value.
-    /// @tparam R Rep parameter for frequency type to construct from
-    /// @tparam M Multiplier parameter for frequency type to
-    ///                     construct from
-    /// @param f  Frequency value for clock
-      template <typename R, typename M>
-      constexpr explicit fixed_oscillator_clock_source(frequency<R,M> const & f)
-      : freq{f}
-      {}
-
-    /// @brief Observer. Result is the frequency value in Hertz
-    /// @returns  Frequency in Hertz
-      constexpr hertz frequency() const { return freq; }
-
-    /// @brief Observer. Result indicating an external oscillator clock source
-    /// @returns clock_source::oscillator.
-      constexpr clock_source source() const { return clock_source::oscillator; }
-    };
-
   /// @brief Clock frequency jitter reducing filtering values
   /// Jitter can be reduced by applying a number of MASH filtering stages to
   /// the frequency of a clock so that its average frequency is close to the
@@ -248,6 +208,49 @@ namespace dibase { namespace rpi {
     /// @returns Requested frequency filter severity for clock.
       constexpr clock_filter filter() const { return filter_mode; }
     };
+
+  /// @brief Strongly typed enumeration of clock sources supported by BCM2835.
+  /// These values map on to the source values for a clock's SRC control
+  /// register field.
+    enum class clock_source
+    { ground = 0      ///< Ground - no source clock (?)
+    , oscillator = 1  ///< External oscillator (probably easiest to use)
+    , testdebug0 = 2  ///< ? no information ?
+    , testdebug1 = 3  ///< ? no information ?
+    , plla = 4        ///< BCM2835 phase locked loop A
+    , pllc = 5        ///< BCM2835 phase locked loop C
+    , plld = 6        ///< BCM2835 phase locked loop D
+    , hdmi_aux = 7    ///< HDMI auxiliary clock (?)
+    };
+
+  /// @brief Type providing a fixed frequency oscillator clock source
+  /// Objects are immutable having a frequency as specified during construction.
+    class fixed_oscillator_clock_source
+    {
+      hertz   freq; ///< The frequency, in Hertz
+
+    public:
+    /// @brief Construct from a frequency value.
+    /// @tparam R Rep parameter for frequency type to construct from
+    /// @tparam M Multiplier parameter for frequency type to
+    ///                     construct from
+    /// @param f  Frequency value for clock
+      template <typename R, typename M>
+      constexpr explicit fixed_oscillator_clock_source(frequency<R,M> const & f)
+      : freq{f}
+      {}
+
+    /// @brief Observer. Result is the frequency value in Hertz
+    /// @returns  Frequency in Hertz
+      constexpr hertz frequency() const { return freq; }
+
+    /// @brief Observer. Result indicating an external oscillator clock source
+    /// @returns clock_source::oscillator.
+      constexpr clock_source source() const { return clock_source::oscillator; }
+    };
+
+  /// @brief Raspberry Pi 19.2MHz fixed oscillator external clock source
+    constexpr fixed_oscillator_clock_source rpi_oscillator{kilohertz{19200}};
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed
 #endif // DIBASE_RPI_PERIPHERALS_CLOCKDEFS_H

@@ -125,15 +125,6 @@ TEST_CASE( "Unit-tests/frequency/0040/create from different frequency type"
   CHECK(hertz(f_megahertz(800.123456)).count()==800123456);
 }
 
-TEST_CASE( "Unit-tests/fixed_oscillator_clock_source/0000/create"
-         , "fixed_oscillator_clock_source can be created from a frequency"
-         )
-{
-  fixed_oscillator_clock_source osc_19_3MHz(f_megahertz(19.3));
-  CHECK(osc_19_3MHz.source()==clock_source::oscillator);
-  CHECK(osc_19_3MHz.frequency().count()==19300000);
-}
-
 TEST_CASE( "Unit-tests/clock_frequency/0000/create with default filter"
          , "clock_frequency can be created from just a frequency with the "
            "filter type defaulting to none."
@@ -152,4 +143,23 @@ TEST_CASE( "Unit-tests/clock_frequency/0010/create with explicit filter"
   clock_frequency clk_600KHz(f_kilohertz(18.33), clock_filter::medium);
   CHECK(clk_600KHz.filter()==clock_filter::medium);
   CHECK(clk_600KHz.average_frequency().count()==18330);
+}
+
+TEST_CASE( "Unit-tests/fixed_oscillator_clock_source/0000/create"
+         , "fixed_oscillator_clock_source can be created from a frequency"
+         )
+{
+  fixed_oscillator_clock_source osc_19_3MHz(f_megahertz(19.3));
+  CHECK(osc_19_3MHz.source()==clock_source::oscillator);
+  CHECK(osc_19_3MHz.frequency().count()==19300000);
+}
+
+TEST_CASE( "Unit-tests/fixed_oscillator_clock_source/0010/rpi oscillator"
+         , "Check the rpi_oscillator fixed_oscillator_clock_source works as "
+           "expected"
+         )
+{
+
+  CHECK(rpi_oscillator.source()==clock_source::oscillator);
+  CHECK(rpi_oscillator.frequency().count()==19200000);
 }

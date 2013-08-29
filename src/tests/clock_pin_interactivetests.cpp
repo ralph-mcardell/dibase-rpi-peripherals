@@ -49,7 +49,7 @@ TEST_CASE( "Interactive_tests/clock_pin/0000/create start, stop 600KHz clock"
             << " to a waveform monitoring device (oscilloscope etc.).\n"
             << "Expect a 600KHz square waveform.\n\n";
   clock_pin clk { available_clk_pin_id
-                , fixed_oscillator_clock_source{f_megahertz{19.2}}
+                , rpi_oscillator
                 , clock_frequency{kilohertz{600}, clock_filter::none}
                 };
   CHECK(clk.frequency_min()==hertz{600000U});

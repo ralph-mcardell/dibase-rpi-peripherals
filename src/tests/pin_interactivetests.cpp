@@ -10,7 +10,6 @@
 #include "pin.h"
 #include <iostream>
 #include <string>
-#include "pin_alloc.h"
 #include "interactivetests_config.h"
 
 using namespace dibase::rpi::peripherals;

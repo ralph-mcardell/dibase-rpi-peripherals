@@ -7,7 +7,7 @@
 
 #include "catch.hpp"
 #include "pin.h"
-#include "pin_alloc.h"
+#include "periexcept.h"
 
 using namespace dibase::rpi::peripherals;
 

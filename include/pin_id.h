@@ -137,7 +137,7 @@ namespace dibase { namespace rpi {
   /// pin numbers to BCM2835 GPIO pin numbers (that is, pin_id values). One
   /// extra slot is required for the non-existent pin 0, which resolves to an
   /// invalid GPIO pin id value.
-    extern pin_id_int_t p1_gpio_pin_map[pinout_versions][p1_map_size];
+    extern pin_id_int_t const p1_gpio_pin_map[pinout_versions][p1_map_size];
 
   /// @brief Raspberry Pi P1 connector pin representation
   /// 
@@ -178,7 +178,7 @@ namespace dibase { namespace rpi {
   /// extra slot is required for the non-existent pin 0, which resolves to an
   /// invalid GPIO pin id value. All P5 pins for version 1 boards map to
   /// invalid pins as there is no P5 on version 1 boards.
-    extern pin_id_int_t p5_gpio_pin_map[pinout_versions][p5_map_size];
+    extern pin_id_int_t const p5_gpio_pin_map[pinout_versions][p5_map_size];
 
   /// @brief Raspberry Pi P5 connector pin representation
   /// 

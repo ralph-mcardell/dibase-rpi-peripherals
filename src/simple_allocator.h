@@ -8,9 +8,6 @@
 #ifndef DIBASE_RPI_PERIPHERALS_INTERNAL_SIMPLE_ALLOCATOR_H
 # define DIBASE_RPI_PERIPHERALS_INTERNAL_SIMPLE_ALLOCATOR_H
 
-# include "phymem_ptr.h"
-# include "pwm_registers.h"
-
 namespace dibase { namespace rpi {
   namespace peripherals
   { namespace internal

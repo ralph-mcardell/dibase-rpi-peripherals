@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file pin_edge_event.h 
-/// @brief Single GPIO pin edge event class specification.
+/// @brief Single GPIO input pin edge event class specification.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
@@ -16,46 +16,41 @@ namespace dibase { namespace rpi {
   {
   /// @brief GPIO pin edge event abstraction.
   ///
-  /// Allows working with GPIO pin edge events.
+  /// Allows working with GPIO pin input edge events.
   ///
   /// pin_edge_event instances may be created for single input GPIO pins.
-  /// GPIO pins associated with pin_edge_event instances _must_ be exported in
-  /// the sys file system and should be expected to be used as input pins.
-  /// This is because the implementation has to use the GPIO sys file system
-  /// interface and specifies pins having an "in" direction.
+  /// The implementation relies on the sys file system GPIO input pin event
+  /// support, hence \ref ipin instances associated with pin_edge_event
+  /// instances _must_ be exported in the sys file system - which will be so
+  /// if using the provided pin allocator.
     class pin_edge_event
     {
-      int     pin_event_fd; ///< Watchable file descriptor for edge events.
-      pin_id  id;           ///< Id of pin on which edge events watched for.
+      int     pin_event_fd;
+      pin_id  id;
 
-    /// @brief Internal non-templated member function to perform timed waits.
-    /// @param t_rel_secs  Seconds portion of relative time to wait.
-    /// @param t_rel_secs  Nano seconds portion of relative time to wait.
-    /// @returns true if an event occurred or false if no event occurred and
-    ///          the call timed out.
-    /// @throws std::system_error if any system function call returns failure.
-     bool     wait_(long t_rel_secs, long t_rel_ns) const;
+      bool     wait_(long t_rel_secs, long t_rel_ns) const;
 
     public:
-    /// @brief Enumeration of edge transitions to monitor.
+    /// @brief Monitored edge transition type options
       enum edge_mode
       { rising    ///< Rising edge transitions.
       , falling   ///< Falling edge transitions.
       , both      ///< Both rising and falling edge transitions.
       };
 
-    /// @brief Construct from open ipin.
-    /// The ipin should be open and the pin it represents should be exported
-    /// in GPIO part of the sys file system - which is so if using the provided
-    /// pinallocator.
-    /// @param in   Open ipin to monitor for edge transitions.
-    /// @param mode Which edge transitions raise events.
-    /// @throws std::invalid_argument if in not open or mode is invalid.
-    /// @throws std::runtime_error on failure to open a pin mode setup file.
+    /// @brief Construct from open \ref ipin.
+    ///
+    /// The \ref ipin should be open and the pin it represents should be
+    /// exported in GPIO part of the sys file system - which is so if using
+    /// the provided pin allocator.
+    /// @param[in] in   Open \ref ipin to monitor for edge transitions.
+    /// @param[in] mode Which edge transition types raise events.
+    /// @throws std::invalid_argument if \b in not open or mode is invalid.
+    /// @throws std::runtime_error on failure to open a pin mode set-up file.
     /// @throws std::ios_base::failure on failure or error writing pin
     ///         set-up information.
     /// @throws std::system_error if error obtaining watchable file descriptor.
-    /// @throws bad_pin_alloc if the pin represented by in already has a
+    /// @throws bad_pin_alloc if the pin represented by \b in already has a
     ///         pin_edge_event object associated with it.
       pin_edge_event(ipin const & in, edge_mode mode);
  
@@ -81,11 +76,11 @@ namespace dibase { namespace rpi {
       void wait() const;
 
     /// @brief Wait for edge event for a given amount of time.
-    /// @tparam Rep     std::duration parameter see C++11 standard
-    ///                           section 20.11.5.
-    /// @tparam Period  std::duration parameter see C++11 standard
-    ///                           section 20.11.5.
-    /// @param rel_time   Amount of time to wait for a monitored edge event
+    /// @tparam Rep       template parameter for std::chrono::duration -
+    ///                   see C++11 standard section 20.11.5.
+    /// @tparam Period    template parameter for std::chrono::duration -
+    ///                   see C++11 standard section 20.11.5.
+    /// @param[in] rel_time   Amount of time to wait for a monitored edge event
     ///                   to occur on the associated pin.
     /// @returns true if an event occurred or false if no event occurred and
     ///          the call timed out.
@@ -102,11 +97,11 @@ namespace dibase { namespace rpi {
       }
 
     /// @brief Wait for edge event until a given point in time.
-    /// @tparam Clock     std::time_point parameter see C++11
-    ///                             standard section 20.11.6.
-    /// @tparam Duration  std::time_point parameter see C++11
-    ///                             standard section 20.11.6.
-    /// @param abs_time   Point in time to wait until for a monitored edge
+    /// @tparam Clock     template parameter for std::chrono::time_point -
+    ///                   see C++1 standard section 20.11.6.
+    /// @tparam Duration  template parameter for std::chrono::time_point -
+    ///                   see C++1 standard section 20.11.6.
+    /// @param[in] abs_time   Point in time to wait until for a monitored edge
     ///                   event to occur on the associated pin.
     /// @returns true if an event occurred or false if no event occurred and
     ///          the call timed out.

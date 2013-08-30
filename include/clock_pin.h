@@ -56,9 +56,9 @@ namespace dibase { namespace rpi {
     ///                   member function returning source frequency in Hertz
     ///                   and source() member function returning a clock_source
     ///                   value.
-    /// @param p          Pin id of GPIO pin to use with clock
-    /// @param src        Instance of Source specifying clock source parameters
-    /// @param freq       Clock requested frequency characteristics
+    /// @param[in] p      Pin id of GPIO pin to use with clock
+    /// @param[in] src    Instance of Source specifying clock source parameters
+    /// @param[in] freq   Clock requested frequency characteristics
     /// @throws std::invalid_argument if the requested pin has no clock
     ///         function, the clock frequency is out of range for the
     ///         filtering mode requested or the source and requested

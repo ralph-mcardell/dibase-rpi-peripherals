@@ -49,10 +49,10 @@ namespace dibase { namespace rpi {
   /// Works in a similar fashion to std::chrono::duration_cast, and in fact
   /// uses std::chrono::duration_cast to do the leg work.
   ///
-  /// @tparam ToFreq      frequency type to cast to
-  /// @tparam Rep         Rep type of frequency type to cast from
-  /// @tparam Multiplier  Multiplier type of frequency to cast from
-  /// @param f            Frequency instance to cast from.
+  /// @tparam ToFreq          frequency type to cast to
+  /// @tparam Rep             Rep type of frequency type to cast from
+  /// @tparam Multiplier      Multiplier type of frequency to cast from
+  /// @param [in] f           Frequency instance to cast from.
     template <class ToFreq, class Rep, class Multiplier>
     constexpr
     ToFreq frequency_cast(const frequency<Rep, Multiplier>& f)
@@ -71,6 +71,7 @@ namespace dibase { namespace rpi {
       typedef Rep         rep;                ///< Count representation type
       typedef Multiplier  multiplier;         ///< Multiplier std::ratio type
       typedef frequency<rep,multiplier> self; ///< self type
+
     private:
         rep rep_;
 
@@ -80,13 +81,13 @@ namespace dibase { namespace rpi {
       constexpr frequency() : rep_{} {}
 
     /// @brief Construct from count value
-    /// @param r  count of oscillations per second divided by Multiplier
+    /// @param[in] r  count of oscillations per second divided by Multiplier
       constexpr frequency(rep const & r) : rep_{r} {}
 
     /// @brief Construct from instance of other frequency type
     /// @tparam Rep2        Rep type of other frequency type
     /// @tparam Multiplier2 Multiplier type of other frequency
-    /// @param f  Other frequency type instance
+    /// @param[in] f  Other frequency type instance
       template <typename Rep2, typename Multiplier2>
       constexpr frequency(frequency<Rep2,Multiplier2> const & f) 
       : rep_{frequency_cast<self>(f).count()} {}
@@ -96,7 +97,7 @@ namespace dibase { namespace rpi {
       constexpr rep count() const {return rep_;}
 
     /// @brief Compare two frequencies of the SAME TYPE for equality
-    /// @param rhs  Frequency of the SAME TYPE to compare this frequency to 
+    /// @param[in] rhs  Frequency of the SAME TYPE to compare this frequency to 
     /// @returns true of this frequency count equals rhs frequency count
       constexpr bool operator==(frequency const & rhs) const 
       {
@@ -104,7 +105,7 @@ namespace dibase { namespace rpi {
       }
 
     /// @brief Compare this frequency being less than other of the SAME TYPE
-    /// @param rhs  Frequency of the SAME TYPE to compare this frequency to 
+    /// @param[in] rhs  Frequency of the SAME TYPE to compare this frequency to 
     /// @returns true if this frequency count less than rhs frequency count
       constexpr bool operator<(frequency const & rhs) const 
       {
@@ -187,14 +188,14 @@ namespace dibase { namespace rpi {
   /// would exceed the maximum permissible frequency.
     class clock_frequency
     {
-      hertz         avg_freq;     ///< Required average frequency, in Hertz
-      clock_filter  filter_mode;  ///< Requested severity of filtering
+      hertz         avg_freq;
+      clock_filter  filter_mode;
 
     public:
     /// @brief Construct from frequency and filtering severity values.
-    /// @tparam Frequency  frequency type to construct from
-    /// @param af Average frequency value for clock
-    /// @param f  Filter mode value for clock. 
+    /// @tparam Frequency  A \ref frequency type to construct from
+    /// @param[in] af Average frequency value for clock
+    /// @param[in] f  Filter mode for clock. Defaults to clock_filter::none.
       template <typename Freqency>
       constexpr explicit clock_frequency
       ( Freqency const & af
@@ -238,10 +239,9 @@ namespace dibase { namespace rpi {
 
     public:
     /// @brief Construct from a frequency value.
-    /// @tparam R Rep parameter for frequency type to construct from
-    /// @tparam M Multiplier parameter for frequency type to
-    ///                     construct from
-    /// @param f  Frequency value for clock
+    /// @tparam R   Rep         \ref frequency type to construct from parameter
+    /// @tparam M   Multiplier  \ref frequency type to construct from parameter
+    /// @param[in] f            Frequency value for clock
       template <typename R, typename M>
       constexpr explicit fixed_oscillator_clock_source(frequency<R,M> const & f)
       : freq{f}

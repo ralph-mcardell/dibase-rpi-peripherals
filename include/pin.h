@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file pin.h 
-/// @brief Single GPIO pin I/O class specifications.
+/// @brief Single GPIO pin I/O classes specifications.
 ///
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell
@@ -13,7 +13,8 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
-  /// @brief Base class for I/O direction specific GPIO classes opin and ipin.
+  /// @brief Base class for I/O direction specific GPIO classes
+  /// \ref opin and \ref ipin.
   ///
   /// Specifies public and protected member functions providing common
   /// functionality to the sub-types. Also stores, and provides read only
@@ -28,8 +29,9 @@ namespace dibase { namespace rpi {
 
     /// @brief Close an open pin object. It is OK to close a closed pin.
       void close();
+
     protected:
-    /// @brief Protected pin_base constructor initialises pin to being closed.
+    /// @brief Initialise pin to being closed.
       pin_base()
       : pin(0)
       , open_flag(false)
@@ -42,11 +44,12 @@ namespace dibase { namespace rpi {
 
     /// @brief open data direction mode flag enumerations
       enum direction_mode
-      { in=1
-      , out=2
+      { in=1      ///< Direction mode value for data input
+      , out=2     ///< Direction mode value for data output
       };
 
-    /// @brief Common pin object open logic. 
+    /// @brief Pin object open logic common to input and output pins
+    ///
     /// Allocates pin and sets pin's GPIO function to input or output as
     /// specified by the mode parameter.
     /// @param[in]  pin   Id of GPIO pin to open.
@@ -67,7 +70,7 @@ namespace dibase { namespace rpi {
       bool open_flag; ///< Flag tracking open/close state of pin objects
     };
 
-  /// @brief Single GPIO pin class for output.
+  /// @brief Use a single GPIO pin for output.
   ///
   /// Provides explicit open member function to open a single GPIO pin for
   /// output of Boolean values via a put member function. In addition provides
@@ -110,7 +113,7 @@ namespace dibase { namespace rpi {
       void put( bool v );
     };
 
-  /// @brief Single GPIO pin class for input.
+  /// @brief Use a single GPIO pin for input.
   ///
   /// Provides explicit open member function to open a single GPIO pin for
   /// input as a Boolean value via a get member function. In addition provides
@@ -118,13 +121,13 @@ namespace dibase { namespace rpi {
   /// will also close an open pin on destruction.
     class ipin : public pin_base
     {
-    friend class pin_edge_event;
+    friend class pin_edge_event;///< ipin objects can be associated with events
     public:
     /// @brief Input open mode flag enumerations
       enum open_mode
-      { pull_disable = 0
-      , pull_up = 1
-      , pull_down=2
+      { pull_disable = 0    ///< No pull up or pull down mode value
+      , pull_up = 1         ///< Apply pull up resistor mode value
+      , pull_down=2         ///< Apply pull down resistor mode value
       };
 
     /// @brief Create input pin closed to be opened later
@@ -147,7 +150,7 @@ namespace dibase { namespace rpi {
     /// @brief Open pin for input.
     /// @param[in]  pin   Id of GPIO pin to open for input.
     /// @param[in]  mode  Open mode for input pin. Specifies pull up/down
-    ///                   mode, default is pull_disable (no pull).
+    ///                   mode, default is ipin::pull_disable (no pull).
     /// @exception  bad_pin_alloc if the GPIO pin is in use by this process
     ///             or elsewhere.
       void open(pin_id pin, unsigned mode=0);
@@ -155,7 +158,7 @@ namespace dibase { namespace rpi {
     /// @brief Return the current state of open input pin
     /// @return true if pin is in a high state
     ///         false if pin is in a low state
-    ///         Note: Always returns false if pin is not open.
+    ///         Always returns false if pin is not open.
       bool get();
     };
   } // namespace peripherals closed

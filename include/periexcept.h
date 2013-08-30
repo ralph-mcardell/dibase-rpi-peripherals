@@ -45,7 +45,10 @@ namespace dibase { namespace rpi {
       {}
     };
 
-  /// @brief Exception type raised if required free peripherals are is in use
+  /// @brief Exception type raised if required free peripherals are in use
+  ///
+  /// Note that peripheral_in_use is for cases other than allocating a
+  /// peripheral where one or more peripherals need to be free but are not.
     struct peripheral_in_use : peripheral_exception
     {
     /// @brief Construct from an explanatory std::string.
@@ -62,7 +65,8 @@ namespace dibase { namespace rpi {
     };
 
   /// @brief Exception type raised when expecting a pin to be (un)exported
-  /// Some functionality relies on sys filesystem GPIO support and expects
+  ///
+  /// Some functionality relies on sys file system GPIO support and expects
   /// pins to be either exported or unexported.
     struct bad_pin_export_state : peripheral_exception
     {

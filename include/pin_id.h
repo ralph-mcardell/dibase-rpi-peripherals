@@ -25,7 +25,7 @@ namespace dibase { namespace rpi {
   /// not a valid GPIO pin id number causes an exception to be thrown.
   ///
   /// pin_id instances may be converted back to their associated integer type
-  /// defined by the pin_id_int_t type alias.
+  /// defined by the \ref pin_id_int_t type alias.
     class pin_id
     {
     public:
@@ -40,11 +40,12 @@ namespace dibase { namespace rpi {
 
     /// @brief Explicitly construct a pin_id from an integer value.
     ///
-    /// The integer value must be in the range [min_id..max_id]. Values outside
-    /// this range cause a std::invalid_argument exception to be thrown.
-    ///
+    /// The integer value must be in the range [\ref min_id, \ref max_id].
+    /// Values outside this range cause a std::invalid_argument exception to
+    /// be thrown.
     /// @param[in]  v   Integer value of pin id number to represent.
-    /// @exception std::invalid_argument raised if v > max_id or v < min_id
+    /// @exception std::invalid_argument raised if v > \ref max_id
+    ///            or v < \refmin_id
       explicit pin_id( pin_id_int_t v )
       : value( v )
       {
@@ -95,7 +96,7 @@ namespace dibase { namespace rpi {
     /// The base pin_id is initialised by the value for the associated pin key
     /// in a map vector. The vector may be one of several in a 2D array and is
     /// selected based on the Raspberry Pi board version. The lookup is like
-    /// so: pin_id( map[rpi_board_version_index][connector_pin_number] )
+    /// so: pin_id ( map[rpi_board_version_index][connector_pin_number] )
     /// The Raspberry Pi board version index value is obtained from the 
     /// rpi_info.index_version() member function.
     ///
@@ -108,9 +109,9 @@ namespace dibase { namespace rpi {
     ///                         construction failure
     /// @param[in]  n_pins      Number of connector pin elements in a map vector
     /// @param[in]  n_versions  Number of board version vectors in the map
-    /// @exception  std::invalid_argument raised if reported board version >=
-    ///             n_versions, pin >= n_pins or map[version][pin] is not a
-    ///             valid pin_id value.
+    /// @exception  std::invalid_argument raised if reported board \e version >=
+    ///             \b n_versions, \b pin >= \b n_pins or
+    ///             \b map[\e version][\b pin] is not a valid pin_id value.
       rpi_version_mapped_pin_id
       ( pin_id_int_t pin
       , pin_id_int_t const * map
@@ -141,8 +142,8 @@ namespace dibase { namespace rpi {
 
   /// @brief Raspberry Pi P1 connector pin representation
   /// 
-  /// A rpi_version_mapped_pin_id sub-type that takes simply a value
-  /// representing a P1 connector pin number. It converts to an integer having
+  /// A rpi_version_mapped_pin_id sub-type that takes only a value representing
+  /// a P1 connector pin number. It converts this to an integer having
   /// the value of the underlying BCM2835 GPIO pin id value or, for invalid,
   /// non-GPIO pin numbers or unsupported board versions throws an exception.
     struct p1_pin : rpi_version_mapped_pin_id
@@ -182,8 +183,8 @@ namespace dibase { namespace rpi {
 
   /// @brief Raspberry Pi P5 connector pin representation
   /// 
-  /// A rpi_version_mapped_pin_id sub-type that takes simply a value
-  /// representing a P5 connector pin number. It converts to an integer having
+  /// A rpi_version_mapped_pin_id sub-type that takes only a value representing
+  /// a P5 connector pin number. It converts this to an integer having
   /// the value of the underlying BCM2835 GPIO pin id value or, for invalid,
   /// non-GPIO pin numbers or unsupported board versions throws an exception.
     struct p5_pin : rpi_version_mapped_pin_id
@@ -205,28 +206,30 @@ namespace dibase { namespace rpi {
     };
 
   /// @brief Static Raspberry Pi BCM2835 GPIO pin representation.
+  ///
   /// Template class that takes a static BCM2835 GPIO pin id number as a
   /// template parameter and applies it only when first used as a pin_id. 
   /// This defers the work of creating the pin_id until first use.
-  /// @param PIN  BCM2835 GPIO pin id number (0..53).
-    template <pin_id_int_t PIN>
+  /// @tparam Pin  BCM2835 GPIO pin id number (0..53).
+    template <pin_id_int_t Pin>
     struct static_pin_id
     {
     /// @brief Convert a static_pin_id to a pin_id
-    /// @return a pin_id representing the value of the PIN template argument
-    /// @exception  std::invalid_argument raised if PIN template parameter
+    /// @return a pin_id representing the value of the \b Pin template argument
+    /// @exception  std::invalid_argument raised if \b Pin template parameter
     ///             value is out of range.
       operator pin_id() const;
     };
 
-    template <pin_id_int_t PIN>    
-    static_pin_id<PIN>::operator pin_id() const
+    template <pin_id_int_t Pin>    
+    static_pin_id<Pin>::operator pin_id() const
     {
-      static pin_id pinid{PIN};
+      static pin_id pinid{Pin};
       return pinid;
     }
 
   /// @brief Static Raspberry Pi P1 connector pin representation.
+  ///
   /// Template class that takes a static P1 connector pin number as a template
   /// parameter and applies it only when first used as a pin_id to lookup and
   /// create a pin_id, or fail. This defers the work of performing the P1
@@ -234,29 +237,30 @@ namespace dibase { namespace rpi {
   /// object of the P1 pin is used and prevents pins that are only valid in
   /// certain board versions from throwing if used at the point of creation
   /// (e.g. pre-main dynamic static initialisation for global instances).
-  /// @param PIN  Raspberry Pi P1 connector pin id number (1..26).
-    template <pin_id_int_t PIN>
+  /// @param Pin  Raspberry Pi P1 connector pin id number (1..26).
+    template <pin_id_int_t Pin>
     struct static_p1_pin
     {
     /// @brief Convert a static_p1_pin to a pin_id
     /// @return a pin_id, specifically a p1_pin, representing the BCM2835 GPIO
-    ///         pin connected to the P1 connector pin specified by the PIN
+    ///         pin connected to the P1 connector pin specified by the \b Pin
     ///         template parameter value.
-    /// @exception  std::invalid_argument raised if the PIN template parameter
+    /// @exception  std::invalid_argument raised if the \b Pin template parameter
     ///             value is out of range or represents a pin with a non-GPIO
     ///             function or the Raspberry Pi board has an unsupported
     ///             version number.
       operator pin_id() const;
     };
 
-    template <pin_id_int_t PIN>    
-    static_p1_pin<PIN>::operator pin_id() const
+    template <pin_id_int_t Pin>    
+    static_p1_pin<Pin>::operator pin_id() const
     {
-      static p1_pin pinid{PIN};
+      static p1_pin pinid{Pin};
       return pinid;
     }
 
   /// @brief Static Raspberry Pi P5 connector pin representation.
+  ///
   /// Template class that takes a static P5 connector pin number as a template
   /// parameter and applies it only when first used as a pin_id to lookup and
   /// create a pin_id, or fail. This defers the work of performing the P5
@@ -264,25 +268,25 @@ namespace dibase { namespace rpi {
   /// object of the P5 pin is used and prevents pins that are only valid in
   /// certain board versions from throwing if used at the point of creation
   /// (e.g. pre-main dynamic static initialisation for global instances).
-  /// @param PIN  Raspberry Pi P5 connector pin id number (1..8, 3..6 valid).
-    template <pin_id_int_t PIN>
+  /// @param Pin  Raspberry Pi P5 connector pin id number (1..8, 3..6 valid).
+    template <pin_id_int_t Pin>
     struct static_p5_pin
     {
     /// @brief Convert a static_p5_pin to a pin_id
     /// @return a pin_id, specifically a p5_pin, representing the BCM2835 GPIO
-    ///         pin connected to the P5 connector pin specified by the PIN
+    ///         pin connected to the P5 connector pin specified by the \b Pin
     ///         template parameter value.
-    /// @exception  std::invalid_argument raised if PIN template parameter
+    /// @exception  std::invalid_argument raised if \b Pin template parameter
     ///             value is out of range, represents a pin with a non-GPIO
     ///             function or the Raspberry Pi board has an unsupported
     ///             version number or does not support P5.
       operator pin_id() const;
     };
 
-    template <pin_id_int_t PIN>
-    static_p5_pin<PIN>::operator pin_id() const
+    template <pin_id_int_t Pin>
+    static_p5_pin<Pin>::operator pin_id() const
     {
-      static p5_pin pinid{PIN};
+      static p5_pin pinid{Pin};
       return pinid;
     }
 

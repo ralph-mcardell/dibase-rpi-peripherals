@@ -1,6 +1,7 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file clockdefs.h 
-/// @brief GPIO pin as clock supporting types specifications.
+/// @brief Clock peripherals supporting type specifications and constant
+/// definitions.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
@@ -14,7 +15,8 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
-  /// @brief Bare bones representation of frequency
+  /// @brief Representation of frequency.
+  /// Similar in spirit to a simplified std::chrono::duration.
   ///
   /// Allow frequencies to be represented as a count of oscillations per
   /// inverse period (just called the multiplier) represented as a std::ratio.
@@ -25,20 +27,21 @@ namespace dibase { namespace rpi {
   ///  - a count of 10000000 with a multiplier ratio std::ratio<1>
   ///
   /// frequency values provide explicit support for default construction,
-  /// construction from a count value and comparisons using ==, !=, <, >, >=,
-  /// <= providing the count representation and multiplier ratio are the same
-  /// for the LHS & RHS operands. 
+  /// construction from a count value or other frequency object and
+  /// comparisons using ==, !=, <, >, >=, <= providing the count
+  /// representation and multiplier ratio are the same for the LHS & RHS
+  /// operands. 
   ///
-  /// Additionally a frequency_cast is provided to allow casting between
+  /// A frequency_cast function template is provided to allow casting between
   /// frequency types of differing representation and multiplier ratios.
   ///
   /// All else depends on compiler provided defaults and conversions.
   ///
-  /// Note that a full implementation would probably look very much like an
+  /// Note: a full implementation would probably look very much like an
   /// implementation of std::chrono::duration.
   ///
-  /// @param Rep        Frequency count representation type
-  /// @param Multiplier Frequency count multiplier ratio type
+  /// @tparam Rep        Frequency count representation type
+  /// @tparam Multiplier Frequency count multiplier ratio type
     template <typename Rep, typename Multiplier=std::ratio<1>>
     class frequency;
 
@@ -49,7 +52,7 @@ namespace dibase { namespace rpi {
   /// @tparam ToFreq      frequency type to cast to
   /// @tparam Rep         Rep type of frequency type to cast from
   /// @tparam Multiplier  Multiplier type of frequency to cast from
-  /// @param f          Frequency instance to cast from.
+  /// @param f            Frequency instance to cast from.
     template <class ToFreq, class Rep, class Multiplier>
     constexpr
     ToFreq frequency_cast(const frequency<Rep, Multiplier>& f)
@@ -65,21 +68,20 @@ namespace dibase { namespace rpi {
     class frequency
     {
     public:
-      typedef Rep         rep;          ///< Count representation type
-      typedef Multiplier  multiplier;   ///< Multiplier std::ratio type
+      typedef Rep         rep;                ///< Count representation type
+      typedef Multiplier  multiplier;         ///< Multiplier std::ratio type
       typedef frequency<rep,multiplier> self; ///< self type
     private:
-        rep rep_;     ///< Oscillation count
+        rep rep_;
 
     public:
     /// @brief Default constructor
     /// Zero/default initialises count representation value.
       constexpr frequency() : rep_{} {}
 
-    /// @brief Construct from  count value
+    /// @brief Construct from count value
     /// @param r  count of oscillations per second divided by Multiplier
       constexpr frequency(rep const & r) : rep_{r} {}
-
 
     /// @brief Construct from instance of other frequency type
     /// @tparam Rep2        Rep type of other frequency type
@@ -116,44 +118,45 @@ namespace dibase { namespace rpi {
 
   /// @brief Alias for (unsigned) integer frequency type alias
   /// Count of 1==1Hz
-  /// @param Rep          unsigned int (32-bit on Raspberry Pi)
-  /// @param Multiplier   std::ratio<1> - i.e. 1:1
+  /// @tparam Rep         unsigned int (32-bit on Raspberry Pi)
+  /// @tparam Multiplier  std::ratio<1> - i.e. 1:1
     typedef frequency<unsigned>             i_hertz;
 
   /// @brief Alias for (unsigned) integer frequency type alias
   /// Count of 1==1000Hz (ie. 1KHz)
-  /// @param Rep          unsigned int (32-bit on Raspberry Pi)
-  /// @param Multiplier   std::kilo - i.e. 1000:1
+  /// @tparam Rep         unsigned int (32-bit on Raspberry Pi)
+  /// @tparam Multiplier  std::kilo - i.e. 1000:1
     typedef frequency<unsigned, std::kilo>  i_kilohertz;
 
   /// @brief Alias for (unsigned) integer frequency type alias
   /// Count of 1==1000000Hz (ie. 1MHz)
-  /// @param Rep          unsigned int (32-bit on Raspberry Pi)
-  /// @param Multiplier   std::mega - i.e. 1000000:1
+  /// @tparam Rep         unsigned int (32-bit on Raspberry Pi)
+  /// @tparam Multiplier  std::mega - i.e. 1000000:1
     typedef frequency<unsigned, std::mega>  i_megahertz;
 
   /// @brief Alias for (double) floating point frequency type alias
   /// Count of 1.0==1000Hz (ie. 1KHz)
-  /// @param Rep          double
-  /// @param Multiplier   std::kilo - i.e. 1000:1
+  /// @tparam Rep         double
+  /// @tparam Multiplier  std::kilo - i.e. 1000:1
     typedef frequency<double, std::kilo>    f_kilohertz;
 
   /// @brief Alias for (double) floating point frequency type alias
   /// Count of 1.0==1000000Hz (ie. 1MHz)
-  /// @param Rep          double
-  /// @param Multiplier   std::mega - i.e. 1000000:1
+  /// @tparam Rep         double
+  /// @tparam Multiplier  std::mega - i.e. 1000000:1
     typedef frequency<double, std::mega>    f_megahertz;
 
-  /// @brief Short alias integer hertz frequency type 
+  /// @brief Short alias for (unsigned) integer hertz frequency type 
     typedef i_hertz                         hertz;
 
-  /// @brief Short alias integer kilohertz frequency type 
+  /// @brief Short alias for (unsigned) integer kilohertz frequency type 
     typedef i_kilohertz                     kilohertz;
 
-  /// @brief Short alias integer megahertz frequency type 
+  /// @brief Short alias for (unsigned) integer megahertz frequency type 
     typedef i_megahertz                     megahertz;
 
-  /// @brief Clock frequency jitter reducing filtering values
+  /// @brief Clock frequency jitter reducing filtering values.
+  ///
   /// Jitter can be reduced by applying a number of MASH filtering stages to
   /// the frequency of a clock so that its average frequency is close to the
   /// requested frequency but the frequency varies between a maximum and
@@ -162,10 +165,10 @@ namespace dibase { namespace rpi {
   ///
   /// The enumeration values specify an amount of filtering to apply.
   ///
-  /// Note also that for the none mode the selected frequency may not be as
-  /// close to the requested frequency as for other modes because only an
-  /// integer divisor of the source clock frequency is used as opposed to
-  /// a combined integer and fractional value.
+  /// Note: for none, no filtering mode the maximum frequency is 125MHz and the
+  /// selected frequency may not be as close to the requested frequency as for
+  /// other modes as only an integer divisor of the source clock frequency is
+  /// used as opposed to a combined integer and fractional value.
     enum class clock_filter
     { none      = 0  ///< No filter, use only integer divisor value
     , minimum   = 1  ///< Least amount of filtering 
@@ -173,21 +176,22 @@ namespace dibase { namespace rpi {
     , maximum   = 3  ///< Greatest amount of filtering 
     };
 
-  /// @brief Clock frequency characteristics
-  /// Instances specify the characteristics requirements for clocks' frequency.
-  /// This includes the required average frequency and severity of signal
-  /// filter to apply, which affect the clock MASH filter settings.
+  /// @brief Target frequency characteristics for a clock.
   ///
-  /// Note that the filtering value is used as a suggestion and maps to a MASH
-  /// filtering mode starting point. A less severe mode may be used if the 
-  /// frequency range would exceed the maximum permissible frequency.
+  /// Instances specify the characteristics required for a clocks' frequency.
+  /// This includes the required average frequency and severity of signal
+  /// filtering to apply - affecting the MASH filter setting.
+  ///
+  /// Note: the filtering value is used as a hint to select a initial MASH
+  /// filtering mode. A less severe mode may be used if the frequency range
+  /// would exceed the maximum permissible frequency.
     class clock_frequency
     {
-      hertz         avg_freq;     ///< The average frequency, in Hertz
-      clock_filter  filter_mode;  ///< Amount of filtering
+      hertz         avg_freq;     ///< Required average frequency, in Hertz
+      clock_filter  filter_mode;  ///< Requested severity of filtering
 
     public:
-    /// @brief Construct from a frequency value and filter severity
+    /// @brief Construct from frequency and filtering severity values.
     /// @tparam Frequency  frequency type to construct from
     /// @param af Average frequency value for clock
     /// @param f  Filter mode value for clock. 
@@ -200,16 +204,17 @@ namespace dibase { namespace rpi {
       , filter_mode{f}
       {}
 
-    /// @brief Observer. Result is the average frequency value in Hertz
-    /// @returns  Average frequency in Hertz
+    /// @brief Return the required average frequency value.
+    /// @returns  Average frequency in Hertz.
       constexpr hertz average_frequency() const { return avg_freq; }
 
-    /// @brief Observer. Result is the filter mode value
-    /// @returns Requested frequency filter severity for clock.
+    /// @brief Return the requested filtering mode value.
+    /// @returns Requested frequency filter severity.
       constexpr clock_filter filter() const { return filter_mode; }
     };
 
-  /// @brief Strongly typed enumeration of clock sources supported by BCM2835.
+  /// @brief Values representing clock source supported by BCM2835.
+  ///
   /// These values map on to the source values for a clock's SRC control
   /// register field.
     enum class clock_source
@@ -223,11 +228,13 @@ namespace dibase { namespace rpi {
     , hdmi_aux = 7    ///< HDMI auxiliary clock (?)
     };
 
-  /// @brief Type providing a fixed frequency oscillator clock source
-  /// Objects are immutable having a frequency as specified during construction.
+  /// @brief Fixed frequency oscillator clock source parameters.
+  ///
+  /// Objects are immutable having a frequency as specified during construction
+  /// and may be queried for frequency in Hertz and clock source type.
     class fixed_oscillator_clock_source
     {
-      hertz   freq; ///< The frequency, in Hertz
+      hertz   freq; ///< The oscillator frequency in Hertz
 
     public:
     /// @brief Construct from a frequency value.
@@ -240,16 +247,16 @@ namespace dibase { namespace rpi {
       : freq{f}
       {}
 
-    /// @brief Observer. Result is the frequency value in Hertz
+    /// @brief Return the frequency value in Hertz
     /// @returns  Frequency in Hertz
       constexpr hertz frequency() const { return freq; }
 
-    /// @brief Observer. Result indicating an external oscillator clock source
+    /// @brief Return value indicating an external oscillator clock source
     /// @returns clock_source::oscillator.
       constexpr clock_source source() const { return clock_source::oscillator; }
     };
 
-  /// @brief Raspberry Pi 19.2MHz fixed oscillator external clock source
+  /// @brief Raspberry Pi 19.2MHz fixed oscillator external clock source.
     constexpr fixed_oscillator_clock_source rpi_oscillator{kilohertz{19200}};
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

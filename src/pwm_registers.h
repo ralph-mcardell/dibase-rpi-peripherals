@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file pwm_registers.h 
-/// @brief Low-level (GPIO) PWM control registers type definition.
+/// @brief \b Internal : low-level (GPIO) PWM control registers type definition.
 ///
 /// Refer to the
 /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">

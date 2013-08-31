@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file pin.h 
-/// @brief Single GPIO pin I/O classes specifications.
+/// @brief Use a GPIO pin for input or output : class definitions.
 ///
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell

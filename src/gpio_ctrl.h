@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file gpio_ctrl.h 
-/// @brief Internal GPIO control type.
+/// @brief \b Internal : GPIO control type definition
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell

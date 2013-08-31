@@ -1,6 +1,7 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file clock_ctrl.h 
-/// @brief Internal GPIO clock control type.
+/// @brief \b Internal : GPIO clock control type definition with supporting
+/// function declaration and object definitions.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
@@ -23,7 +24,7 @@ namespace dibase { namespace rpi {
       constexpr unsigned pwmclk{3U}; ///< PWMCLK internal index value
       constexpr std::size_t number_of_clocks{4U};///< Number of supported clocks
 
-    /// @broef Convert an internal clock index value to a clock_id enum value
+    /// @brief Convert an internal clock index value to a clock_id enum value
     /// @param i  Internal clock index value: gpclk0, gpclk1, gpclk2 or pwmclk.
     ///           NOT range checked.
     /// @returns clock_id enumeration value used with clock register operations

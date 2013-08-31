@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file peridef.h 
-/// @brief Common BCM2835 peripheral declarations and definitions.
+/// @brief \b Internal : common BCM2835 peripheral declarations and definitions
 ///
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell

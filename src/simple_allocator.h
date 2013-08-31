@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file simple_allocator.h 
-/// @brief Internal bit-field availability table allocator.
+/// @brief \b Internal : Simple resource allocator : class definition
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
@@ -17,7 +17,7 @@ namespace dibase { namespace rpi {
       /// Supports allocate, de-allocate and in_use operations for resources
       /// specified using resource index values
       ///
-      /// @param NumRes   Number of resources supported 
+      /// @tparam NumRes  Number of resources supported 
       ///                 (up to bit size of unsigned)
         template <unsigned NumRes>
         class simple_allocator

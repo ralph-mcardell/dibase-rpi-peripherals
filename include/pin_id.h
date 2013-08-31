@@ -1,6 +1,7 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file pin_id.h 
-/// @brief Value classes supporting validated BCM2835 GPIO pin id numbers.
+/// @brief Validated BCM2835 GPIO pin id numbers : 
+/// type, function and object definitions and declarations.
 ///
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell

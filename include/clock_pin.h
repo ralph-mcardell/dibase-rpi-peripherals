@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file clock_pin.h 
-/// @brief GPIO pin as clock classes' specifications.
+/// @brief Use a GPIO pin as a general purpose clock : class definition.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell

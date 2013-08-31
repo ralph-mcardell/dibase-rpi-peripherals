@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file pin_edge_event.h 
-/// @brief Single GPIO input pin edge event class specification.
+/// @brief Provide a GPIO input pin with edge event support : class definition
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell

@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file rpi_init.h 
-/// @brief Class of virtual functions for rpi_info initialisation.
+/// @brief \b Internal : rpi_info initialisation : class definition
 ///
 /// Only used internally and by tests
 ///
@@ -13,6 +13,7 @@
  #include <cstdlib>
 
  namespace dibase { namespace rpi {
+ /// @brief Namespace containing Raspberry Pi specific internal details
  namespace internal
  {
  /// @brief Overridable Raspberry Pi information initialisation member functions

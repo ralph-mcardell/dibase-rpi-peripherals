@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file rpi_info.h 
-/// @brief Class providing information about a Raspberry Pi.
+/// @brief Raspberry Pi platform information : class definition
 ///
 /// @copyright Copyright (c) Dibase Limited 2012
 /// @author Ralph E. McArdell

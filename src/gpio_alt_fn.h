@@ -1,6 +1,7 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file gpio_alt_fn.h 
-/// @brief GPIO pin alternative special function support.
+/// @brief \b Internal : GPIO pin alternative special function support :
+/// type definitions and function declarations.
 ///
 /// Refer to the
 /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">

@@ -1,7 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file clockdefs.h 
-/// @brief Clock peripherals supporting type specifications and constant
-/// definitions.
+/// @brief Clock peripherals supporting type and object definitions.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell

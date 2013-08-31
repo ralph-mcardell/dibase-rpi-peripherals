@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file clock_parameters.h 
-/// @brief Library internal use clock_parameters class specification.
+/// @brief \b Internal : clock_parameters class definition.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell

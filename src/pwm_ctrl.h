@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file pwm_ctrl.h 
-/// @brief InternalPWM control type.
+/// @brief \b Internal GPIO PWM control type & supporting definitions.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell

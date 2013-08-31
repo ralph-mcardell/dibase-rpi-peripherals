@@ -1,7 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file pwm_pin.h 
-/// @brief Using a GPIO pin for pulse width modulation (PWM):
-/// classes' specifications.
+/// @brief Use a GPIO pin for pulse width modulation (PWM): type definitions.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell

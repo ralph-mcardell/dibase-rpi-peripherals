@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file pin_alloc.h 
-/// @brief Specification of GPIO pin allocation types.
+/// @brief \b Internal : GPIO pin allocation : type definitions
 ///
 /// GPIO pins may be considered a resource access to which will usually be
 /// exclusive to one use in one process at a time with the possible exception

@@ -117,43 +117,43 @@ namespace dibase { namespace rpi {
     using std::rel_ops::operator<=;
     using std::rel_ops::operator>=;
 
-  /// @brief Alias for (unsigned) integer frequency type alias
+  /// @brief Alias for (unsigned) integer /ref frequency type alias
   /// Count of 1==1Hz
   /// @tparam Rep         unsigned int (32-bit on Raspberry Pi)
   /// @tparam Multiplier  std::ratio<1> - i.e. 1:1
     typedef frequency<unsigned>             i_hertz;
 
-  /// @brief Alias for (unsigned) integer frequency type alias
+  /// @brief Alias for (unsigned) integer /ref frequency type alias
   /// Count of 1==1000Hz (ie. 1KHz)
   /// @tparam Rep         unsigned int (32-bit on Raspberry Pi)
   /// @tparam Multiplier  std::kilo - i.e. 1000:1
     typedef frequency<unsigned, std::kilo>  i_kilohertz;
 
-  /// @brief Alias for (unsigned) integer frequency type alias
+  /// @brief Alias for (unsigned) integer /ref frequency type alias
   /// Count of 1==1000000Hz (ie. 1MHz)
   /// @tparam Rep         unsigned int (32-bit on Raspberry Pi)
   /// @tparam Multiplier  std::mega - i.e. 1000000:1
     typedef frequency<unsigned, std::mega>  i_megahertz;
 
-  /// @brief Alias for (double) floating point frequency type alias
+  /// @brief Alias for (double) floating point /ref frequency type alias
   /// Count of 1.0==1000Hz (ie. 1KHz)
   /// @tparam Rep         double
   /// @tparam Multiplier  std::kilo - i.e. 1000:1
     typedef frequency<double, std::kilo>    f_kilohertz;
 
-  /// @brief Alias for (double) floating point frequency type alias
+  /// @brief Alias for (double) floating point /ref frequency type alias
   /// Count of 1.0==1000000Hz (ie. 1MHz)
   /// @tparam Rep         double
   /// @tparam Multiplier  std::mega - i.e. 1000000:1
     typedef frequency<double, std::mega>    f_megahertz;
 
-  /// @brief Short alias for (unsigned) integer hertz frequency type 
+  /// @brief Short alias for (unsigned) integer hertz /ref frequency type 
     typedef i_hertz                         hertz;
 
-  /// @brief Short alias for (unsigned) integer kilohertz frequency type 
+  /// @brief Short alias for (unsigned) integer kilohertz /ref frequency type 
     typedef i_kilohertz                     kilohertz;
 
-  /// @brief Short alias for (unsigned) integer megahertz frequency type 
+  /// @brief Short alias for (unsigned) integer megahertz /ref frequency type 
     typedef i_megahertz                     megahertz;
 
   /// @brief Clock frequency jitter reducing filtering values.

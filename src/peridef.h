@@ -20,21 +20,27 @@ namespace rpi
 {
 /// @brief Namespace containing Raspberry Pi peripheral library entities
   namespace peripherals
-  {
-  /// @brief Represents physical addresses. These will be offsets into /dev/mem.
-    typedef off_t         physical_address_t;
+  { 
+  /// @brief Namespace containing entities internal to the
+  /// Raspberry Pi peripheral library
+    namespace internal
+    {
+    /// @brief Represents physical addresses. 
+    /// These will be offsets into /dev/mem.
+      typedef off_t         physical_address_t;
 
-  /// @brief Represents BCM2835 peripheral control registers
-    typedef std::uint32_t register_t;
+    /// @brief Represents BCM2835 peripheral control registers
+      typedef std::uint32_t register_t;
 
-  /// @brief Number of bits in a BCM2835 peripheral control register.
-    std::size_t const register_width{std::numeric_limits<register_t>::digits};
+    /// @brief Number of bits in a BCM2835 peripheral control register.
+      std::size_t const register_width{std::numeric_limits<register_t>::digits};
 
-  /// @brief BCM2835 peripheral control block byte size as a page size multiple.
-    std::size_t const register_block_size{4096};
+    /// @brief BCM2835 peripheral control block byte size as page size multiple.
+      std::size_t const register_block_size{4096};
 
-  /// @brief Physical address of BCM2835 peripheral control blocks.
-    physical_address_t const peripheral_base_address{0x20000000};
-  }
-}} 
+    /// @brief Physical address of BCM2835 peripheral control blocks.
+      physical_address_t const peripheral_base_address{0x20000000};
+   } // namespace internal closed
+  } // namespace peripherals closed
+}} // namespaces rpi and dibase closed
 #endif // DIBASE_RPI_PERIPHERALS_PERIDEF_H

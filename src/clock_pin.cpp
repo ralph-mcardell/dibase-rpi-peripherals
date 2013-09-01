@@ -57,9 +57,9 @@ namespace dibase { namespace rpi {
     , clock_frequency const & freq
     )
     { // Select alt function descriptors for pin for GPCLKn special functions
-      using pin_alt_fn::result_set;
-      using pin_alt_fn::select;
-      using pin_alt_fn::gpio_special_fn;
+      using internal::pin_alt_fn::result_set;
+      using internal::pin_alt_fn::select;
+      using internal::pin_alt_fn::gpio_special_fn;
       auto clk_fn_info=result_set(select( pin
                                         , { gpio_special_fn::gpclk0
                                           , gpio_special_fn::gpclk1 

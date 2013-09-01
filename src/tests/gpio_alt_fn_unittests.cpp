@@ -11,7 +11,8 @@
 #include <algorithm>
 
 using namespace dibase::rpi::peripherals;
-using namespace dibase::rpi::peripherals::pin_alt_fn;
+using namespace dibase::rpi::peripherals::internal::pin_alt_fn;
+using dibase::rpi::peripherals::internal::gpio_pin_fn;
 
 TEST_CASE( "Unit-tests/pin_alt_fn::descriptor/0000/construct valid arguments"
          , "Can create pin_alt_fn_descriptor from valid pin id, gpio_pin_fn, "

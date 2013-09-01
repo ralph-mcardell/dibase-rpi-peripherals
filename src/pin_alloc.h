@@ -22,7 +22,7 @@
 /// The more fuzzy problem of determining if a GPIO pin is being used by
 /// another process is only a partial solution. A GPIO pin is deemed to be in
 /// use if it has been previously exported in the Linux sys file system 
-/// (see /sys/classes/gpio). If is not then it is exported so any other
+/// (see /sys/classes/gpio). If it is not then it is exported so any other
 /// processes using the same assumption will not try to also use the GPIO pin.
 /// As mentioned this is by no means a watertight solution and may be
 /// revisited in the future.
@@ -43,14 +43,14 @@
 ///                                   bad_peripheral_alloc exception if the pin
 ///                                   is in use. Inter process pin allocators
 ///                                   may throw other exceptions such as
-///                                   std::runtime_error.
+///                                   std::runtime_error.\n
 ///   void deallocate( pin_id pin ) : deallocate a previously allocated pin.
 ///                                   Throw a std::logic error if the pin is
 ///                                   not allocated locally or some other 
 ///                                   exception such as std::runtime_error if 
 ///                                   a pin is not allocated globally or its
 ///                                   status cannot be determined due to some
-///                                   unexpected condition.
+///                                   unexpected condition.\n
 ///   bool is_in_use( pin_id pin )  : Returns true if the pin is in use at the
 ///                                   time of the query, false if it is not.
 ///
@@ -83,14 +83,14 @@ namespace dibase { namespace rpi {
     /// the local cache and, if _not_ locally in use, passes the query onto the
     /// contained allocator.
     ///
-    /// @param PIN_ALLOC_T  Type of pin allocator to pass requests onto if 
-    ///                     cached results indicate so. Dictates inter-process
-    ///                     pin allocation policy.
-      template <class PIN_ALLOC_T>
+    /// @tparam PinAllocT Type of pin allocator to pass requests onto if 
+    ///                   cached results indicate so. Dictates inter-process
+    ///                   pin allocation policy.
+      template <class PinAllocT>
       class pin_cache_allocator
       {
         bool pat[pin_id::number_of_pins]; ///< GPIO Pin Availability Table
-        PIN_ALLOC_T allocator;            ///< Contained pin allocator
+        PinAllocT allocator;            ///< Contained pin allocator
 
       public:
         pin_cache_allocator()
@@ -98,7 +98,7 @@ namespace dibase { namespace rpi {
           std::memset(pat, 0, sizeof(pat));
         }
 
-      /// @brief allocate a GPIO pin for use
+      /// @brief Allocate a GPIO pin for use
       ///
       /// If a pin has already been allocated using this allocator then throws
       /// a bad_peripheral_alloc exception, otherwise passes the pin_id to the
@@ -113,7 +113,7 @@ namespace dibase { namespace rpi {
       ///             a passed on allocation request should fail.
       void allocate( pin_id pin );
 
-      /// @brief deallocate a GPIO pin from use
+      /// @brief Deallocate a GPIO pin from use
       ///
       /// If a pin has not been allocated using this allocator then throws a
       /// std::logic_error exception, otherwise passes the pin_id to the
@@ -147,8 +147,8 @@ namespace dibase { namespace rpi {
         }
       };
 
-      template <class PIN_ALLOC_T>
-      void pin_cache_allocator<PIN_ALLOC_T>::allocate( pin_id pin )
+      template <class PinAllocT>
+      void pin_cache_allocator<PinAllocT>::allocate( pin_id pin )
       {
         if (pat[pin])
           {
@@ -160,8 +160,8 @@ namespace dibase { namespace rpi {
         pat[pin] = true;
       }
 
-      template <class PIN_ALLOC_T>
-      void pin_cache_allocator<PIN_ALLOC_T>::deallocate( pin_id pin )
+      template <class PinAllocT>
+      void pin_cache_allocator<PinAllocT>::deallocate( pin_id pin )
       {
         if (!pat[pin])
           {

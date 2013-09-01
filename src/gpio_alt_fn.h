@@ -146,7 +146,7 @@ namespace dibase { namespace rpi {
         /// @param p  Pin id of GPIO pin alt function that is described
         /// @param a  Alt function of GPIO pin that is described
         /// @param s  Special function performed by pin in alt mode described.
-        /// @throws std::invalid_argument if gpio_pin_fn argument is 
+        /// @throws std::invalid_argument if #gpio_pin_fn argument is 
         ///         gpio_pin_fn::input or gpio_pin_fn::output.
           descriptor(pin_id p, gpio_pin_fn a, gpio_special_fn s);
 
@@ -190,17 +190,17 @@ namespace dibase { namespace rpi {
         /// @param p  Pin id of GPIO pin alt function of the descriptor
         /// @param a  Alt function of GPIO pin of the descriptor
         /// @param s  Special function value of the descriptor.
-        /// @throws std::invalid_argument if gpio_pin_fn argument is 
+        /// @throws std::invalid_argument if #gpio_pin_fn argument is 
         ///         gpio_pin_fn::input or gpio_pin_fn::output.
           void emplace_add(pin_id p, gpio_pin_fn a, gpio_special_fn s)
           {
             items.emplace_back(p,a,s);
           }
 
-        /// @brief drain builder contents into a std::vector
-        /// After calling drain empty()==true.
-        /// @returns  std::vector<descriptor> containing builder object's
-        ///           contained items.
+        /// @brief Drain builder contents into a \b std::vector
+        /// @post empty()==true.
+        /// @returns  \b std::vector\< \ref descriptor \b \> containing builder
+        ///           object's contained items.
           descriptor_container_type drain()
           {
             descriptor_container_type vessel;
@@ -214,7 +214,7 @@ namespace dibase { namespace rpi {
         class result_set
         {
           typedef std::vector<descriptor>   descriptor_container_type;
-          descriptor_container_type     items; ///< result items collection
+          descriptor_container_type     items;
 
         public:
         /// @brief Unsigned integral type for result_set size values
@@ -227,8 +227,9 @@ namespace dibase { namespace rpi {
           typedef descriptor_container_type::const_iterator   const_iterator;
 
         /// @brief Create from result_set_builder.
-        /// Theresult_set_builder object is drained thus post condition is that
-        /// b.empty()==true
+        ///
+        /// The result_set_builder object is drained.
+        /// @post b.empty()==true
         /// @param  b   Builder object containing the descriptor results
           explicit result_set( result_set_builder & b )
           : items{b.drain()}
@@ -243,15 +244,16 @@ namespace dibase { namespace rpi {
           bool empty() const noexcept { return items.empty(); }
 
         /// @brief Element access, not bounds checked
-        /// Effects undefined if n >= size().
+        ///
+        /// Effects undefined if \b n >= size().
         /// @param n  Zero-based index of item in result set.
-        /// @returns Reference to item at index n. 
+        /// @returns Reference to item at index \b n. 
           const_reference operator[](size_type n) const { return items[n]; };
 
         /// @brief Element access, bounds checked
         /// @param n  Zero-based index of item in result set.
-        /// @returns Reference to item at index n. 
-        /// @throws std::out_of_range if n >= size().
+        /// @returns Reference to item at index \b n. 
+        /// @throws std::out_of_range if \b n >= size().
           const_reference at(size_type n) const { return items.at(n); }
 
         /// @brief Iterator for constant access to first result

@@ -40,8 +40,8 @@ namespace dibase { namespace rpi {
       ///       Mapped start address should be page aligned and be a 
       ///       page size multiple in length.
       ///
-      /// @param[in]  phy_addr  Physical address to map, page size multiple
-      ///                       - 'offset' into /dev/mem device 'file'.
+      /// @param[in]  phy_addr  Physical address to map, page size multiple.
+      ///                       Used as offset into /dev/mem device 'file'.
       /// @param[in]  length    Length of mapped address region. Page size
       ///                       multiple.
       /// @exception  std::system_error if /dev/mem cannot be opened or the
@@ -81,8 +81,8 @@ namespace dibase { namespace rpi {
       /// \ref raw_phymem_ptr::raw_phymem_ptr(physical_address_t phy_addr, std::size_t length)
       /// constructor.
       ///
-      /// @param[in]  phy_addr  Physical address to map, page size multiple
-      ///                       - 'offset' into /dev/mem device 'file'.
+      /// @param[in]  phy_addr  Physical address to map, page size multiple.
+      ///                       Used as offset into /dev/mem device 'file'.
       /// @param[in]  length    Length of mapped address region. Page size
       ///                       multiple.
       /// @exception  std::system_error if /dev/mem cannot be opened or the

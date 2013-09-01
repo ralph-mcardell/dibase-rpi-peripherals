@@ -28,14 +28,14 @@ namespace dibase { namespace rpi {
     /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
     /// Broadcom BCM2835 ARM Peripherals Datasheet</a>.
       enum class gpio_pin_fn : register_t
-      { input   = 0
-      , output  = 1
-      , alt0    = 4
-      , alt1    = 5
-      , alt2    = 6
-      , alt3    = 7
-      , alt4    = 3
-      , alt5    = 2
+      { input   = 0   ///< GPIO input (default after reset)
+      , output  = 1   ///< GPIO output
+      , alt0    = 4   ///< Alternative function 0
+      , alt1    = 5   ///< Alternative function 1
+      , alt2    = 6   ///< Alternative function 2
+      , alt3    = 7   ///< Alternative function 3
+      , alt4    = 3   ///< Alternative function 4
+      , alt5    = 2   ///< Alternative function 5
       };
 
     /// @brief Strongly typed enumeration of GPIO pull up/down control values.
@@ -47,9 +47,9 @@ namespace dibase { namespace rpi {
     /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
     /// Broadcom BCM2835 ARM Peripherals Datasheet</a>.
       enum class gpio_pud_mode : register_t
-      { off                       = 0
-      , enable_pull_down_control  = 1
-      , enable_pull_up_control    = 2
+      { off                       = 0   ///< Disable pull up/down control signal
+      , enable_pull_down_control  = 1   ///< Enable pull down control signal
+      , enable_pull_up_control    = 2   ///< Enable pull up control signal
       };
 
     /// @brief Type representing register pairs for 1 bit per pin field groups
@@ -191,8 +191,9 @@ namespace dibase { namespace rpi {
       ///
       /// GPIO pins may be set to be either input or output or one of up to
       /// five alternate functions. How many and which alternative functions
-      /// are available varies. They are described in the Broadcom BCM2835
-      /// Peripherals datasheet, section 6.2.
+      /// are available varies. They are described in the 
+      /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
+      /// Broadcom BCM2835 ARM Peripherals Datasheet</a>, section 6.2.
       ///
       /// @param[in]  pinid   Id number of the GPIO pin whose function is to be
       ///                     set.

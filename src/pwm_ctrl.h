@@ -23,6 +23,7 @@ namespace dibase { namespace rpi {
       constexpr std::size_t number_of_pwm_channels{2};
 
     /// @brief GPIO PWM control type. There is only 1 (yes it's a singleton!)
+    ///
     /// Maps BCM2708/2835 PWM registers into the requisite physical
     /// memory mapped area, provides simple allocator for in-process clock
     /// resource use tracking.
@@ -38,12 +39,13 @@ namespace dibase { namespace rpi {
       /// @returns THE instance of the PWM control object.
         static pwm_ctrl & instance();
 
-      /// @brief set source and frequency of the common PWM clock
+      /// @brief Set source and frequency of the common PWM clock
+      ///
       /// Note that the clock is common to all (both) PWM channels. The
       /// clock should only be set when no PWM channels are in use.
       /// @param cp   Clock set-up an frequency parameters
       /// @throws peripheral_in_use if any PWM channel is in use (as reported
-      ///         by the alloc allocator member) at the time of the call.
+      ///         by the \ref alloc allocator member) at the time of the call.
         void set_clock(clock_parameters const & cp);
 
       private:

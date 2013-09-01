@@ -21,6 +21,7 @@ namespace dibase { namespace rpi {
   { namespace internal
     {
     /// @brief Strong enumeration type for PWM channels
+    ///
     /// There are two channels known, confusingly, either as GPIO special
     /// functions PWM0, PWM1 or PWM channel 1, PWM channel 2 in the PWM
     /// controller registers descriptions.
@@ -32,6 +33,7 @@ namespace dibase { namespace rpi {
       };
 
     /// @brief Strong enumeration type for PWM modes
+    ///
     /// The PWM controller supports two main modes: PWM and serialiser.
       enum class pwm_mode : register_t
       { pwm = 0         ///< PWM controller PWM mode
@@ -46,7 +48,7 @@ namespace dibase { namespace rpi {
     /// See the
     /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
     /// Broadcom BCM2835 ARM Peripherals Datasheet</a> chapter 9 for published
-    /// details. PWN clock control and divisor register offsets gleaned from
+    /// details. PWM clock control and divisor register offsets gleaned from
     /// Gertboard gb_pwm.h source code.
     ///
     /// Note that there is some confusion with regard to PWM channel numbering.

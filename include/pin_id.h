@@ -46,7 +46,7 @@ namespace dibase { namespace rpi {
     /// be thrown.
     /// @param[in]  v   Integer value of pin id number to represent.
     /// @exception std::invalid_argument raised if v > \ref max_id
-    ///            or v < \refmin_id
+    ///            or v < \ref min_id
       explicit pin_id( pin_id_int_t v )
       : value( v )
       {

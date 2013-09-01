@@ -24,12 +24,15 @@ namespace dibase { namespace rpi {
   namespace peripherals
   {
     using internal::gpio_pin_fn;
+
+  /// @brief Namespace grouping entities related to GPIO pin alternative
+  /// functions' special function assignments
     namespace pin_alt_fn
     {
-    /// @brief Enumeration detailing special functions GPIO pins may support
+    /// @brief Enumerates special functions GPIO pins may support
     ///
     /// Unnumbered table following table 6-31 ("Special function legend") in
-    /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf"\>
+    /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
     /// Broadcom BCM2835 ARM Peripherals Datasheet</a> details the various
     /// possible special functions that GPIO pins may support. The enumeration
     /// names are based on the names in this table.
@@ -37,8 +40,8 @@ namespace dibase { namespace rpi {
       enum class gpio_special_fn
       {
       /// @brief No special function
-      /// In BCM2835 peripherals datasheet table 6-31 slot for pin alt
-      /// function is blank or specified as <reserved> or <Internal>.
+      /// In BCM2835 peripherals datasheet table 6-31. Slot for pin alternative
+      /// function is blank or specified as \<reserved\> or \<Internal\>.
         no_fn           
       , gpclk0          ///< General purpose Clock 0
       , gpclk1          ///< General purpose Clock 1
@@ -129,15 +132,27 @@ namespace dibase { namespace rpi {
     ///
     /// A GPIO pin's alternative functions are defined by:
     ///   - the pin's id
-    ///   - the pin function mode (alt0...alt5)
-    ///   - the special function the pin has in the alt function mode
+    ///   - the pin alternative function mode (alt0...alt5)
+    ///   - the special function the pin has in the alternative function mode
       class descriptor
       {
-        pin_id          pin_;         ///< Id of GPIO pin in question
-        gpio_pin_fn     alt_fn_;      ///< Alternative function of GPIO pin
-        gpio_special_fn special_fn_;  ///< Special function pin's alt_fn has
+        pin_id          pin_;
+        gpio_pin_fn     alt_fn_;
+        gpio_special_fn special_fn_;
 
       public:
+      /// @brief Return the value of the descriptor's pin_id
+      /// @returns pin_id value descriptor created with.
+        pin_id pin() const { return pin_; }
+
+      /// @brief Return the value of the descriptor's (alternative) pin function
+      /// @returns gpio_pin_fn value descriptor created with.
+        gpio_pin_fn alt_fn() const { return alt_fn_; };
+
+      /// @brief Return the value of the descriptor's special alt function.
+      /// @returns gpio_special_fn value descriptor created with.
+        gpio_special_fn special_fn() const { return special_fn_; }
+
       /// @brief Construct from individual values
       /// @param p  Pin id of GPIO pin alt function that is described
       /// @param a  Alt function of GPIO pin that is described
@@ -150,8 +165,8 @@ namespace dibase { namespace rpi {
                     { if (a==gpio_pin_fn::input||a==gpio_pin_fn::output)
                         {
                           throw std::invalid_argument
-                                { "pin_alt_fn::descriptor::descriptor:"
-                                  " gpio_pin_fn argument should be an alt "
+                                { "pin_alt_fn::descriptor::descriptor: "
+                                  "gpio_pin_fn argument should be an alt "
                                   "function value not gpio_pin_fn::input or "
                                   "gpio_pin_fn::output."
                                 };
@@ -161,18 +176,6 @@ namespace dibase { namespace rpi {
                  }
         , special_fn_{s}
         {}
-
-      /// @brief Return the value of the descriptor's pin_id
-      /// @returns pin_id value descriptor created with.
-        pin_id pin() const { return pin_; }
-
-      /// @brief Return the value of the descriptor's (alternative) pin function
-      /// @returns gpio_pin_fn value descriptor created with.
-        gpio_pin_fn alt_fn() const { return alt_fn_; };
-
-      /// @brief Return the value of the descriptor's special alt function.
-      /// @returns gpio_special_fn value descriptor created with.
-        gpio_special_fn special_fn() const { return special_fn_; }
       };
 
     /// @brief Mutable type used to build up results of pin alt function queries

@@ -24,13 +24,14 @@ namespace dibase { namespace rpi {
       constexpr unsigned pwmclk{3U}; ///< PWMCLK internal index value
       constexpr std::size_t number_of_clocks{4U};///< Number of supported clocks
 
-    /// @brief Convert an internal clock index value to a clock_id enum value
+    /// @brief Convert an internal clock index value to a #clock_id enum value
     /// @param i  Internal clock index value: gpclk0, gpclk1, gpclk2 or pwmclk.
     ///           NOT range checked.
-    /// @returns clock_id enumeration value used with clock register operations
+    /// @returns #clock_id enumeration value used with clock register operations
       clock_id index_to_clock_id(unsigned i);
 
     /// @brief GPIO clock control type. There is only 1 (yes it's a singleton!)
+    ///
     /// Maps BCM2708/2835 GPIO clock registers into the requisite physical
     /// memory mapped area, provides simple allocator for in-process clock
     /// resource use tracking and helper to allocate and initialise a clock.

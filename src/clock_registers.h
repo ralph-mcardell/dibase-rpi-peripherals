@@ -6,8 +6,9 @@
 /// Refer to the
 /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
 /// Broadcom BCM2835 ARM Peripherals Datasheet</a> Chapter 6 General Purpose
-/// I/O (GPIO) for details along with additional information on clocks for
-/// PWM found in wiringpi and Gertboard source code.
+/// I/O (GPIO), section 6.3 "General Purpose GPIO Clocks" for details along
+/// with additional information on clocks for PWM found in wiringpi and
+/// Gertboard source code.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
@@ -22,6 +23,7 @@ namespace dibase { namespace rpi {
   { namespace internal
     {
     /// @brief Strongly typed enumeration of clock busy override values
+    ///
     /// Many operations are best not performed if a clock is busy and 
     /// interface functions usually do not allow such operations to proceed
     /// if a clock is busy by default but allow forcing the issue if the
@@ -40,10 +42,10 @@ namespace dibase { namespace rpi {
     /// I/O (GPIO), section 6.3 "General Purpose GPIO Clocks" for more
     /// information.
       enum class clock_mash_mode : register_t
-      { integer_division = 0
-      , mash_1_stage = (1<<9)
-      , mash_2_stage = (2<<9)
-      , mash_3_stage = (3<<9)
+      { integer_division = 0  ///< No filtering; use only an integer divisor
+      , mash_1_stage = (1<<9) ///< Apply one stage of MASH filtering
+      , mash_2_stage = (2<<9) ///< Apply two stages of MASH filtering
+      , mash_3_stage = (3<<9) ///< Apply three stages of MASH filtering
       };
 
     /// @brief Strongly typed enumeration of clock SRC control mode values.
@@ -55,14 +57,14 @@ namespace dibase { namespace rpi {
     /// I/O (GPIO), section 6.3 "General Purpose GPIO Clocks" for more
     /// information.
       enum class clock_src : register_t
-      { gnd = 0
-      , oscillator = 1
-      , testdebug0 = 2
-      , testdebug1 = 3
-      , plla = 4
-      , pllc = 5
-      , plld = 6
-      , hdmi_aux = 7
+      { gnd = 0           ///< Ground source (no source?)
+      , oscillator = 1    ///< External oscillator source
+      , testdebug0 = 2    ///< ? no information ?
+      , testdebug1 = 3    ///< ? no information ?
+      , plla = 4          ///< Phase locked loop a peripheral
+      , pllc = 5          ///< Phase locked loop c peripheral
+      , plld = 6          ///< Phase locked loop d peripheral
+      , hdmi_aux = 7      ///< HDMI Auxiliary ?
       /* field values 8..15 are also mapped to GND so are not used here */
       };
 
@@ -132,6 +134,7 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Returns value of SRC control register field.
+      ///
       /// Note: Raw field values of 8...15 are mapped to clock_src::gnd
       /// (value 0).
       /// @returns Clock control register SRC field value.
@@ -142,14 +145,14 @@ namespace dibase { namespace rpi {
                                           : static_cast<clock_src>(raw_src);
         }
 
-      /// @brief Returns value of DIVI divisor register field.
+      /// @brief Returns value of DIVI integer divisor register field.
       /// @returns Clock divisor DIVI field register value in range [1..0xFFF]
         register_t get_divi() volatile const
         {
           return (divisor&div_divi_mask)>>div_divi_shift;
         }
 
-      /// @brief Returns value of DIVF divisor register field.
+      /// @brief Returns value of DIVF fractional divisor register field.
       /// @returns Clock divisor DIVF field register value in range [0..0xFFF]
         register_t get_divf() volatile const
         {
@@ -157,8 +160,9 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Set the value of ENAB control register bit
+      ///
       /// Will not enable the clock or disable it again if not running if clock
-      /// is busy and not overridden (force is busy_override::yes).
+      /// is busy and not overridden (\b force is busy_override::yes).
       /// @param state State to set ENAB bit to: true->1, false->0
       /// @param force Specifies whether to allow operation if clock is busy
       /// @returns  true if operation performed, false if it was not performed
@@ -186,7 +190,8 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Set the value of FLIP control register bit
-      /// Will not perform the operation if clock is busy and force is not
+      ///
+      /// Will not perform the operation if clock is busy and \b force is not
       /// busy_override::yes.
       /// @param state State to set FLIP bit to: true->1, false->0
       /// @param force Specifies whether to allow operation if clock is busy
@@ -205,7 +210,8 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Set the value of MASH control register field
-      /// Will not perform the operation if clock is busy and force is not
+      ///
+      /// Will not perform the operation if clock is busy and \b force is not
       /// busy_override::yes.
       /// @param mode  Value to set MASH field to
       /// @param force Specifies whether to allow operation if clock is busy
@@ -229,7 +235,8 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Set the value of SRC control register field
-      /// Will not perform the operation if clock is busy and force is not
+      ///
+      /// Will not perform the operation if clock is busy and \b force is not
       /// busy_override::yes.
       /// @param src  Value to set SRC field to
       /// @param force Specifies whether to allow operation if clock is busy
@@ -250,8 +257,9 @@ namespace dibase { namespace rpi {
           return true;
         }
 
-      /// @brief Set the value of DIVI divisor register field
-      /// Will not perform the operation if clock is busy and force is not
+      /// @brief Set the value of DIVI integer divisor register field
+      ///
+      /// Will not perform the operation if clock is busy and \b force is not
       /// busy_override::yes.
       /// Does not check control MASH setting to adjust current minimum value.
       /// The minimums are: 1 for MASH integer divide mode, 2 for MASH stage 1,
@@ -278,8 +286,9 @@ namespace dibase { namespace rpi {
           return true;
         }
 
-      /// @brief Set the value of DIVF divisor register field
-      /// Will not perform the operation if clock is busy and force is not
+      /// @brief Set the value of DIVF fractional divisor register field
+      ///
+      /// Will not perform the operation if clock is busy and \b force is not
       /// busy_override::yes.
       /// @param divf  Value to set divf field to in range [0,0xfff].
       /// @param force Specifies whether to allow operation if clock is busy
@@ -316,9 +325,9 @@ namespace dibase { namespace rpi {
     ///
     /// See the
     /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
-    /// Broadcom BCM2835 ARM Peripherals Datasheet</a> chapter 6 for published
-    /// details. PWN clock control and divisor register offsets gleaned from
-    /// Gertboard gb_pwm.h source code.
+    /// Broadcom BCM2835 ARM Peripherals Datasheet</a> chapter 6, section 6.3
+    /// "General Purpose GPIO Clocks" for published details. PWM clock control
+    /// and divisor register offsets gleaned from Gertboard gb_pwm.h source code
     ///
     /// Member function operations are provided to query and set the various
     /// fields and flags of a specified clock's control and divisor registers.
@@ -328,10 +337,10 @@ namespace dibase { namespace rpi {
       {
       private:
         enum
-        { gp_offset   = 28///< General purpose control & divisor registers' offset
-        , pwm_offset  = 40///< PWM control & divisor registers' offset
-        , regs_per_clk= 2 ///< Number of 32-bit (4-byte) registers for each clock
-        , num_gp_clks = 3 ///< Number of general purpose clocks
+        { gp_offset   = 28
+        , pwm_offset  = 40
+        , regs_per_clk= 2 
+        , num_gp_clks = 3 
         
       /// @brief 32-bit register gap between GP clocks end & PWM clocks start
         , gp_pwm_gap=pwm_offset-gp_offset-(num_gp_clks*regs_per_clk)
@@ -399,7 +408,7 @@ namespace dibase { namespace rpi {
           return (this->*clk).get_source();
         }
 
-      /// @brief Returns value of clock DIVI divisor register field.
+      /// @brief Returns value of clock DIVI integer divisor register field.
       /// @param clk  Clock id of clock to return DIVI field value of
       /// @returns Clock divisor register DIVI field value in range [1..0xFFF]
         register_t get_divi(clock_id clk) volatile const
@@ -407,7 +416,7 @@ namespace dibase { namespace rpi {
           return (this->*clk).get_divi();
         }
 
-      /// @brief Returns value of clock DIVF divisor register field.
+      /// @brief Returns value of clock DIVF fractional divisor register field.
       /// @param clk  Clock id of clock to return DIVF field value of
       /// @returns Clock divisor register DIVF field value in range [0..0xFFF]
         register_t get_divf(clock_id clk) volatile const
@@ -416,8 +425,9 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Set the value of clock ENAB control register bit
-      /// Will not perform the operation if clock is busy and force is not
-      /// busy_override::yes.
+      ///
+      /// Will not enable the clock or disable it again if not running if clock
+      /// is busy and not overridden (\b force is busy_override::yes).
       /// @param clk  Clock id of clock to modify enable bit value of
       /// @param state State to set ENAB bit to: true->1, false->0
       /// @param force Specifies whether to allow operation if clock is busy
@@ -441,7 +451,8 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Set the value of clock FLIP control register bit
-      /// Will not perform the operation if clock is busy and force is not
+      ///
+      /// Will not perform the operation if clock is busy and \b force is not
       /// busy_override::yes.
       /// @param clk  Clock id of clock to modify flip bit value of
       /// @param state State to set FLIP bit to: true->1, false->0
@@ -458,7 +469,8 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Set the value of clock MASH control register field
-      /// Will not perform the operation if clock is busy and force is not
+      ///
+      /// Will not perform the operation if clock is busy and \b force is not
       /// busy_override::yes.
       /// @param clk   Clock id of clock to modify MASH field value of
       /// @param mode  Value to set clock MASH field to
@@ -475,7 +487,8 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Set the value of clock SRC control register field
-      /// Will not perform the operation if clock is busy and force is not
+      ///
+      /// Will not perform the operation if clock is busy and \b force is not
       /// busy_override::yes.
       /// @param clk   Clock id of clock to modify SRC field value of
       /// @param src  Value to set clock SRC field to
@@ -491,8 +504,9 @@ namespace dibase { namespace rpi {
           return (this->*clk).set_source(src, force);
         }
 
-      /// @brief Set the value of clock DIVI divisor register field
-      /// Will not perform the operation if clock is busy and force is not
+      /// @brief Set the value of clock DIVI integer divisor register field
+      ///
+      /// Will not perform the operation if clock is busy and \b force is not
       /// busy_override::yes.
       /// Does not check control MASH setting to adjust current minimum value.
       /// The minimums are: 1 for MASH integer divide mode, 2 for MASH stage 1,
@@ -511,8 +525,9 @@ namespace dibase { namespace rpi {
           return (this->*clk).set_divi(divi, force);
         }
 
-      /// @brief Set the value of clock DIVF divisor register field
-      /// Will not perform the operation if clock is busy and force is not
+      /// @brief Set the value of clock DIVF fractional divisor register field
+      ///
+      /// Will not perform the operation if clock is busy and \b force is not
       /// busy_override::yes.
       /// @param clk   Clock id of clock to modify DIVF field value of
       /// @param divf  Value to set divf field to in range [0,0xfff].

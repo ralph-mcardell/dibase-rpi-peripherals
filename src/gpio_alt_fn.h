@@ -141,6 +141,14 @@ namespace dibase { namespace rpi {
         gpio_special_fn special_fn_;
 
       public:
+      /// @brief Construct from individual values
+      /// @param p  Pin id of GPIO pin alt function that is described
+      /// @param a  Alt function of GPIO pin that is described
+      /// @param s  Special function performed by pin in alt mode described.
+      /// @throws std::invalid_argument if gpio_pin_fn argument is 
+      ///         gpio_pin_fn::input or gpio_pin_fn::output.
+        descriptor(pin_id p, gpio_pin_fn a, gpio_special_fn s);
+
       /// @brief Return the value of the descriptor's pin_id
       /// @returns pin_id value descriptor created with.
         pin_id pin() const { return pin_; }
@@ -152,30 +160,6 @@ namespace dibase { namespace rpi {
       /// @brief Return the value of the descriptor's special alt function.
       /// @returns gpio_special_fn value descriptor created with.
         gpio_special_fn special_fn() const { return special_fn_; }
-
-      /// @brief Construct from individual values
-      /// @param p  Pin id of GPIO pin alt function that is described
-      /// @param a  Alt function of GPIO pin that is described
-      /// @param s  Special function performed by pin in alt mode described.
-      /// @throws std::invalid_argument if gpio_pin_fn argument is 
-      ///         gpio_pin_fn::input or gpio_pin_fn::output.
-        descriptor(pin_id p, gpio_pin_fn a, gpio_special_fn s)
-        : pin_{p}
-        , alt_fn_{[](gpio_pin_fn a)->gpio_pin_fn
-                    { if (a==gpio_pin_fn::input||a==gpio_pin_fn::output)
-                        {
-                          throw std::invalid_argument
-                                { "pin_alt_fn::descriptor::descriptor: "
-                                  "gpio_pin_fn argument should be an alt "
-                                  "function value not gpio_pin_fn::input or "
-                                  "gpio_pin_fn::output."
-                                };
-                        }
-                      return a;
-                    }(a)
-                 }
-        , special_fn_{s}
-        {}
       };
 
     /// @brief Mutable type used to build up results of pin alt function queries

@@ -215,8 +215,23 @@ namespace dibase { namespace rpi {
           }
           pin_id_range_iterator end() const { return pin_id_range_iterator{}; }
         };
-      }
+      } // End of anonymous namespace
    
+      descriptor::descriptor(pin_id p, gpio_pin_fn a, gpio_special_fn s)
+      : pin_{p}
+      , alt_fn_{a}
+      , special_fn_{s}
+      {
+        if (a==gpio_pin_fn::input||a==gpio_pin_fn::output)
+          {
+            throw std::invalid_argument
+                    { "pin_alt_fn::descriptor::descriptor: gpio_pin_fn "
+                      "argument should be an alt function value not "
+                      "gpio_pin_fn::input or gpio_pin_fn::output."
+                    };
+          }
+      }
+
       result_set select(select_options opt)
       { return  make_results( pin_id_range{}
                             , [opt](gpio_special_fn spl_fn)

@@ -9,11 +9,14 @@ ROOT_DIR = $(realpath $(CURDIR)/../..)
 include $(ROOT_DIR)/makeinclude.mak
 
 # Files and directories
-SRC_FILES = open-collector.cpp leds_and_switches.cpp led-segment-display.cpp
+SRC_FILES = open-collector.cpp\
+            leds_and_switches.cpp\
+            led-segment-display.cpp\
+            pwm-motor.cpp
 DEP_FILES = $(SRC_FILES:%.cpp=%.d)
 
 # Executable target files have the name of the example source file less the 
-# extension but might includ a build configuration specific suffix.
+# extension but might include a build configuration specific suffix.
 # Both lists of paths are required for the clean target:
 TGT_FILES_RELEASE = $(SRC_FILES:%.cpp=$(EXEC_DIR)/%$(RELEASE_FILE_SUFFIX))
 TGT_FILES_DEBUG = $(SRC_FILES:%.cpp=$(EXEC_DIR)/%$(DEBUG_FILE_SUFFIX))

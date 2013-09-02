@@ -5,7 +5,7 @@
 /// Refer to the
 /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
 /// Broadcom BCM2835 ARM Peripherals Datasheet</a> Chapter 9 Pulse Width
-/// Modifier for details along with additional information on PWM found in 
+/// Modulator for details along with additional information on PWM found in 
 /// wiringpi and Gertboard source code..
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
@@ -52,11 +52,9 @@ namespace dibase { namespace rpi {
     /// Gertboard gb_pwm.h source code.
     ///
     /// Note that there is some confusion with regard to PWM channel numbering.
-    /// While the GPIO pins special functions refer to PWM channels 0 and 1 (PWM0,
-    /// PWM1), the PWM control registers use PWM channels 1 and 2 - go figure. 
-    /// The obvious assumption is that PWM0 maps onto PWM channel 1 and PWM1 to
-    /// channel 2, and is backed up by values used by the Gertboard software PWM 
-    /// source code (pwm.h, pwm.c).
+    /// While the GPIO pins special functions refer to PWM channels 0 and 1
+    /// (PWM0, PWM1), the PWM control registers use PWM channels 1 and 2 - go
+    /// figure. PWM0 maps onto PWM channel 1 and PWM1 to channel 2.
     ///
     /// Member function operations are provided to query and set the various
     /// fields and flags for PWM channel control.
@@ -114,7 +112,8 @@ namespace dibase { namespace rpi {
         register_t range2;      ///< PWM1 (channel 2) range register, RNG2
         register_t data2;       ///< PWM1 (channel 2) data register, DAT2
 
-      /// @brief Return value of control register PWENi bit for specified channel.
+      /// @brief Return value of \ref control register PWENi bit for specified
+      /// channel.
       /// @param ch  PWM channel id to return enable state for
       /// @returns true if channel control register PWEN bit set, false if not.
         bool get_enable(pwm_channel ch) volatile const
@@ -122,7 +121,8 @@ namespace dibase { namespace rpi {
           return control & ctl_ch_shift(ch,ctl_enable);
         }
 
-      /// @brief Return value of control register PWENi bit for specified channel.
+      /// @brief Return value of \ref control register PWENi bit for specified
+      /// channel.
       /// @param ch  PWM channel id to return mode for
       /// @returns pwm_mode::pwm if channel is in PWM mode or
       ///          pwm_mode::serialiser if the channel is in serialiser mode.
@@ -132,7 +132,8 @@ namespace dibase { namespace rpi {
                                                         : pwm_mode::pwm;
         }
 
-      /// @brief Return value of control register RPTLi bit for specified channel.
+      /// @brief Return value of \ref control register RPTLi bit for specified
+      /// channel.
       /// @param ch  PWM channel id to return repeat last data state for
       /// @returns true if channel control register RPTL bit set, false if not.
         bool get_repeat_last_data(pwm_channel ch) volatile const
@@ -140,7 +141,8 @@ namespace dibase { namespace rpi {
           return control & ctl_ch_shift(ch,ctl_rptl);
         }
 
-      /// @brief Return value of control register SBITi bit for specified channel.
+      /// @brief Return value of \ref control register SBITi bit for specified
+      /// channel.
       /// @param ch  PWM channel id to return silence (no transmission) state for
       /// @returns true if channel control register SBIT bit set, false if not.
         bool get_silence(pwm_channel ch) volatile const
@@ -148,7 +150,8 @@ namespace dibase { namespace rpi {
           return control & ctl_ch_shift(ch,ctl_sbit);
         }
 
-      /// @brief Return value of control register POLAi bit for specified channel.
+      /// @brief Return value of \ref control register POLAi bit for specified
+      /// channel.
       /// @param ch  PWM channel id to return polarity inverted state
       /// @returns true if channel control register POLA bit set, false if not.
         bool get_polarity_inverted(pwm_channel ch) volatile const
@@ -156,7 +159,8 @@ namespace dibase { namespace rpi {
           return control & ctl_ch_shift(ch,ctl_pola);
         }
 
-      /// @brief Return value of control register USEFi bit for specified channel.
+      /// @brief Return value of \ref control register USEFi bit for specified
+      /// channel.
       /// @param ch  PWM channel id to return using FIFO state
       /// @returns true if channel control register USEF bit set, false if not.
         bool get_use_fifo(pwm_channel ch) volatile const
@@ -164,7 +168,8 @@ namespace dibase { namespace rpi {
           return control & ctl_ch_shift(ch,ctl_usef);
         }
 
-      /// @brief Return value of control register MSENi bit for specified channel.
+      /// @brief Return value of \ref control register MSENi bit for specified
+      /// channel.
       /// @param ch  PWM channel id to return M/S PWM algorithm enabled state
       /// @returns true if channel control register MSEN bit set, false if not.
         bool get_ms_enabled(pwm_channel ch) volatile const
@@ -172,13 +177,15 @@ namespace dibase { namespace rpi {
           return control & ctl_ch_shift(ch,ctl_msen);
         }
 
-      /// @brief Clear the FIFO. There is only 1 FIFO, no channel parameter needed
+      /// @brief Clear the FIFO. There is only 1 FIFO, no channel parameter
+      /// needed.
         void clear_fifo() volatile
         {
           control |= ctl_clrf;
         }
 
-      /// @brief Set value of control register PWENi bit for specified channel.
+      /// @brief Set value of \ref control register PWENi bit for specified
+      /// channel.
       /// @param ch     PWM channel id to set enable state for
       /// @param state  Enable state to set: true : enabled; false : disabled
         void set_enable(pwm_channel ch, bool state) volatile
@@ -187,7 +194,8 @@ namespace dibase { namespace rpi {
                           : control & ~ctl_ch_shift(ch,ctl_enable);
         }
 
-      /// @brief Set value of control register PWENi bit for specified channel.
+      /// @brief Set value of \ref control register PWENi bit for specified
+      /// channel.
       /// @param ch     PWM channel id to set mode for
       /// @param mode   Mode to set channel to
         void set_mode(pwm_channel ch, pwm_mode mode) volatile
@@ -197,7 +205,8 @@ namespace dibase { namespace rpi {
                                         : control&~ctl_ch_shift(ch,ctl_mode_ser);
         }
 
-      /// @brief Set value of control register RPTLi bit for specified channel.
+      /// @brief Set value of \ref control register RPTLi bit for specified
+      /// channel.
       /// @param ch     PWM channel id to set repeat last data for
       /// @param state  Repeat last data state to set. true: on; false: off
         void set_repeat_last_data(pwm_channel ch, bool state) volatile
@@ -206,7 +215,8 @@ namespace dibase { namespace rpi {
                           : control & ~ctl_ch_shift(ch,ctl_rptl);
         }
 
-      /// @brief Set value of control register SBITi bit for specified channel.
+      /// @brief Set value of \ref control register SBITi bit for specified
+      /// channel.
       /// @param ch     PWM channel id to set silence bits state for
       /// @param state  Silence bit state: true: 1; false: 0
         void set_silence(pwm_channel ch, bool state) volatile
@@ -215,7 +225,8 @@ namespace dibase { namespace rpi {
                           : control & ~ctl_ch_shift(ch,ctl_sbit);
         }
 
-      /// @brief Set value of control register POLAi bit for specified channel.
+      /// @brief Set value of \ref control register POLAi bit for specified
+      /// channel.
       /// @param ch     PWM channel id to set polarity invert state for
       /// @param state  Polarity invert state: true: invert bits; false: do not
         void set_polarity_inverted(pwm_channel ch, bool state) volatile
@@ -224,7 +235,8 @@ namespace dibase { namespace rpi {
                           : control & ~ctl_ch_shift(ch,ctl_pola);
         }
 
-      /// @brief Set value of control register USEFi bit for specified channel.
+      /// @brief Set value of \ref control register USEFi bit for specified
+      /// channel.
       /// @param ch     PWM channel id to set use-FIFO for transmission state
       /// @param state  Use FIFO state: true: use FIFO; false: use data register 
         void set_use_fifo(pwm_channel ch, bool state) volatile
@@ -233,7 +245,8 @@ namespace dibase { namespace rpi {
                           : control & ~ctl_ch_shift(ch,ctl_usef);
         }
 
-      /// @brief Set value of control register MSENi bit for specified channel.
+      /// @brief Set value of \ref control register MSENi bit for specified
+      /// channel.
       /// @param ch     PWM channel id to set M/S algorithm enabled state for
       /// @param state  M/S enabled state: true: use M/S algorithm; 
       ///                                  false: use PWM algorithm
@@ -244,42 +257,43 @@ namespace dibase { namespace rpi {
         }
 
 
-      /// @brief Returns state of status register FULL1 flag
+      /// @brief Returns state of \ref status register FULL1 flag
       /// @returns true if FIFO full; false if not
         bool get_fifo_full() volatile const
         {
           return status & sta_fifo_full;
         }
 
-      /// @brief Returns state of status register EMPT1 flag
+      /// @brief Returns state of \ref status register EMPT1 flag
       /// @returns true if FIFO empty; false if not
         bool get_fifo_empty() volatile const
         {
           return status & sta_fifo_empt;
         }
 
-      /// @brief Returns state of status register WERR1 flag
+      /// @brief Returns state of \ref status register WERR1 flag
       /// @returns true if error writing to FIFO; false if no such error
         bool get_fifo_write_error() volatile const
         {
           return status & sta_fifo_werr;
         }
 
-      /// @brief Returns state of status register RERR1 flag
+      /// @brief Returns state of \ref status register RERR1 flag
       /// @returns true if error reading from FIFO; false if no such error
         bool get_fifo_read_error() volatile const
         {
           return status & sta_fifo_rerr;
         }
 
-      /// @brief Returns state of status register BERR1 flag
+      /// @brief Returns state of \ref status register BERR1 flag
       /// @returns true if error writing to registers via APB; false if not
         bool get_bus_error() volatile const
         {
           return status & sta_berr;
         }
 
-      /// @brief Return value of status register GAPOi flag for specified channel.
+      /// @brief Return value of \ref status register GAPOi flag for specified
+      /// channel.
       /// @param ch  PWM channel id to return gap occurred flag for
       /// @returns true if gap in transmission occurred; false if not 
         bool get_gap_occurred(pwm_channel ch) volatile const
@@ -287,7 +301,8 @@ namespace dibase { namespace rpi {
           return status & sta_ch_shift(ch,sta_gapo);
         }
 
-      /// @brief Return value of status register STAi flag for specified channel.
+      /// @brief Return value of \ref status register STAi flag for specified
+      /// channel.
       /// @param ch  PWM channel id to return transmitting data state flag for
       /// @returns true if channel transmitting data; false if it is not 
         bool get_txd_state(pwm_channel ch) volatile const
@@ -321,28 +336,28 @@ namespace dibase { namespace rpi {
         }
 
 
-      /// @brief Returns state of DMA configuration register ENAB flag
+      /// @brief Returns state of \ref dma_config register ENAB flag
       /// @returns true if PWM DMA enabled; false if not
         bool get_dma_enable() volatile const
         {
           return dma_config & dma_enable;
         }
 
-      /// @brief Returns value of DMA configuration DREQ field
+      /// @brief Returns value of \ref dma_config DREQ field
       /// @returns DMA threshold for data request signal (0-255)
         register_t get_dma_data_req_threshold() volatile const
         {
           return dma_config & dma_dreq_mask;
         }
 
-      /// @brief Returns value of DMA configuration PANIC field
+      /// @brief Returns value of \ref dma_config PANIC field
       /// @returns DMA threshold for panic signal (0-255)
         register_t get_dma_panic_threshold() volatile const
         {
           return (dma_config & dma_panic_mask)>>dma_panic_shift;
         }
 
-      /// @brief Set value of DMA configuration ENAB flag.
+      /// @brief Set value of \ref dma_config ENAB flag.
       /// @param state  DMA enable state to set: true: enabled; false: disabled
         void set_dma_enable(bool state) volatile
         {
@@ -350,9 +365,11 @@ namespace dibase { namespace rpi {
                               : dma_config & ~dma_enable;
         }
 
-      /// @brief Set value of DMA configuration DREQ field.
-      /// @param value  PWM DMA data request signal threshold value to set (0-255)
-      /// @returns true if value in range and operation performed, false otherwise
+      /// @brief Set value of \ref dma_config DREQ field.
+      /// @param value  PWM DMA data request signal threshold value to set
+      ///               (0-255)
+      /// @returns  true if value in range and operation performed,
+      ///           false otherwise
         bool set_dma_data_req_threshold(register_t value) volatile
         {
           if (value>dma_dreq_max)
@@ -363,9 +380,10 @@ namespace dibase { namespace rpi {
           return true;
         }
 
-      /// @brief Set value of DMA configuration PANIC field.
+      /// @brief Set value of \ref dma_config PANIC field.
       /// @param value  PWM DMA panic signal threshold value to set (0-255)
-      /// @returns true if value in range and operation performed, false otherwise
+      /// @returns  true if value in range and operation performed,
+      ///           false otherwise
         bool set_dma_panic_threshold(register_t value) volatile
         {
           if (value>dma_panic_max)
@@ -377,17 +395,22 @@ namespace dibase { namespace rpi {
         }
 
 
-      /// @brief Return rangei register value PWM_RNGi field for specified channel
-      /// @param ch  PWM channel id to return range register value for
-      /// @returns Value of rangei PWM_RNGi field (0-0xffffffff)
+      /// @brief Return PWM channel PWM_RNGi field value of \ref range1 or 
+      /// \ref range2 register.
+      /// specified channel
+      /// @param ch PWM channel id to return range register value for
+      /// @returns  Value of \ref range1 or \ref range2 register PWM_RNGi
+      ///           field (0-0xffffffff)
         register_t get_range(pwm_channel ch) volatile const
         {
           return ch==pwm_channel::pwm_ch1 ? range1 : range2;
         }
 
-      /// @brief Return datai register value PWM_DATi field for specified channel
-      /// @param ch  PWM channel id to return data register value for
-      /// @returns Value of datai PWM_DATi field (0-0xffffffff)
+      /// @brief Return PWM channel PWM_DATi field value of \ref data1 or 
+      /// \ref data2 register.
+      /// @param ch PWM channel id to return data register value for
+      /// @returns  Value of \ref data1 or \ref data2 register PWM_DATi
+      ///           field (0-0xffffffff)
         register_t get_data(pwm_channel ch) volatile const
         {
           return ch==pwm_channel::pwm_ch1 ? data1 : data2;
@@ -402,7 +425,8 @@ namespace dibase { namespace rpi {
 
       /// @brief Set value of the channel range registers RNGi
       /// @param ch     PWM channel id to set range register value for
-      /// @param value  Value to set channel range register to (0...0xffffffff)
+      /// @param value  Value to set \ref range1 or \ref range2 register
+      ///               to (0...0xffffffff)
         void set_range(pwm_channel ch, register_t value) volatile
         {
           if (ch==pwm_channel::pwm_ch1)
@@ -417,7 +441,8 @@ namespace dibase { namespace rpi {
 
       /// @brief Set value of the channel data registers DATi
       /// @param ch     PWM channel id to set data register value for
-      /// @param value  Value to set channel data register to (0...0xffffffff)
+      /// @param value  Value to set \ref data1 or \ref data2 register
+      ///               to (0...0xffffffff)
         void set_data(pwm_channel ch, register_t value) volatile
         {
           if (ch==pwm_channel::pwm_ch1)

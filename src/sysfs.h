@@ -33,16 +33,15 @@ namespace dibase { namespace rpi {
     /// @returns true on success, false on failure.
       bool unexport_pin(pin_id pin);
     
-    /// @brief Internal use input pin edge event mode values
-    ///
-    /// rising  : edge events on low to high rising edges
-    /// falling : edge events on high to low falling edges
-    /// both    : edge events on rising and falling edges
-    /// bad_mode: should never be used. Will cause std::invalid_argument to be
-    ///           thrown from open_ipin_for_edge_events. Assigned only when
-    ///           converting from external mode value types which are
-    ///           themselves invalid.
-      enum class edge_event_mode{rising, falling, both, bad_mode=0xbad};
+    /// @brief Input pin edge event mode values used with sys file-system 
+    /// utilities
+      enum class edge_event_mode
+      { rising            ///< Edge events on low to high rising edges
+      , falling           ///< Edge events on rising and falling edges
+      , both              ///< Edge events on rising and falling edges
+      , bad_mode=0xbad    ///< Should never be used.  Used only when
+                          ///< converting from invalid source values
+      };
 
     /// @brief Open a pin for use in edge events IO multiplexing.
     /// @param pin  Id of input pin to open for edge event monitoring uses

@@ -14,8 +14,8 @@ namespace dibase { namespace rpi {
     {
       /// @brief Simple resource allocation class template.
       ///
-      /// Supports allocate, de-allocate and in_use operations for resources
-      /// specified using resource index values
+      /// Supports allocate, de-allocate and usage query operations for
+      /// resources specified using resource index values
       ///
       /// @tparam NumRes  Number of resources supported 
       ///                 (up to bit size of unsigned)

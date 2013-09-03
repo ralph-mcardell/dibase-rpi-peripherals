@@ -35,11 +35,11 @@ namespace dibase { namespace rpi {
         constexpr static physical_address_t 
                             physical_address = peripheral_base_address+0x204000;
 
-        regsiter_t  control_and_status; ///< SPI Master Control and Status, CS
+        register_t  control_and_status; ///< SPI Master Control and Status, CS
         register_t  fifo;               ///< SPI Master TX and RX FIFOs, FIFO
         register_t  clock;              ///< SPI Master Clock Divider, CLK
-        register_t  data_length         ///< SPI Master Data Length, DLEN
-        register_t  lossi_mode_toh      ///< SPI LOSSI mode TOH, LTOH
+        register_t  data_length;        ///< SPI Master Data Length, DLEN
+        register_t  lossi_mode_toh;     ///< SPI LOSSI mode TOH, LTOH
         register_t  dma_controls;       ///< SPI DMA DREQ Controls, DC
       };
     } // namespace internal closed

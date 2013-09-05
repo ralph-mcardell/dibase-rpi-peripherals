@@ -319,3 +319,219 @@ TEST_CASE( "Unit-tests/spi0_registers/0190/get_chip_select_polarity"
   CHECK_FALSE(spi0_regs.get_chip_select_polarity(1));
   CHECK_FALSE(spi0_regs.get_chip_select_polarity(3));
 }
+
+TEST_CASE( "Unit-tests/spi0_registers/00300/set_chip_select"
+         , "set_chip_select sets the correct state for control_and_status "
+           "register CS bits"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  CHECK(spi0_regs.set_chip_select(1U));
+  CHECK(spi0_regs.control_and_status==1U);    // bits [1:0] == 01, other bits 0
+  CHECK(spi0_regs.set_chip_select(2U));
+  CHECK(spi0_regs.control_and_status==2U);    // bits [1:0] == 10, other bits 0
+  CHECK(spi0_regs.set_chip_select(0U));
+  CHECK(spi0_regs.control_and_status==0U);    // bits [1:0] == 00, other bits 0
+  CHECK_FALSE(spi0_regs.set_chip_select(3U)); // Reserved value, should fail
+  CHECK(spi0_regs.control_and_status==0U);    // No change
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0310/set_clock_phase"
+         , "set_clock_phase sets correct state for control_and_status "
+           "register CPHA bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_clock_phase(true);
+  CHECK(spi0_regs.control_and_status==4U);  // bit [2] == 1
+  spi0_regs.set_clock_phase(false);
+  CHECK(spi0_regs.control_and_status==0U);  // bit [2] == 0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0320/set_clock_polarity"
+         , "set_clock_polarity sets correct state for control_and_status "
+           "register CPOL bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_clock_polarity(true);
+  CHECK(spi0_regs.control_and_status==8U);  // bit [3] == 1
+  spi0_regs.set_clock_polarity(false);
+  CHECK(spi0_regs.control_and_status==0U);  // bit [3] == 0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0330/set_chip_select_polarity"
+         , "set_chip_select_polarity sets correct state for control_and_status "
+           "register CSPOL bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_chip_select_polarity(true);
+  CHECK(spi0_regs.control_and_status==0x40U); // bit [6] == 1
+  spi0_regs.set_chip_select_polarity(false);
+  CHECK(spi0_regs.control_and_status==0U);    // bit [6] == 0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0340/set_chip_select_polarity"
+         , "set_chip_select_polarity sets correct state for "
+           "control_and_status register CSPOL[0,1,2] bits"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  CHECK(spi0_regs.set_chip_select_polarity(0, true));
+  CHECK(spi0_regs.control_and_status==0x200000U); // bit [21]==1 (CSPOL0) only
+  CHECK(spi0_regs.set_chip_select_polarity(1, true));
+  CHECK(spi0_regs.control_and_status==0x600000U); // bit [21:22]==1 (CSPOL0,1)
+  CHECK(spi0_regs.set_chip_select_polarity(2, true));
+  CHECK(spi0_regs.control_and_status==0xe00000U); // bit [21:23]==1 (CSPOL0,1,2)
+  CHECK_FALSE(spi0_regs.set_chip_select_polarity(3, true)); // Fails, bad chip id
+  CHECK(spi0_regs.control_and_status==0xe00000U); // No change
+  CHECK(spi0_regs.set_chip_select_polarity(0, false));
+  CHECK(spi0_regs.control_and_status==0xc00000U); // bit [22:23]==1 (CSPOL1,2)
+  CHECK(spi0_regs.set_chip_select_polarity(1, false));
+  CHECK(spi0_regs.control_and_status==0x800000U); // bit [23]==1 (CSPOL2) only
+  CHECK(spi0_regs.set_chip_select_polarity(2, false));
+  CHECK(spi0_regs.control_and_status==0x000000U); // bits all 0
+  CHECK_FALSE(spi0_regs.set_chip_select_polarity(3, false));
+  CHECK(spi0_regs.control_and_status==0x000000U); //  No change
+ 
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0350/clear_fifo"
+         , "clear_fifo sets correct state for "
+           "control_and_status register CLEAR bits"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.clear_fifo(spi0_fifo_clear_action::clear_tx);
+  CHECK(spi0_regs.control_and_status==0x10); // bits [5:4]==01
+  spi0_regs.control_and_status = 0U; // CLEAR field one shot & always reads as 0
+  spi0_regs.clear_fifo(spi0_fifo_clear_action::clear_rx);
+  CHECK(spi0_regs.control_and_status==0x20U); // bits [5:4]==10
+  spi0_regs.control_and_status = 0U; // CLEAR field one shot & always reads as 0
+  spi0_regs.clear_fifo(spi0_fifo_clear_action::clear_tx_rx);
+  CHECK(spi0_regs.control_and_status==0x30U); // bits [5:4]==11
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0360/set_transfer_active"
+         , "set_transfer_active sets correct state for control_and_status "
+           "register TA bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_transfer_active(true);
+  CHECK(spi0_regs.control_and_status==0x80U); // bit [7] == 1
+  spi0_regs.set_transfer_active(false);
+  CHECK(spi0_regs.control_and_status==0U);    // bit [7] == 0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0370/set_dma_enable"
+         , "set_dma_enable sets correct state for control_and_status "
+           "register DMAEN bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_dma_enable(true);
+  CHECK(spi0_regs.control_and_status==0x100U);  // bit [8] == 1
+  spi0_regs.set_dma_enable(false);
+  CHECK(spi0_regs.control_and_status==0U);      // bit [8] == 0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0380/set_interrupt_on_done"
+         , "set_interrupt_on_done sets correct state for control_and_status "
+           "register INTD bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_interrupt_on_done(true);
+  CHECK(spi0_regs.control_and_status==0x200U);  // bit [9] == 1
+  spi0_regs.set_interrupt_on_done(false);
+  CHECK(spi0_regs.control_and_status==0U);      // bit [9] == 0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0380/set_interrupt_on_rxr"
+         , "set_interrupt_on_rxr sets correct state for control_and_status "
+           "register INTR bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_interrupt_on_rxr(true);
+  CHECK(spi0_regs.control_and_status==0x400U);  // bit [10] == 1
+  spi0_regs.set_interrupt_on_rxr(false);
+  CHECK(spi0_regs.control_and_status==0U);      // bit [10] == 0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0380/set_auto_deassert_chip_select"
+         , "set_auto_deassert_chip_select sets correct state for"
+           " control_and_status register ADCS bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_auto_deassert_chip_select(true);
+  CHECK(spi0_regs.control_and_status==0x800U);  // bit [11] == 1
+  spi0_regs.set_auto_deassert_chip_select(false);
+  CHECK(spi0_regs.control_and_status==0U);      // bit [11] == 0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0380/set_read_enable"
+         , "set_read_enable sets correct state for"
+           " control_and_status register REN bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_read_enable(true);
+  CHECK(spi0_regs.control_and_status==0x1000U); // bit [12] == 1
+  spi0_regs.set_read_enable(false);
+  CHECK(spi0_regs.control_and_status==0U);      // bit [12] == 0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0380/set_lossi_enable"
+         , "set_lossi_enable sets correct state for"
+           " control_and_status register LEN bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_lossi_enable(true);
+  CHECK(spi0_regs.control_and_status==0x2000U); // bit [13] == 1
+  spi0_regs.set_lossi_enable(false);
+  CHECK(spi0_regs.control_and_status==0U);      // bit [13] == 0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0380/set_lossi_dma_enable"
+         , "set_lossi_dma_enable sets correct state for"
+           " control_and_status register DMA_LEN bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_lossi_dma_enable(true);
+  CHECK(spi0_regs.control_and_status==0x1000000U);  // bit [24] == 1
+  spi0_regs.set_lossi_dma_enable(false);
+  CHECK(spi0_regs.control_and_status==0U);          // bit [24]==0, other bits 0
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0380/set_lossi_long_word"
+         , "set_lossi_long_word sets correct state for"
+           " control_and_status register LEN_LONG bit"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  spi0_regs.set_lossi_long_word(true);
+  CHECK(spi0_regs.control_and_status==0x2000000U);  // bit [25] == 1
+  spi0_regs.set_lossi_long_word(false);
+  CHECK(spi0_regs.control_and_status==0U);          // bit [25]==0, other bits 0
+}

@@ -624,3 +624,37 @@ TEST_CASE( "Unit-tests/spi0_registers/0710/get_dma_data_length"
   spi0_regs.data_length = expected;
   CHECK(spi0_regs.get_dma_data_length()==expected);
 }
+
+TEST_CASE( "Unit-tests/spi0_registers/0800/set_lossi_output_hold_delay"
+         , "set_lossi_output_hold_delay sets correct value in the "
+           "lossi_mode_toh register TOH field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{15U};
+  spi0_regs.set_lossi_output_hold_delay(expected);
+  CHECK(spi0_regs.lossi_mode_toh==expected);
+  expected = 1U;
+  spi0_regs.set_lossi_output_hold_delay(expected);
+  CHECK(spi0_regs.lossi_mode_toh==expected);
+  CHECK_FALSE(spi0_regs.set_lossi_output_hold_delay(0U));
+  CHECK_FALSE(spi0_regs.set_lossi_output_hold_delay(16U));
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0810/get_lossi_output_hold_delay"
+         , "get_lossi_output_hold_delay obtains correct value from the "
+           "lossi_mode_toh register TOH field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{15U};
+  spi0_regs.lossi_mode_toh = expected;
+  CHECK(spi0_regs.get_lossi_output_hold_delay()==expected);
+  spi0_regs.lossi_mode_toh = expected|0xfffffff0U;
+  CHECK(spi0_regs.get_lossi_output_hold_delay()==expected);
+  expected = 1U;
+  spi0_regs.lossi_mode_toh = expected;
+  CHECK(spi0_regs.get_lossi_output_hold_delay()==expected);
+}

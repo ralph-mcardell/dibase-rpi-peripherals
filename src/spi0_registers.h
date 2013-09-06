@@ -96,6 +96,9 @@ namespace dibase { namespace rpi {
         , dlen_len_min = 0U           // Minimum DMA transfer byte length
         , dlen_len_max = 0xffffU      // Maximum DMA transfer byte length
         , dlen_len_mask = 0xffffU     // Low 16-bits of register only
+        , ltoh_toh_min = 1U           // Minimum LoSSI mode o/p hold delay
+        , ltoh_toh_max = 15U          // Maximum LoSSI mode o/p hold delay
+        , ltoh_toh_mask = 15U         // Low 4 bits of register only
         };
 
       public:
@@ -556,7 +559,7 @@ namespace dibase { namespace rpi {
       ///
       /// @param[in] len  SPI0 DMA data transfer length [0,65535]
       /// @returns  true if operation performed,
-      ///           false if operation not performed as divisor out of range
+      ///           false if operation not performed as length out of range
         bool  set_dma_data_length(register_t len)
         {
           if (/*dlen_len_min>len ||*/ len>dlen_len_max)
@@ -564,6 +567,36 @@ namespace dibase { namespace rpi {
               return false;
             }
           data_length = len&dlen_len_mask;
+          return true;
+        }
+
+
+      /// @brief Return currently set SPI0 LoSSI mode output hold delay.
+      ///
+      /// Note: Relevant in LoSSI mode only (get_lossi_enable()==true). Value
+      /// is the number of APB clocks to hold the output for.
+      ///
+      /// @returns Number of APB clocks to hold output for [1,15]
+        register_t get_lossi_output_hold_delay()
+        {
+          return lossi_mode_toh&ltoh_toh_mask;
+        }
+
+      /// @brief Set LoSSI mode output hold delay.
+      ///
+      /// Note: Relevant in LoSSI mode only (get_lossi_enable()==true). Value
+      /// is the number of APB clocks to hold the output for.
+      ///
+      /// @param[in] delay  SPI0 LoSSI mode output hold delay [1,15] APB clocks
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as delay out of range
+        bool  set_lossi_output_hold_delay(register_t delay)
+        {
+          if (ltoh_toh_min>delay || delay>ltoh_toh_max)
+            {
+              return false;
+            }
+          lossi_mode_toh = delay&ltoh_toh_mask;
           return true;
         }
       };

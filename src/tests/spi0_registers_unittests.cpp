@@ -543,7 +543,7 @@ TEST_CASE( "Unit-tests/spi0_registers/0500/transmit_fifo_write"
 {
   spi0_registers spi0_regs;
   std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
-  std::uint8_t expected{255};
+  std::uint8_t expected{255U};
   spi0_regs.transmit_fifo_write(expected);
   CHECK(spi0_regs.fifo==expected);  
 }
@@ -555,7 +555,39 @@ TEST_CASE( "Unit-tests/spi0_registers/0510/receive_fifo_read"
 {
   spi0_registers spi0_regs;
   std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
-  std::uint8_t expected{255};
+  std::uint8_t expected{255U};
   spi0_regs.fifo = expected;
   CHECK(spi0_regs.receive_fifo_read()==expected);  
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0600/set_clock_divider"
+         , "set_clock_divider sets correct value in the "
+           "clock register CDIV field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{2U};
+  spi0_regs.set_clock_divider(expected);
+  CHECK(spi0_regs.clock==expected);  
+  spi0_regs.set_clock_divider(65536U);
+  CHECK(spi0_regs.clock==0U);  
+  CHECK_FALSE(spi0_regs.set_clock_divider(65537U));
+  CHECK_FALSE(spi0_regs.set_clock_divider(1U));
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0610/get_clock_divider"
+         , "get_clock_divider obtains correct value from the "
+           "clock register CDIV field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{2U};
+  spi0_regs.clock = expected;
+  CHECK(spi0_regs.get_clock_divider()==expected);
+  spi0_regs.clock = expected|0xffff0000U;
+  CHECK(spi0_regs.get_clock_divider()==expected);
+  spi0_regs.clock = 0U;
+  CHECK(spi0_regs.get_clock_divider()==65536);  
 }

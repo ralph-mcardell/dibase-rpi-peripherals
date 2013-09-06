@@ -88,8 +88,11 @@ namespace dibase { namespace rpi {
         , cs_lossi_dma_enable_mask=0x1000000U// CS register LoSSI DMA mode enable field bit-mask
         , cs_lossi_dma_enable_bit=24U // CS register LoSSI DMA mode enable field bit number
         , cs_lossi_long_mask=0x2000000U// CS register LoSSI long word field bit-mask
-        ,cs_lossi_long_bit = 25U      // CS register LoSSI long word field bit number
+        , cs_lossi_long_bit = 25U     // CS register LoSSI long word field bit number
         , cs_csline_polarity_base_mask=0x200000U// CS register CSPOL0 field bit-mask
+        , clk_divisor_min = 2U        // Effective minimum clock divisor value
+        , clk_divisor_max = 65536U    // Effective maximum clock divisor value, written as 0
+        , clk_divisor_mask = 0xffffU  // Low 16-bits of register only
         };
 
       public:
@@ -475,6 +478,7 @@ namespace dibase { namespace rpi {
                               | (enable<<cs_lossi_long_bit);
         }
 
+
       /// @brief Write 8-bit byte to transmit FIFO
       ///
       /// Note: Only for poll / interrupt modes. DMA mode uses a DMA write
@@ -497,6 +501,37 @@ namespace dibase { namespace rpi {
         std::uint8_t receive_fifo_read()
         {
           return fifo;
+        }
+
+
+      /// @brief Return currently set SPI0 clock divisor value
+      ///
+      /// Note: values will be even, in the range [0,65536]. A value of 
+      /// 65536 represented as a register value of 0
+      ///
+      /// @returns SPI0 clock register divisor (CDIV) 16-bit field value
+        register_t get_clock_divider()
+        {
+          register_t value{clock&clk_divisor_mask};
+          return value?value:static_cast<register_t>(clk_divisor_max);
+        }
+
+      /// @brief Set SPI0 clock divisor value. Divides the system APB clock.
+      ///
+      /// Note: Values should be even, in the range [2,65536]. Odd values will
+      /// be rounded down.
+      ///
+      /// @param[in] divisor  SPI0 APB clock divisor value [2,65536]
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as divisor out of range
+        bool  set_clock_divider(register_t divisor)
+        {
+          if (clk_divisor_min>divisor || divisor>clk_divisor_max)
+            {
+              return false;
+            }
+          clock = divisor&clk_divisor_mask;
+          return true;
         }
       };
     } // namespace internal closed

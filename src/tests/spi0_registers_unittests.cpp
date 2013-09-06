@@ -535,3 +535,27 @@ TEST_CASE( "Unit-tests/spi0_registers/0380/set_lossi_long_word"
   spi0_regs.set_lossi_long_word(false);
   CHECK(spi0_regs.control_and_status==0U);          // bit [25]==0, other bits 0
 }
+
+TEST_CASE( "Unit-tests/spi0_registers/0500/transmit_fifo_write"
+         , "transmit_fifo_write set correct byte data to "
+           "fifo register DATA field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  std::uint8_t expected{255};
+  spi0_regs.transmit_fifo_write(expected);
+  CHECK(spi0_regs.fifo==expected);  
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0510/receive_fifo_read"
+         , "receive_fifo_read obtains correct byte data from "
+           "fifo register DATA field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  std::uint8_t expected{255};
+  spi0_regs.fifo = expected;
+  CHECK(spi0_regs.receive_fifo_read()==expected);  
+}

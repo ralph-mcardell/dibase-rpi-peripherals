@@ -18,6 +18,7 @@
 # define DIBASE_RPI_PERIPHERALS_INTERNAL_SPI0_REGISTERS_H
 
 # include "peridef.h"
+# include <cstdint>
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -472,6 +473,30 @@ namespace dibase { namespace rpi {
         {
           control_and_status = (control_and_status & ~cs_lossi_long_mask)
                               | (enable<<cs_lossi_long_bit);
+        }
+
+      /// @brief Write 8-bit byte to transmit FIFO
+      ///
+      /// Note: Only for poll / interrupt modes. DMA mode uses a DMA write
+      /// channel to implicitly write data in 32-bit words to the SPI0 FIFO
+      /// register.
+      ///
+      /// @param[in] data   8-bit byte to write to transmit FIFO.
+        void transmit_fifo_write(std::uint8_t data)
+        {
+          fifo = data;
+        }
+
+      /// @brief Read 8-bit byte from receive FIFO
+      ///
+      /// Note: Only for poll / interrupt modes. DMA mode uses a DMA read
+      /// channel to implicitly read data in 32-bit words from the SPI0 FIFO
+      /// register.
+      ///
+      /// @returns 8-bit byte read from the receive FIFO
+        std::uint8_t receive_fifo_read()
+        {
+          return fifo;
         }
       };
     } // namespace internal closed

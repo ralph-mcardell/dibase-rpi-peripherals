@@ -93,6 +93,9 @@ namespace dibase { namespace rpi {
         , clk_divisor_min = 2U        // Effective minimum clock divisor value
         , clk_divisor_max = 65536U    // Effective maximum clock divisor value, written as 0
         , clk_divisor_mask = 0xffffU  // Low 16-bits of register only
+        , dlen_len_min = 0U           // Minimum DMA transfer byte length
+        , dlen_len_max = 0xffffU      // Maximum DMA transfer byte length
+        , dlen_len_mask = 0xffffU     // Low 16-bits of register only
         };
 
       public:
@@ -531,6 +534,36 @@ namespace dibase { namespace rpi {
               return false;
             }
           clock = divisor&clk_divisor_mask;
+          return true;
+        }
+
+
+      /// @brief Return currently set SPI0 DMA data length value (bytes).
+      ///
+      /// Note: Relevant in DMA mode only (get_dma_enable()==true). Value is
+      /// for both transmit and receive.
+      ///
+      /// @returns Number of _bytes_ to transfer in DMA operation [0,0xffff]
+        register_t get_dma_data_length()
+        {
+          return data_length&dlen_len_mask;
+        }
+
+      /// @brief Set the SPI0 DMA data length value (bytes).
+      ///
+      /// Note: Valid only in DMA mode (get_dma_enable()==true). Value is
+      /// for both transmit and receive.
+      ///
+      /// @param[in] len  SPI0 DMA data transfer length [0,65535]
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as divisor out of range
+        bool  set_dma_data_length(register_t len)
+        {
+          if (/*dlen_len_min>len ||*/ len>dlen_len_max)
+            {
+              return false;
+            }
+          data_length = len&dlen_len_mask;
           return true;
         }
       };

@@ -589,5 +589,38 @@ TEST_CASE( "Unit-tests/spi0_registers/0610/get_clock_divider"
   spi0_regs.clock = expected|0xffff0000U;
   CHECK(spi0_regs.get_clock_divider()==expected);
   spi0_regs.clock = 0U;
-  CHECK(spi0_regs.get_clock_divider()==65536);  
+  CHECK(spi0_regs.get_clock_divider()==65536U);  
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0700/set_dma_data_length"
+         , "set_dma_data_length sets correct value in the "
+           "data_length register CDIV field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{65535U};
+  spi0_regs.set_dma_data_length(expected);
+  CHECK(spi0_regs.data_length==expected);
+  expected = 0U;
+  spi0_regs.set_dma_data_length(expected);
+  CHECK(spi0_regs.data_length==expected);
+  CHECK_FALSE(spi0_regs.set_dma_data_length(65536U));
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0710/get_dma_data_length"
+         , "get_dma_data_length obtains correct value from the "
+           "data_length register CDIV field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{65535U};
+  spi0_regs.data_length = expected;
+  CHECK(spi0_regs.get_dma_data_length()==expected);
+  spi0_regs.data_length = expected|0xffff0000U;
+  CHECK(spi0_regs.get_dma_data_length()==expected);
+  expected = 0U;
+  spi0_regs.data_length = expected;
+  CHECK(spi0_regs.get_dma_data_length()==expected);
 }

@@ -99,6 +99,13 @@ namespace dibase { namespace rpi {
         , ltoh_toh_min = 1U           // Minimum LoSSI mode o/p hold delay
         , ltoh_toh_max = 15U          // Maximum LoSSI mode o/p hold delay
         , ltoh_toh_mask = 15U         // Low 4 bits of register only
+        , dc_tdreq_min = 0U           // Minimum DMA write request threshold
+        , dc_tdreq_max = 255U         // Maximum DMA write request threshold
+        , dc_tdreq_mask = 255U        // Low 8 bits of register only
+        , dc_tpanic_min = 0U          // Minimum DMA write panic threshold
+        , dc_tpanic_max = 255U        // Maximum DMA write panic threshold
+        , dc_tpanic_mask = 0xff00U    // Bits [15,8] of register only
+        , dc_tpanic_bit = 8U          // Start bit of write panic threshold field
         };
 
       public:
@@ -530,7 +537,7 @@ namespace dibase { namespace rpi {
       /// @param[in] divisor  SPI0 APB clock divisor value [2,65536]
       /// @returns  true if operation performed,
       ///           false if operation not performed as divisor out of range
-        bool  set_clock_divider(register_t divisor)
+        bool set_clock_divider(register_t divisor)
         {
           if (clk_divisor_min>divisor || divisor>clk_divisor_max)
             {
@@ -560,7 +567,7 @@ namespace dibase { namespace rpi {
       /// @param[in] len  SPI0 DMA data transfer length [0,65535]
       /// @returns  true if operation performed,
       ///           false if operation not performed as length out of range
-        bool  set_dma_data_length(register_t len)
+        bool set_dma_data_length(register_t len)
         {
           if (/*dlen_len_min>len ||*/ len>dlen_len_max)
             {
@@ -590,13 +597,67 @@ namespace dibase { namespace rpi {
       /// @param[in] delay  SPI0 LoSSI mode output hold delay [1,15] APB clocks
       /// @returns  true if operation performed,
       ///           false if operation not performed as delay out of range
-        bool  set_lossi_output_hold_delay(register_t delay)
+        bool set_lossi_output_hold_delay(register_t delay)
         {
           if (ltoh_toh_min>delay || delay>ltoh_toh_max)
             {
               return false;
             }
           lossi_mode_toh = delay&ltoh_toh_mask;
+          return true;
+        }
+
+
+      /// @brief Return currently set SPI0 DMA write request threshold value
+      ///
+      /// @returns  Transmit FIFO level at or below which a DREQ signal is 
+      ///           issued to the transmit DMA engine
+        register_t get_dma_write_request_threshold()
+        {
+          return dma_controls&dc_tdreq_mask;
+        }
+
+      /// @brief Set SPI0 DMA write request threshold value
+      ///
+      /// @param[in] threshold  Transmit FIFO level at or below which a DREQ
+      ///                       signal is  issued to the transmit DMA engine
+      ///                       [0..255]
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as threshold out of range
+        bool set_dma_write_request_threshold(register_t threshold)
+        {
+          if (/*dc_tdreq_min>threshold ||*/ threshold>dc_tdreq_max)
+            {
+              return false;
+            }
+          dma_controls = (dma_controls&~dc_tdreq_mask)|threshold;
+          return true;
+        }
+
+      /// @brief Return currently set SPI0 DMA write panic threshold value
+      ///
+      /// @returns  Transmit FIFO level at or below which a Panic signal is 
+      ///           issued to the transmit DMA engine
+        register_t get_dma_write_panic_threshold()
+        {
+          return (dma_controls&dc_tpanic_mask)>>dc_tpanic_bit;
+        }
+
+      /// @brief Set SPI0 DMA write panic threshold value
+      ///
+      /// @param[in] threshold  Transmit FIFO level at or below which a Panic
+      ///                       signal is  issued to the transmit DMA engine
+      ///                       [0..255]
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as threshold out of range
+        bool set_dma_write_panic_threshold(register_t threshold)
+        {
+          if (/*dc_tpanic_min>threshold ||*/ threshold>dc_tpanic_max)
+            {
+              return false;
+            }
+          dma_controls =  (dma_controls&~dc_tpanic_mask)
+                        | (threshold<<dc_tpanic_bit);
           return true;
         }
       };

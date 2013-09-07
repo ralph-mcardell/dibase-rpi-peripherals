@@ -658,3 +658,75 @@ TEST_CASE( "Unit-tests/spi0_registers/0810/get_lossi_output_hold_delay"
   spi0_regs.lossi_mode_toh = expected;
   CHECK(spi0_regs.get_lossi_output_hold_delay()==expected);
 }
+
+TEST_CASE( "Unit-tests/spi0_registers/0900/set_dma_write_request_threshold"
+         , "set_dma_write_request_threshold sets correct value in the "
+           "dma_controls register TDREQ field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{255U};
+  spi0_regs.set_dma_write_request_threshold(expected);
+  CHECK(spi0_regs.dma_controls==expected);
+  expected = 0U;
+  spi0_regs.set_dma_write_request_threshold(expected);
+  CHECK(spi0_regs.dma_controls==expected);
+  spi0_regs.dma_controls = 0xffffff00U;
+  spi0_regs.set_dma_write_request_threshold(0x69U);
+  CHECK(spi0_regs.dma_controls==0xffffff69U);
+  CHECK_FALSE(spi0_regs.set_dma_write_request_threshold(256U));
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0910/get_dma_write_request_threshold"
+         , "get_dma_write_request_threshold obtains correct value from the "
+           "dma_controls register TDREQ field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{255U};
+  spi0_regs.dma_controls = expected;
+  CHECK(spi0_regs.get_dma_write_request_threshold()==expected);
+  spi0_regs.dma_controls = expected|0xffffff00U;
+  CHECK(spi0_regs.get_dma_write_request_threshold()==expected);
+  expected = 0U;
+  spi0_regs.dma_controls = expected;
+  CHECK(spi0_regs.get_dma_write_request_threshold()==expected);
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0920/set_dma_write_panic_threshold"
+         , "set_dma_write_panic_threshold sets correct value in the "
+           "dma_controls register TPANIC field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{255U};
+  spi0_regs.set_dma_write_panic_threshold(expected);
+  CHECK(spi0_regs.dma_controls==(expected<<8U));
+  expected = 0U;
+  spi0_regs.set_dma_write_panic_threshold(expected);
+  CHECK(spi0_regs.dma_controls==expected);
+  spi0_regs.dma_controls = 0xffff00ffU;
+  spi0_regs.set_dma_write_panic_threshold(0x69U);
+  CHECK(spi0_regs.dma_controls==0xffff69ffU);
+  CHECK_FALSE(spi0_regs.set_dma_write_panic_threshold(256U));
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0930/get_dma_write_panic_threshold"
+         , "get_dma_write_panic_threshold obtains correct value from the "
+           "dma_controls register TPANIC field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{255U};
+  spi0_regs.dma_controls = expected<<8U;
+  CHECK(spi0_regs.get_dma_write_panic_threshold()==expected);
+  spi0_regs.dma_controls = (expected<<8U)|0xffff00ffU;
+  CHECK(spi0_regs.get_dma_write_panic_threshold()==expected);
+  expected = 0U;
+  spi0_regs.dma_controls = expected;
+  CHECK(spi0_regs.get_dma_write_panic_threshold()==expected);
+}

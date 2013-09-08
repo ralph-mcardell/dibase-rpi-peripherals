@@ -730,3 +730,75 @@ TEST_CASE( "Unit-tests/spi0_registers/0930/get_dma_write_panic_threshold"
   spi0_regs.dma_controls = expected;
   CHECK(spi0_regs.get_dma_write_panic_threshold()==expected);
 }
+
+TEST_CASE( "Unit-tests/spi0_registers/0950/set_dma_read_request_threshold"
+         , "set_dma_read_request_threshold sets correct value in the "
+           "dma_controls register RDREQ field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{255U};
+  spi0_regs.set_dma_read_request_threshold(expected);
+  CHECK(spi0_regs.dma_controls==(expected<<16U));
+  expected = 0U;
+  spi0_regs.set_dma_read_request_threshold(expected);
+  CHECK(spi0_regs.dma_controls==expected);
+  spi0_regs.dma_controls = 0xff00ffffU;
+  spi0_regs.set_dma_read_request_threshold(0x69U);
+  CHECK(spi0_regs.dma_controls==0xff69ffffU);
+  CHECK_FALSE(spi0_regs.set_dma_read_request_threshold(256U));
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0960/get_dma_read_request_threshold"
+         , "get_dma_read_request_threshold obtains correct value from the "
+           "dma_controls register RDREQ field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{255U};
+  spi0_regs.dma_controls = expected<<16U;
+  CHECK(spi0_regs.get_dma_read_request_threshold()==expected);
+  spi0_regs.dma_controls = (expected<<16U)|0xff00ffffU;
+  CHECK(spi0_regs.get_dma_read_request_threshold()==expected);
+  expected = 0U;
+  spi0_regs.dma_controls = expected;
+  CHECK(spi0_regs.get_dma_read_request_threshold()==expected);
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0970/set_dma_read_panic_threshold"
+         , "set_dma_read_panic_threshold sets correct value in the "
+           "dma_controls register RPANIC field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{255U};
+  spi0_regs.set_dma_read_panic_threshold(expected);
+  CHECK(spi0_regs.dma_controls==(expected<<24U));
+  expected = 0U;
+  spi0_regs.set_dma_read_panic_threshold(expected);
+  CHECK(spi0_regs.dma_controls==expected);
+  spi0_regs.dma_controls = 0x00ffffffU;
+  spi0_regs.set_dma_read_panic_threshold(0x69U);
+  CHECK(spi0_regs.dma_controls==0x69ffffffU);
+  CHECK_FALSE(spi0_regs.set_dma_read_panic_threshold(256U));
+}
+
+TEST_CASE( "Unit-tests/spi0_registers/0980/get_dma_read_panic_threshold"
+         , "get_dma_read_panic_threshold obtains correct value from the "
+           "dma_controls register RPANIC field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  dibase::rpi::peripherals::internal::register_t expected{255U};
+  spi0_regs.dma_controls = expected<<24U;
+  CHECK(spi0_regs.get_dma_read_panic_threshold()==expected);
+  spi0_regs.dma_controls = (expected<<24U)|0x00ffffffU;
+  CHECK(spi0_regs.get_dma_read_panic_threshold()==expected);
+  expected = 0U;
+  spi0_regs.dma_controls = expected;
+  CHECK(spi0_regs.get_dma_read_panic_threshold()==expected);
+}

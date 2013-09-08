@@ -106,6 +106,14 @@ namespace dibase { namespace rpi {
         , dc_tpanic_max = 255U        // Maximum DMA write panic threshold
         , dc_tpanic_mask = 0xff00U    // Bits [15,8] of register only
         , dc_tpanic_bit = 8U          // Start bit of write panic threshold field
+        , dc_rdreq_min = 0U           // Minimum DMA read request threshold
+        , dc_rdreq_max = 255U         // Maximum DMA read request threshold
+        , dc_rdreq_mask = 0xff0000U   // Bits [23:16] of register only
+        , dc_rdreq_bit = 16U          // Start bit of read request threshold field
+        , dc_rpanic_min = 0U          // Minimum DMA read panic threshold
+        , dc_rpanic_max = 255U        // Maximum DMA read panic threshold
+        , dc_rpanic_mask = 0xff000000U// Upper 8 bits of register only
+        , dc_rpanic_bit = 24U         // Start bit of read panic threshold field
         };
 
       public:
@@ -620,7 +628,7 @@ namespace dibase { namespace rpi {
       /// @brief Set SPI0 DMA write request threshold value
       ///
       /// @param[in] threshold  Transmit FIFO level at or below which a DREQ
-      ///                       signal is  issued to the transmit DMA engine
+      ///                       signal is issued to the transmit DMA engine
       ///                       [0..255]
       /// @returns  true if operation performed,
       ///           false if operation not performed as threshold out of range
@@ -646,7 +654,7 @@ namespace dibase { namespace rpi {
       /// @brief Set SPI0 DMA write panic threshold value
       ///
       /// @param[in] threshold  Transmit FIFO level at or below which a Panic
-      ///                       signal is  issued to the transmit DMA engine
+      ///                       signal is issued to the transmit DMA engine
       ///                       [0..255]
       /// @returns  true if operation performed,
       ///           false if operation not performed as threshold out of range
@@ -658,6 +666,60 @@ namespace dibase { namespace rpi {
             }
           dma_controls =  (dma_controls&~dc_tpanic_mask)
                         | (threshold<<dc_tpanic_bit);
+          return true;
+        }
+
+      /// @brief Return currently set SPI0 DMA read request threshold value
+      ///
+      /// @returns  Receive FIFO level at or below which a DREQ signal is 
+      ///           issued to the receive DMA engine
+        register_t get_dma_read_request_threshold()
+        {
+          return (dma_controls&dc_rdreq_mask)>>dc_rdreq_bit;
+        }
+
+      /// @brief Set SPI0 DMA read request threshold value
+      ///
+      /// @param[in] threshold  Receive FIFO level at or below which a DREQ
+      ///                       signal is issued to the receive DMA engine
+      ///                       [0..255]
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as threshold out of range
+        bool set_dma_read_request_threshold(register_t threshold)
+        {
+          if (/*dc_rdreq_min>threshold ||*/ threshold>dc_rdreq_max)
+            {
+              return false;
+            }
+          dma_controls =  (dma_controls&~dc_rdreq_mask)
+                        | (threshold<<dc_rdreq_bit);
+          return true;
+        }
+
+      /// @brief Return currently set SPI0 DMA read panic threshold value
+      ///
+      /// @returns  Receive FIFO level at or below which a Panic signal is 
+      ///           issued to the receive DMA engine
+        register_t get_dma_read_panic_threshold()
+        {
+          return (dma_controls&dc_rpanic_mask)>>dc_rpanic_bit;
+        }
+
+      /// @brief Set SPI0 DMA read panic threshold value
+      ///
+      /// @param[in] threshold  Receive FIFO level at or below which a Panic
+      ///                       signal is issued to the receive DMA engine
+      ///                       [0..255]
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as threshold out of range
+        bool set_dma_read_panic_threshold(register_t threshold)
+        {
+          if (/*dc_rpanic_min>threshold ||*/ threshold>dc_rpanic_max)
+            {
+              return false;
+            }
+          dma_controls =  (dma_controls&~dc_rpanic_mask)
+                        | (threshold<<dc_rpanic_bit);
           return true;
         }
       };

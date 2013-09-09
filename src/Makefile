@@ -1,4 +1,4 @@
-# rpi-periphals static library makefile
+# rpi-peripherals static library makefile
 # Copyright (c) Dibase Limited 2012
 # Author: Ralph E. McArdell
 
@@ -15,6 +15,7 @@ SRC_FILES = phymem_ptr.cpp\
             gpio_alt_fn.cpp\
             clock_ctrl.cpp\
             pwm_ctrl.cpp\
+            spi0_ctrl.cpp\
             pin_id.cpp\
             rpi_info.cpp\
             pin_alloc.cpp\

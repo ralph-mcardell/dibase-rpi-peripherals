@@ -15,9 +15,6 @@ namespace dibase { namespace rpi {
   namespace peripherals
   { namespace internal
     {
-    /// @brief Number of channels supported by the BCM2835 SPI0 peripheral
-      constexpr std::size_t number_of_spi0_channels{2};
-
     /// @brief SPI0 control type. There is only 1 (yes it's a singleton!)
     ///
     /// Maps BCM2708/2835 SPI0 registers into the requisite physical

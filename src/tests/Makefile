@@ -37,7 +37,8 @@ UNITTEST_SRC_FILE = gpio_registers_unittests.cpp\
                     clockdefs_unittests.cpp\
                     clock_parameters_unittests.cpp\
                     simple_allocator_unittests.cpp\
-                    pwm_pin_unittests.cpp
+                    pwm_pin_unittests.cpp\
+                    spi0_pins_unittests.cpp
 ALL_SRC_FILES = $(COMMON_SRC_FILES) $(INTERACTIVETEST_SRC_FILES) \
           $(PLATTEST_SRC_FILES) $(UNITTEST_SRC_FILE)
 

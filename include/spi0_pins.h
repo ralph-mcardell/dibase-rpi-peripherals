@@ -37,25 +37,49 @@
 namespace dibase { namespace rpi {
   namespace peripherals
   {
-  constexpr pin_id_int_t spi0_no_miso{~0U};
-  
-  template  < pin_id_int_t CE0
-            , pin_id_int_t CE1
-            , pin_id_int_t SCLK
-            , pin_id_int_t MOSI
-            , pin_id_int_t MISO=spi0_no_miso
-            >
-  struct spi0_pin_set
-  {
-    constexpr pin_id_int_t ce0() { return CE0; }
-    constexpr pin_id_int_t ce1() { return CE1; }
-    constexpr pin_id_int_t sclk() { return SCLK; }
-    constexpr pin_id_int_t mosi() { return MOSI; }
-    constexpr pin_id_int_t miso() { return MISO; }
-  };
+  /// @brief GPIO pin id used to indicate unused or not required pin
+  ///
+  /// Note that GPIO pin 53 has no useful alternative special functions
+    constexpr pin_id_int_t spi0_pin_not_used{53U};
 
-  typedef spi0_pin_set<8, 7, 11, 10, 9>   rpi_p1_spi0_full_pin_set;
-  typedef spi0_pin_set<8, 7, 11, 10>      rpi_p1_spi0_2_wire_only_pin_set;
+  /// @brief Simple constexpr type template to hold SPI0 pin sets
+  /// @tparam CE0   SPI0 CE0 (chip enable line 0) GPIO pin number
+  /// @tparam CE1   SPI0 CE1 (chip enable line 1) GPIO pin number
+  /// @tparam SCLK  SPIO SCLK (SPI clock) GPIO pin number
+  /// @tparam MOSI  SPIO MOSI (SPI master out slave in) GPIO pin number
+  /// @tparam MISO  SPIO MISO (SPI master in slave out) GPIO pin number
+  ///               Optional, defaults to spi0_pin_not_used indicating no
+  ///               MISO pin in the pin set. MISO is not used by 2-wire modes.
+    template  < pin_id_int_t CE0
+              , pin_id_int_t CE1
+              , pin_id_int_t SCLK
+              , pin_id_int_t MOSI
+              , pin_id_int_t MISO=spi0_pin_not_used
+              >
+    struct spi0_pin_set
+    {
+    /// @returns Specialisation type's CE0 parameter value
+      constexpr pin_id_int_t ce0() { return CE0; }
+
+    /// @returns Specialisation type's CE1 parameter value
+      constexpr pin_id_int_t ce1() { return CE1; }
+
+    /// @returns Specialisation type's SCLK parameter value
+      constexpr pin_id_int_t sclk() { return SCLK; }
+
+    /// @returns Specialisation type's MOSI parameter value
+      constexpr pin_id_int_t mosi() { return MOSI; }
+
+    /// @returns Specialisation type's MISO parameter value
+      constexpr pin_id_int_t miso() { return MISO; }
+    };
+
+  /// @brief Full 5-pin SPI0 pin set provided by Raspberry Pi's P1 connector
+    constexpr spi0_pin_set<8U, 7U, 11U, 10U, 9U>  rpi_p1_spi0_full_pin_set;
+
+  /// @brief 2-wire mode only 4-pin SPI0 pin set provided by Raspberry Pi's P1
+  /// connector
+    constexpr spi0_pin_set<8U, 7U, 11U, 10U>    rpi_p1_spi0_2_wire_only_pin_set;
   
   /// @brief Type representing a conversation between the SPI0 master device
   /// and an SPI slave device.
@@ -86,14 +110,43 @@ namespace dibase { namespace rpi {
   /// spi0_conversation objects (one at a time).
     class spi0_pins
     {
-      constexpr static unsigned number_of_pins = 5;
+      constexpr static unsigned number_of_pins = 5U;
 
-      spi0_conversation const *             open_conversation;
-      std::array<pin_id_int_t, number_of_pins>    pins;
+      spi0_conversation const *                 open_conversation;
+      std::array<pin_id_int_t, number_of_pins>  pins;
 
-      void construct(pin_id ce0, pin_id ce1, pin_id sclk, pin_id mosi, pin_id_int_t miso);
+      void construct
+      ( pin_id ce0
+      , pin_id ce1
+      , pin_id sclk
+      , pin_id mosi
+      , pin_id miso
+      );
 
     public:
+    /// @brief Construct a spi0_pins object from a spi0_pin_set specialisation
+    ///
+    /// @post The SPI0 peripheral is marked as in use
+    /// @post The pins in the spi0_pin_set are marked as in use (note: does
+    ///       not include a pin for the MISO SPI0 function if it has a value of
+    ///       spi0_pin_not_used.
+    /// @post The object has no associated spi0_conversation.
+    ///
+    /// @tparam CE0   spi0_pin_set CE0 template parameter
+    /// @tparam CE1   spi0_pin_set CE1 template parameter
+    /// @tparam SCLK  spi0_pin_set SCLK template parameter
+    /// @tparam MOSI  spi0_pin_set MOSI template parameter
+    /// @tparam MISO  spi0_pin_set MISO template parameter
+    ///
+    /// @param ps   spi0_pin_set specialisation specifying the set of GPIO pins
+    ///             to use for the various SPI0 functions.
+    ///
+    /// @throws std::invalid_argument if any requested pin does not support the
+    ///         required special function.
+    /// @throws std::range_error if any pin supports the same SPI0 function
+    ///         by more than one alternative function (should not be possible).
+    /// @throws bad_peripheral_alloc if either any of the pins or the SPI0
+    ///         peripheral are already in use.
       template  < pin_id_int_t CE0
                 , pin_id_int_t CE1
                 , pin_id_int_t SCLK
@@ -103,10 +156,15 @@ namespace dibase { namespace rpi {
       explicit spi0_pins(spi0_pin_set<CE0,CE1,SCLK,MOSI,MISO> ps)
       : open_conversation{nullptr}
       {
-        construct(ps.ce0(),ps.ce1(),ps.sclk(),ps.mosi(), ps.miso());
+        construct ( pin_id(ps.ce0()), pin_id(ps.ce1())
+                  , pin_id(ps.sclk()), pin_id(ps.mosi()), pin_id(ps.miso())
+                  );
       }
 
     /// @brief Destroy: close any SPI0 conversation and de-allocate GPIO pins.
+    /// @post Any open spi0_conversation is closed.
+    /// @post The pins allocated during construction are marked as free.
+    /// @post The SPI0 peripheral is marked as free.
       ~spi0_pins();
 
       spi0_pins(spi0_pins const &) = delete;
@@ -117,6 +175,15 @@ namespace dibase { namespace rpi {
     /// @brief Query whether there is an open SPI0 conversation
     /// @returns true if there is an open SPI0 conversation, false if not.
       bool has_conversation() const;
+
+    /// @brief Query whether SPI standard 3-wire protocol is supported
+    ///
+    /// Note that if created with an spi_pin_set specialisation that did not
+    /// include a value for a MISO  p[in to allocate and use then only 2
+    /// wire protocols (SPI bidirectional and LoSSI modes) are supported.
+    /// @returns  true if standard 3-wire SPI supported,
+    ///           false if only 2-wire protocols supported
+      bool has_std_mode_support() const;
     };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

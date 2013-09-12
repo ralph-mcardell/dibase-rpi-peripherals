@@ -209,3 +209,12 @@ TEST_CASE( "Platform-tests/spi0_pins/0040/create bad: pins in use"
   gpio_ctrl::instance().alloc.deallocate(spi_miso);
   REQUIRE_FALSE(gpio_ctrl::instance().alloc.is_in_use(spi_miso));
 }
+
+
+TEST_CASE( "Platform-tests/spi0_conversation/0000/create & destroy good"
+         , "Creating spi0_conversation from a good set of parameters leaves "
+           "object in the expected state"
+         )
+{
+  spi0_conversation sc(spi0_slave::chip1, megahertz(1));
+}

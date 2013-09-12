@@ -33,6 +33,7 @@
 # include "pin_id.h"
 # include "clockdefs.h"
 # include <array>
+# include <cstdint>
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -184,6 +185,123 @@ namespace dibase { namespace rpi {
     /// @returns  true if standard 3-wire SPI supported,
     ///           false if only 2-wire protocols supported
       bool has_std_mode_support() const;
+    };
+
+  /// @brief Enumeration of valid SPI0 slave devices chip numbers
+  /// 
+  /// Note that only 2 devices are directly supported. Although the field is
+  /// 2 bits in size value 0 de-selects all (both) devices and 3 (11 binary)
+  /// is marked as 'reserved'.
+    enum class spi0_slave
+    { chip1 = 1U    ///< Device addressed by Chip Select = 1
+    , chip2 = 2U    ///< Device addressed by Chip Select = 2
+    };
+
+  /// @brief Enumeration of SPI0 communication modes
+    enum class spi0_mode
+    { standard      ///< Standard 3-wire SPI mode - uses MOSI _and_ MISO
+    , bidirectional ///< 2-wire SPI bidirectional mode - does not use MISO
+    , lossi         ///< 2-wire LoSSI mode - does not use MISO
+    };
+
+  /// @brief Enumeration of SPI0 chip select polarity options
+    enum class spi0_cs_polarity
+    { low   ///< Active (asserted) low
+    , high  ///< Active (asserted) high
+    };
+
+  /// @brief Enumeration of SPI0 clock polarity options
+    enum class spi0_clk_polarity
+    { low   ///< Rest state of clock low
+    , high  ///< Rest state of clock high
+    };
+
+  /// @brief Enumeration of SPI0 clock phase options.
+    enum class spi0_clk_phase
+    { middle  ///< Clock transitions at middle of data bit
+    , start   ///< Clock transitions at start of data bit
+    };
+
+  /// @brief Hold a polled conversation with an SPI0 slave device
+  ///
+  /// spi0_conversation specialisations contain the context of the SPI0
+  /// peripheral SPI master <-> SPI slave device that defines how to perform
+  /// raw communication with the slave device. The context includes:
+  ///
+  /// - the slave's chip select value (1 or 2)
+  /// - the required SPI clock frequency
+  /// - the clock polarity and phase (defaults to non-inverted, start of clock)
+  /// - the chip select polarity (defaults to active low)
+  /// - the communication mode (standard 3-wire SPI, bidirectional 2-wire SPI, 
+  ///   or LoSSI 2-wire) (defaults to standard 3-wire SPI)
+  /// - the APB core frequency - which is fixed for a specific board and
+  ///   defaults to rpi_apb_core_frequency.
+  ///
+  /// An spi0_conversation's communication context is only applied when the
+  /// conversation object is opened, at which point is must be associated with
+  /// an spi0_pins object. Only one conversation object may be open
+  /// at one time. When closed no slave device chips are selected (the chip
+  /// select field is set to 0) and the spi0_pins object association removed.
+  ///
+  /// When first created the conversation object is in the closed state. When
+  /// destroyed the conversation object is closed. If the associated spi0_pins
+  /// object is destroyed then a currently open spi0_conversation object will
+  /// be closed.
+  ///
+  /// This scheme allows many conversation objects to exist - more than the two
+  /// the SPI slave addressing scheme would imply allowing more slave devices
+  /// to be supported (assuming the additional hardware is present to allow
+  /// such extensions).
+    class spi0_conversation
+    {
+      std::uint32_t       cs_reg;
+      std::uint32_t       clk_reg;
+      std::uint32_t       ltoh_reg;
+      spi0_mode           mode;
+      spi0_pins const *   pins;
+
+    public:
+    /// @brief Construct from conversation context parameters
+    ///
+    /// The context defines which slave device to communicate with and how to 
+    /// do so. Most of the parameters have defaults.
+    ///
+    /// @post Object is in a closed state.
+    ///
+    /// @param cs     Chip select - which of the two chip enable lines should
+    ///               be asserted during an open conversation.
+    /// @param f      Required frequency of the SPI clock SCLK while
+    ///               communicating.
+    /// @param mode   Communications mode. Defaults to spi_std: standard
+    ///               SPI 3-wire mode.
+    /// @param cspol  Chip select polarity. Defaults to chip select lines
+    ///               asserted when low.
+    /// @param cpol   Clock polarity. Defaults to rest state low
+    /// @param cpha   Clock phase. Defaults to clock transition in middle of
+    ///               data bit.
+    /// @param ltoh   LoSSI mode hold delay (in APB core clock ticks) [1,15]
+    ///               Only relevant for mode==spi0_mode::lossi. Defaults to 1.
+    ///
+    /// @param fc   APB core frequency \ref frequency type. Should be fixed
+    ///             for a given board. Defaults to rpi_apb_core_frequency.
+      spi0_conversation
+      ( spi0_slave cs
+      , hertz f
+      , spi0_mode         mode  = spi0_mode::standard
+      , spi0_cs_polarity  cspol = spi0_cs_polarity::low
+      , spi0_clk_polarity cpol  = spi0_clk_polarity::low
+      , spi0_clk_phase    cpha  = spi0_clk_phase::middle
+      , std::uint32_t     ltoh  = 1U
+      , hertz             fc    = rpi_apb_core_frequency
+      );
+
+    /// @brief Destroy: close if conversation open.
+      ~spi0_conversation();
+
+      spi0_conversation(spi0_conversation const &) = delete;
+      spi0_conversation& operator=(spi0_conversation const &) = delete;
+      spi0_conversation(spi0_conversation &&) = delete;
+      spi0_conversation& operator=(spi0_conversation &&) = delete;
     };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

@@ -143,5 +143,66 @@ namespace dibase { namespace rpi {
           ++idx;
         }
     }
+
+    spi0_conversation::~spi0_conversation()
+    {
+    }
+
+    spi0_conversation::spi0_conversation
+    ( spi0_slave cs
+    , hertz f
+    , spi0_mode mode
+    , spi0_cs_polarity cspol
+    , spi0_clk_polarity cpol
+    , spi0_clk_phase cpha
+    , std::uint32_t ltoh
+    , hertz fc
+    )
+    : mode{mode}
+    , pins{nullptr}
+    {
+      using internal::spi0_registers;
+      spi0_registers ctx_builder;
+      if (!ctx_builder.set_chip_select(static_cast<register_t>(cs)))
+        {
+          throw std::invalid_argument("spi0_conversation::spi0_conversation: "
+                                      "Bad cs parameter value."
+                                     );
+        }
+      ctx_builder.set_lossi_enable(mode==spi0_mode::lossi);
+      ctx_builder.set_chip_select_polarity(cspol==spi0_cs_polarity::high);
+      ctx_builder.set_chip_select_polarity( static_cast<register_t>(cs)
+                                          , cspol==spi0_cs_polarity::high
+                                          );
+      ctx_builder.set_clock_polarity(cpol==spi0_clk_polarity::high);
+      ctx_builder.set_clock_phase(cpha==spi0_clk_phase::start);
+      if (!ctx_builder.set_lossi_output_hold_delay(ltoh))
+        {
+          throw std::out_of_range( "spi0_conversation::spi0_conversation: "
+                                   "ltoh parameter not in the range[1,15]."
+                                 );
+        }
+       if (!ctx_builder.set_clock_divider(fc.count()/f.count()))
+        {
+          throw std::out_of_range( "spi0_conversation::spi0_conversation: "
+                                   "f parameter not range[fc/2,fc/65536]."
+                                 );
+        }
+   // Set fixed control settings or settings that may change during
+   // conversation:
+      ctx_builder.set_transfer_active(false);
+      ctx_builder.set_dma_enable(false);
+      ctx_builder.set_interrupt_on_done(false);
+      ctx_builder.set_interrupt_on_rxr(false);
+      ctx_builder.set_auto_deassert_chip_select(false);
+      ctx_builder.set_read_enable(false);
+      ctx_builder.set_lossi_dma_enable(false);
+      ctx_builder.set_lossi_long_word(false);
+  // Build context, copy across to instance member context register copies.
+      cs_reg = ctx_builder.control_and_status;
+      clk_reg = ctx_builder.clock;
+      ltoh_reg = ctx_builder.lossi_mode_toh;
+    }
+
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

@@ -257,6 +257,10 @@ namespace dibase { namespace rpi {
 
   /// @brief Raspberry Pi 19.2MHz fixed oscillator external clock source.
     constexpr fixed_oscillator_clock_source rpi_oscillator{kilohertz{19200}};
+
+  /// @brief Raspberry Pi 250MHz APB core clock frequency
+    constexpr hertz rpi_apb_core_frequency(megahertz(250));
+
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed
 #endif // DIBASE_RPI_PERIPHERALS_CLOCKDEFS_H

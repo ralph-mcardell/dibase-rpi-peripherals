@@ -125,6 +125,14 @@ TEST_CASE( "Unit-tests/frequency/0040/create from different frequency type"
   CHECK(hertz(f_megahertz(800.123456)).count()==800123456);
 }
 
+TEST_CASE( "Unit-tests/frequency/0040/rpi_apb_core_frequency_type is 250MHz"
+         , "rpi_apb_core_frequency_type is in units of 250MHz"
+         )
+{
+  CHECK(megahertz(rpi_apb_core_frequency).count()==250);
+  CHECK(hertz(rpi_apb_core_frequency).count()==250000000);
+}
+
 TEST_CASE( "Unit-tests/clock_frequency/0000/create with default filter"
          , "clock_frequency can be created from just a frequency with the "
            "filter type defaulting to none."

@@ -86,6 +86,12 @@ namespace dibase { namespace rpi {
   /// and an SPI slave device.
     class spi0_conversation;
 
+  /// @brief Enumeration of SPI0 chip select polarity options
+    enum class spi0_cs_polarity
+    { low   ///< Active (asserted) low
+    , high  ///< Active (asserted) high
+    };
+
   /// @brief Use a GPIO pins for use with the SPI0 peripheral
   ///
   /// The control lines for the SPI0 serial interface peripheral may be
@@ -122,16 +128,21 @@ namespace dibase { namespace rpi {
       , pin_id sclk
       , pin_id mosi
       , pin_id miso
+      , spi0_cs_polarity  cspol1
+      , spi0_cs_polarity  cspol2
       );
 
     public:
     /// @brief Construct a spi0_pins object from a spi0_pin_set specialisation
+    /// and slave chip select assertion polarity values.
     ///
     /// @post The SPI0 peripheral is marked as in use
     /// @post The pins in the spi0_pin_set are marked as in use (note: does
     ///       not include a pin for the MISO SPI0 function if it has a value of
     ///       spi0_pin_not_used.
     /// @post The object has no associated spi0_conversation.
+    /// @post The SPI0 peripheral CS register has chip select polarity bits
+    ///       set appropriately for the cspol1, cspol2 parameter values. 
     ///
     /// @tparam CE0   spi0_pin_set CE0 template parameter
     /// @tparam CE1   spi0_pin_set CE1 template parameter
@@ -139,8 +150,12 @@ namespace dibase { namespace rpi {
     /// @tparam MOSI  spi0_pin_set MOSI template parameter
     /// @tparam MISO  spi0_pin_set MISO template parameter
     ///
-    /// @param ps   spi0_pin_set specialisation specifying the set of GPIO pins
-    ///             to use for the various SPI0 functions.
+    /// @param ps     spi0_pin_set specialisation specifying the set of
+    ///               GPIO pins to use for the various SPI0 functions.
+    /// @param cspol0 Chip 0 select polarity. Defaults to chip select
+    ///               line asserted when low (CE0 is low).
+    /// @param cspol1 Chip 1 select polarity. Defaults to chip select
+    ///               line asserted when low (CE1 is low).
     ///
     /// @throws std::invalid_argument if any requested pin does not support the
     ///         required special function.
@@ -154,11 +169,16 @@ namespace dibase { namespace rpi {
                 , pin_id_int_t MOSI
                 , pin_id_int_t MISO
                 >
-      explicit spi0_pins(spi0_pin_set<CE0,CE1,SCLK,MOSI,MISO> ps)
+      explicit spi0_pins
+      ( spi0_pin_set<CE0,CE1,SCLK,MOSI,MISO> ps
+      , spi0_cs_polarity  cspol1 = spi0_cs_polarity::low
+      , spi0_cs_polarity  cspol2 = spi0_cs_polarity::low
+      )
       : open_conversation{nullptr}
       {
         construct ( pin_id(ps.ce0()), pin_id(ps.ce1())
                   , pin_id(ps.sclk()), pin_id(ps.mosi()), pin_id(ps.miso())
+                  , cspol1, cspol2
                   );
       }
 
@@ -193,8 +213,8 @@ namespace dibase { namespace rpi {
   /// 2 bits in size value 0 de-selects all (both) devices and 3 (11 binary)
   /// is marked as 'reserved'.
     enum class spi0_slave
-    { chip1 = 1U    ///< Device addressed by Chip Select = 1
-    , chip2 = 2U    ///< Device addressed by Chip Select = 2
+    { chip0 = 0U  ///< Device addressed by CS = 0 (assert CE0, de-assert CE1)
+    , chip1 = 1U  ///< Device addressed by CS = 1 (de-assert CE0, assert CE1)
     };
 
   /// @brief Enumeration of SPI0 communication modes
@@ -202,12 +222,6 @@ namespace dibase { namespace rpi {
     { standard      ///< Standard 3-wire SPI mode - uses MOSI _and_ MISO
     , bidirectional ///< 2-wire SPI bidirectional mode - does not use MISO
     , lossi         ///< 2-wire LoSSI mode - does not use MISO
-    };
-
-  /// @brief Enumeration of SPI0 chip select polarity options
-    enum class spi0_cs_polarity
-    { low   ///< Active (asserted) low
-    , high  ///< Active (asserted) high
     };
 
   /// @brief Enumeration of SPI0 clock polarity options
@@ -231,7 +245,6 @@ namespace dibase { namespace rpi {
   /// - the slave's chip select value (1 or 2)
   /// - the required SPI clock frequency
   /// - the clock polarity and phase (defaults to non-inverted, start of clock)
-  /// - the chip select polarity (defaults to active low)
   /// - the communication mode (standard 3-wire SPI, bidirectional 2-wire SPI, 
   ///   or LoSSI 2-wire) (defaults to standard 3-wire SPI)
   /// - the APB core frequency - which is fixed for a specific board and
@@ -274,8 +287,6 @@ namespace dibase { namespace rpi {
     ///               communicating.
     /// @param mode   Communications mode. Defaults to spi_std: standard
     ///               SPI 3-wire mode.
-    /// @param cspol  Chip select polarity. Defaults to chip select lines
-    ///               asserted when low.
     /// @param cpol   Clock polarity. Defaults to rest state low
     /// @param cpha   Clock phase. Defaults to clock transition in middle of
     ///               data bit.
@@ -288,7 +299,6 @@ namespace dibase { namespace rpi {
       ( spi0_slave cs
       , hertz f
       , spi0_mode         mode  = spi0_mode::standard
-      , spi0_cs_polarity  cspol = spi0_cs_polarity::low
       , spi0_clk_polarity cpol  = spi0_clk_polarity::low
       , spi0_clk_phase    cpha  = spi0_clk_phase::middle
       , std::uint32_t     ltoh  = 1U

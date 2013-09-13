@@ -28,6 +28,8 @@ TEST_CASE( "Platform-tests/spi0_pins/0000/create & destroy with good full pin se
     CHECK(gpio_ctrl::instance().alloc.is_in_use(spi_mosi));
     CHECK(gpio_ctrl::instance().alloc.is_in_use(spi_miso));
     CHECK(spi0_ctrl::instance().allocated);
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
     CHECK(sp.has_std_mode_support());
     CHECK_FALSE(sp.has_conversation());
   }
@@ -52,6 +54,8 @@ TEST_CASE( "Platform-tests/spi0_pins/0010/create & destroy with good 2 wire pin 
     CHECK(gpio_ctrl::instance().alloc.is_in_use(spi_mosi));
     CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(spi_miso));
     CHECK(spi0_ctrl::instance().allocated);
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
     CHECK_FALSE(sp.has_std_mode_support());
     CHECK_FALSE(sp.has_conversation());
   }
@@ -63,7 +67,38 @@ TEST_CASE( "Platform-tests/spi0_pins/0010/create & destroy with good 2 wire pin 
   CHECK_FALSE(spi0_ctrl::instance().allocated);
 }
 
-TEST_CASE( "Platform-tests/spi0_pins/0020/create bad: no expected alt-fn"
+
+TEST_CASE( "Platform-tests/spi0_pins/0020/create good, non-default CSPOLn values"
+         , "Creating spi0_pins using non-default cspol1,cspol2 parameter "
+           "values has the expected result on the SPI0 CS register value"
+         )
+{
+  {
+    spi0_pins sp(rpi_p1_spi0_full_pin_set, spi0_cs_polarity::high);
+    CHECK(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
+  }
+  {
+    spi0_pins sp( rpi_p1_spi0_full_pin_set
+                , spi0_cs_polarity::high, spi0_cs_polarity::high);
+    CHECK(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
+    CHECK(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
+  }
+  {
+    spi0_pins sp( rpi_p1_spi0_full_pin_set
+                , spi0_cs_polarity::low, spi0_cs_polarity::high);
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
+    CHECK(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
+  }
+  {
+    spi0_pins sp( rpi_p1_spi0_full_pin_set);
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
+  }
+}
+
+
+TEST_CASE( "Platform-tests/spi0_pins/0030/create bad: no expected alt-fn"
          , "Creating spi0_pins from an SPI0 pin set with a pin that does not "
            "support the stated special function throws an exception"
          )
@@ -107,7 +142,7 @@ TEST_CASE( "Platform-tests/spi0_pins/0020/create bad: no expected alt-fn"
   CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(spi_miso));
 }
 
-TEST_CASE( "Platform-tests/spi0_pins/0030/create bad: SPI0 in use"
+TEST_CASE( "Platform-tests/spi0_pins/0040/create bad: SPI0 in use"
          , "Creating spi0_pins from a good SPI0 pin set when the SPI0 "
            "peripheral is marked as in use throws an exception"
          )
@@ -126,7 +161,7 @@ TEST_CASE( "Platform-tests/spi0_pins/0030/create bad: SPI0 in use"
   REQUIRE_FALSE(spi0_ctrl::instance().allocated);
 }
 
-TEST_CASE( "Platform-tests/spi0_pins/0040/create bad: pins in use"
+TEST_CASE( "Platform-tests/spi0_pins/0050/create bad: pins in use"
          , "Creating spi0_pins from a good SPI0 pin set when a pin in the set "
            "is marked as in use throws an exception"
          )
@@ -216,5 +251,5 @@ TEST_CASE( "Platform-tests/spi0_conversation/0000/create & destroy good"
            "object in the expected state"
          )
 {
-  spi0_conversation sc(spi0_slave::chip1, megahertz(1));
+  spi0_conversation sc(spi0_slave::chip0, megahertz(1));
 }

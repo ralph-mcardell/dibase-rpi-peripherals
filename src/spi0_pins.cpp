@@ -79,6 +79,8 @@ namespace dibase { namespace rpi {
     , pin_id sclk
     , pin_id mosi
     , pin_id miso
+    , spi0_cs_polarity  cspol0
+    , spi0_cs_polarity  cspol1
     )
     {
       pins.fill(pin_id(spi0_pin_not_used)); 
@@ -135,6 +137,11 @@ namespace dibase { namespace rpi {
         throw;
       }
       unsigned idx{0U};
+      spi0_ctrl::instance().regs->set_chip_select_polarity
+                                  (0U, cspol0==spi0_cs_polarity::high);
+      spi0_ctrl::instance().regs->set_chip_select_polarity
+                                  (1U, cspol1==spi0_cs_polarity::high);
+      
       while (idx!=number_of_pins && pins[idx]!=spi0_pin_not_used)
         {
           gpio_ctrl::instance().regs->set_pin_function( pin_id(pins[idx])
@@ -152,7 +159,6 @@ namespace dibase { namespace rpi {
     ( spi0_slave cs
     , hertz f
     , spi0_mode mode
-    , spi0_cs_polarity cspol
     , spi0_clk_polarity cpol
     , spi0_clk_phase cpha
     , std::uint32_t ltoh
@@ -170,10 +176,6 @@ namespace dibase { namespace rpi {
                                      );
         }
       ctx_builder.set_lossi_enable(mode==spi0_mode::lossi);
-      ctx_builder.set_chip_select_polarity(cspol==spi0_cs_polarity::high);
-      ctx_builder.set_chip_select_polarity( static_cast<register_t>(cs)
-                                          , cspol==spi0_cs_polarity::high
-                                          );
       ctx_builder.set_clock_polarity(cpol==spi0_clk_polarity::high);
       ctx_builder.set_clock_phase(cpha==spi0_clk_phase::start);
       if (!ctx_builder.set_lossi_output_hold_delay(ltoh))

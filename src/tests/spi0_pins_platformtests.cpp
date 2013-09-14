@@ -69,7 +69,7 @@ TEST_CASE( "Platform-tests/spi0_pins/0010/create & destroy with good 2 wire pin 
 
 
 TEST_CASE( "Platform-tests/spi0_pins/0020/create good, non-default CSPOLn values"
-         , "Creating spi0_pins using non-default cspol1,cspol2 parameter "
+         , "Creating spi0_pins using non-default cspol0,cspol1 parameter "
            "values has the expected result on the SPI0 CS register value"
          )
 {

@@ -39,18 +39,38 @@ namespace dibase { namespace rpi {
     /// See the
     /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
     /// Broadcom BCM2835 ARM Peripherals Datasheet</a> chapter 10 for published
-    /// details. Note that there are two chip select polarity control field
-    /// sets:
+    /// details. Note that the information on the chip select and the various
+    /// chip select polarity control fields is confusing:
     ///
-    /// - CS register CSPOL field, sets the polarity of all chip select lines
-    /// - CS register CSPOL0, CSPOL1 and CSPOL2 fields set the polarity for
-    /// individual control lines.
+    /// - CS register chip select 2-bit CS field accepts values 0 , 1 and 2
+    ///   but SPI0 only has 2 chip enable lines: CE0, CE1
+    /// - CS register has an unnumbered chip select polarity field CSPOL
+    /// - CS register has numbered chip select polarity fields CSPOL0, CSPOL1
+    ///   and CSPOL2 fields.
     ///
-    /// There is no definitive information on how these 2 sets of fields
-    /// interact given in the data sheet but reference to existing code
-    /// (specifically the Linux BCM2835 SPI driver code in spi-bcm2835.c)
-    /// indicates that both CSPOL and one CSPOL{0,1,2] depending on which
-    /// chip is selected should be set to the required polarity.
+    /// The information in the datasheet table detailing the CS Register (pages
+    /// 153 - 155) gives no clear explanation on how the single unnumbered
+    /// CSPOL field combines with the numbered CSPOLn fields and what is
+    /// meant by references to chip select 2. Empirical results (i.e. trying
+    /// the various combinations of CSPOL and CSPOLn field values with
+    /// Transfer Active 0 (not active), and 1 with CS field values 0, 1 and 2
+    /// and observing the low/high states of SPI0_CE0_N and SPI0_CE1_N) lead
+    /// to the conclusion that the states of the unnumbered CSPOL field and
+    /// the CSPOL2 field have no effect on CE0 and CE1, and that a CS field
+    /// value of 2 (with TA 1, active) gave the same CE0, CE1 state as for TA
+    /// 0 (transfers inactive).
+    ///
+    /// Thus:
+    ///   - TA=0 (inactive)     : de-asserts both CE0 and CE1
+    ///   - TA=1 (active), CS=0 : asserts CE0, de-asserts CE1
+    ///   - TA=1 (active), CS=1 : de-asserts CE0, asserts CE1
+    ///   - TA=1 (active), CS=1 : de-asserts both CE0 and CE1
+    ///
+    /// and:
+    ///   - CSPOL0=0 : CE0 asserted when low
+    ///   - CSPOL0=1 : CE0 asserted when high
+    ///   - CSPOL1=0 : CE1 asserted when low
+    ///   - CSPOL1=1 : CE1 asserted when high
     ///
     /// Member function operations are provided to query and set the various
     /// fields and flags for SPI0 channel control.
@@ -90,7 +110,7 @@ namespace dibase { namespace rpi {
         , cs_lossi_long_mask=0x2000000U// CS register LoSSI long word field bit-mask
         , cs_lossi_long_bit = 25U     // CS register LoSSI long word field bit number
         , cs_csline_polarity_base_mask=0x200000U// CS register CSPOL0 field bit-mask
-        , clk_divisor_min = 2U        // Effective minimum clock divisor value
+        , clk_divisor_min = 1U        // Effective minimum clock divisor value
         , clk_divisor_max = 65536U    // Effective maximum clock divisor value, written as 0
         , clk_divisor_mask = 0xffffU  // Low 16-bits of register only
         , dlen_len_min = 0U           // Minimum DMA transfer byte length

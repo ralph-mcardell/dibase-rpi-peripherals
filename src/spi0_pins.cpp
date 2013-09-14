@@ -169,6 +169,7 @@ namespace dibase { namespace rpi {
     {
       using internal::spi0_registers;
       spi0_registers ctx_builder;
+      ctx_builder.control_and_status = 0U;
       if (!ctx_builder.set_chip_select(static_cast<register_t>(cs)))
         {
           throw std::invalid_argument("spi0_conversation::spi0_conversation: "

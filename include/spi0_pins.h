@@ -92,7 +92,7 @@ namespace dibase { namespace rpi {
     , high  ///< Active (asserted) high
     };
 
-  /// @brief Use a GPIO pins for use with the SPI0 peripheral
+  /// @brief Use a set of 4 or 5 GPIO pins for use with the SPI0 peripheral
   ///
   /// The control lines for the SPI0 serial interface peripheral may be
   /// output to a set of GPIO pins as special functions SPI0_CE0_N, SPI0_CE1_N,
@@ -105,15 +105,19 @@ namespace dibase { namespace rpi {
   /// required: MISO is not used so need not be allocated _if_ _all_ slave
   /// devices use a 2 wire protocol.
   ///
-  /// A spi0_pin object is constructed with a set of GPIO pin_ids which are
-  /// used to determine which, if any, SPI0 functions are supported and if so
-  /// which pin alternative function to use. If the pin supports a SPI0 function
+  /// A spi0_pin object is constructed with a set of GPIO pin_ids to use for
+  /// SPI0 signal functions and values for each chip enable line indicating
+  /// which state (low or high) indicates a slave device is enabled - which
+  /// default to enable when low if not given explicitly.
+  /// 
+  /// If all the pins in the pin set support the requisite SPI0 function
   /// and the SPI0 peripheral is not already in use locally within the same
-  /// process then the SPI0 channel is set-up,  the pins allocated and set to
-  /// the relevant alt-fns. Note that no attempt is made to see if the SPI0
-  /// peripheral is in use externally by other processes.
+  /// process then the SPI0 peripheral is set-up with the requested chip enable
+  /// line polarities and the pins allocated and set to the relevant alt-fns.
+  /// Note that no attempt is made to see if the SPI0 peripheral is in use
+  /// externally by other processes.
   ///
-  /// Once constructed the spi0_pins object may be used in the construction of
+  /// Once constructed the spi0_pins object may be used to open
   /// spi0_conversation objects (one at a time).
     class spi0_pins
     {
@@ -128,8 +132,8 @@ namespace dibase { namespace rpi {
       , pin_id sclk
       , pin_id mosi
       , pin_id miso
+      , spi0_cs_polarity  cspol0
       , spi0_cs_polarity  cspol1
-      , spi0_cs_polarity  cspol2
       );
 
     public:
@@ -142,7 +146,7 @@ namespace dibase { namespace rpi {
     ///       spi0_pin_not_used.
     /// @post The object has no associated spi0_conversation.
     /// @post The SPI0 peripheral CS register has chip select polarity bits
-    ///       set appropriately for the cspol1, cspol2 parameter values. 
+    ///       set appropriately for the cspol0, cspol1 parameter values. 
     ///
     /// @tparam CE0   spi0_pin_set CE0 template parameter
     /// @tparam CE1   spi0_pin_set CE1 template parameter
@@ -171,14 +175,14 @@ namespace dibase { namespace rpi {
                 >
       explicit spi0_pins
       ( spi0_pin_set<CE0,CE1,SCLK,MOSI,MISO> ps
+      , spi0_cs_polarity  cspol0 = spi0_cs_polarity::low
       , spi0_cs_polarity  cspol1 = spi0_cs_polarity::low
-      , spi0_cs_polarity  cspol2 = spi0_cs_polarity::low
       )
       : open_conversation{nullptr}
       {
         construct ( pin_id(ps.ce0()), pin_id(ps.ce1())
                   , pin_id(ps.sclk()), pin_id(ps.mosi()), pin_id(ps.miso())
-                  , cspol1, cspol2
+                  , cspol0, cspol1
                   );
       }
 
@@ -200,7 +204,7 @@ namespace dibase { namespace rpi {
     /// @brief Query whether SPI standard 3-wire protocol is supported
     ///
     /// Note that if created with an spi_pin_set specialisation that did not
-    /// include a value for a MISO  p[in to allocate and use then only 2
+    /// include a value for a MISO pin to allocate and use then only 2
     /// wire protocols (SPI bidirectional and LoSSI modes) are supported.
     /// @returns  true if standard 3-wire SPI supported,
     ///           false if only 2-wire protocols supported
@@ -210,7 +214,7 @@ namespace dibase { namespace rpi {
   /// @brief Enumeration of valid SPI0 slave devices chip numbers
   /// 
   /// Note that only 2 devices are directly supported. Although the field is
-  /// 2 bits in size value 0 de-selects all (both) devices and 3 (11 binary)
+  /// 2 bits in size value 2 de-selects all (both) devices and 3 (11 binary)
   /// is marked as 'reserved'.
     enum class spi0_slave
     { chip0 = 0U  ///< Device addressed by CS = 0 (assert CE0, de-assert CE1)
@@ -242,19 +246,22 @@ namespace dibase { namespace rpi {
   /// peripheral SPI master <-> SPI slave device that defines how to perform
   /// raw communication with the slave device. The context includes:
   ///
-  /// - the slave's chip select value (1 or 2)
-  /// - the required SPI clock frequency
-  /// - the clock polarity and phase (defaults to non-inverted, start of clock)
+  /// - the slave's chip select value (0 or 1)
+  /// - the required SPI0 clock frequency
+  /// - the clock polarity and phase (defaults to low at rest, start of clock)
   /// - the communication mode (standard 3-wire SPI, bidirectional 2-wire SPI, 
   ///   or LoSSI 2-wire) (defaults to standard 3-wire SPI)
   /// - the APB core frequency - which is fixed for a specific board and
   ///   defaults to rpi_apb_core_frequency.
   ///
   /// An spi0_conversation's communication context is only applied when the
-  /// conversation object is opened, at which point is must be associated with
-  /// an spi0_pins object. Only one conversation object may be open
-  /// at one time. When closed no slave device chips are selected (the chip
-  /// select field is set to 0) and the spi0_pins object association removed.
+  /// conversation object is opened, at which point it must be associated with
+  /// an spi0_pins object. Only one conversation object may be open at one time.
+  /// On opening the FIFOs are cleared and transfer active (TA) field is set
+  /// true (active).
+  ///
+  /// When closed the transfer active (TA) field is set false (inactive)
+  /// and the spi0_pins object association removed.
   ///
   /// When first created the conversation object is in the closed state. When
   /// destroyed the conversation object is closed. If the associated spi0_pins
@@ -284,7 +291,8 @@ namespace dibase { namespace rpi {
     /// @param cs     Chip select - which of the two chip enable lines should
     ///               be asserted during an open conversation.
     /// @param f      Required frequency of the SPI clock SCLK while
-    ///               communicating.
+    ///               communicating [fc/2, fc/65536]. Non-integral values
+    ///               of fc/f rounded down so actual frequency may be higher.
     /// @param mode   Communications mode. Defaults to spi_std: standard
     ///               SPI 3-wire mode.
     /// @param cpol   Clock polarity. Defaults to rest state low
@@ -292,9 +300,11 @@ namespace dibase { namespace rpi {
     ///               data bit.
     /// @param ltoh   LoSSI mode hold delay (in APB core clock ticks) [1,15]
     ///               Only relevant for mode==spi0_mode::lossi. Defaults to 1.
+    /// @param fc     APB core frequency \ref frequency type. Should be fixed
+    ///               for a given board. Defaults to rpi_apb_core_frequency.
     ///
-    /// @param fc   APB core frequency \ref frequency type. Should be fixed
-    ///             for a given board. Defaults to rpi_apb_core_frequency.
+    /// @throws std::invalid_argument if the cs parameter is invalid.
+    /// @throws std::out_of_range if the f or ltoh parameters are not in range.
       spi0_conversation
       ( spi0_slave cs
       , hertz f

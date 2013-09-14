@@ -251,5 +251,69 @@ TEST_CASE( "Platform-tests/spi0_conversation/0000/create & destroy good"
            "object in the expected state"
          )
 {
-  spi0_conversation sc(spi0_slave::chip0, megahertz(1));
+  {
+    spi0_conversation sc(spi0_slave::chip0, rpi_apb_core_frequency);
+  }
+  {
+    hertz min_freq((rpi_apb_core_frequency.count()/65536) + 1);
+    spi0_conversation sc(spi0_slave::chip1, min_freq);
+  }
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0010/create bad: force bad chip"
+         , "Creating spi0_conversation from a bad chip value throws exception"
+         )
+{
+  REQUIRE_THROWS_AS((spi0_conversation(static_cast<spi0_slave>(3),megahertz(1)))
+                   , std::invalid_argument);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0020/create bad: frequency too high"
+         , "Creating spi0_conversation from too high frequency value "
+           "throws exception"
+         )
+{
+  hertz high_freq(rpi_apb_core_frequency.count() + 1);
+  REQUIRE_THROWS_AS((spi0_conversation(spi0_slave::chip1, high_freq))
+                   , std::out_of_range);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0030/create bad: frequency too low"
+         , "Creating spi0_conversation from too low frequency value "
+           "throws exception"
+         )
+{
+  hertz low_freq((rpi_apb_core_frequency.count()/65536) - 1);
+  REQUIRE_THROWS_AS((spi0_conversation(spi0_slave::chip1, low_freq))
+                   , std::out_of_range);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0040/create bad: ltoh too low"
+         , "Creating spi0_conversation from too low ltoh value "
+           "throws exception"
+         )
+{
+  REQUIRE_THROWS_AS((spi0_conversation( spi0_slave::chip1
+                                      , megahertz(1)
+                                      , spi0_mode::standard
+                                      , spi0_clk_polarity::low
+                                      , spi0_clk_phase::middle
+                                      , 0U)) 
+                   , std::out_of_range
+                   );
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0050/create bad: ltoh too high"
+         , "Creating spi0_conversation from too high ltoh value "
+           "throws exception"
+         )
+{
+  REQUIRE_THROWS_AS((spi0_conversation( spi0_slave::chip1
+                                      , megahertz(1)
+                                      , spi0_mode::standard
+                                      , spi0_clk_polarity::low
+                                      , spi0_clk_phase::middle
+                                      , 16U)) 
+                   , std::out_of_range
+                   );
 }

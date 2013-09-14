@@ -182,13 +182,13 @@ namespace dibase { namespace rpi {
       if (!ctx_builder.set_lossi_output_hold_delay(ltoh))
         {
           throw std::out_of_range( "spi0_conversation::spi0_conversation: "
-                                   "ltoh parameter not in the range[1,15]."
+                                   "ltoh parameter not in the range [1,15]."
                                  );
         }
        if (!ctx_builder.set_clock_divider(fc.count()/f.count()))
         {
-          throw std::out_of_range( "spi0_conversation::spi0_conversation: "
-                                   "f parameter not range[fc/2,fc/65536]."
+          throw std::out_of_range( "spi0_conversation::spi0_conversation: f "
+                                   "parameter not in the range [fc/65536,fc]."
                                  );
         }
    // Set fixed control settings or settings that may change during

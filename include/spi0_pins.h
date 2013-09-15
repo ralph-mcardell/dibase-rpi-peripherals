@@ -121,10 +121,17 @@ namespace dibase { namespace rpi {
   /// spi0_conversation objects (one at a time).
     class spi0_pins
     {
+    friend class spi0_conversation;
+
       constexpr static unsigned number_of_pins = 5U;
 
-      spi0_conversation const *                 open_conversation;
+      spi0_conversation *                       open_conversation;
       std::array<pin_id_int_t, number_of_pins>  pins;
+
+      void set_conversation(spi0_conversation * sp) 
+      {
+        open_conversation = sp;
+      }
 
       void construct
       ( pin_id ce0
@@ -274,11 +281,11 @@ namespace dibase { namespace rpi {
   /// such extensions).
     class spi0_conversation
     {
-      std::uint32_t       cs_reg;
-      std::uint32_t       clk_reg;
-      std::uint32_t       ltoh_reg;
-      spi0_mode           mode;
-      spi0_pins const *   pins;
+      std::uint32_t cs_reg;
+      std::uint32_t clk_reg;
+      std::uint32_t ltoh_reg;
+      spi0_mode     mode;
+      spi0_pins *   pins;
 
     public:
     /// @brief Construct from conversation context parameters
@@ -322,6 +329,31 @@ namespace dibase { namespace rpi {
       spi0_conversation& operator=(spi0_conversation const &) = delete;
       spi0_conversation(spi0_conversation &&) = delete;
       spi0_conversation& operator=(spi0_conversation &&) = delete;
+
+    /// @brief Open a conversation for communication
+    ///
+    /// @post sp.has_conversation()==true
+    /// @post is_open()==true
+    /// @post Conversation parameters are applied to SPI0
+    /// @post SPI0 transmit and receive FIFOs are clear
+    /// @post SPI0 data transfer is active (CS TA field is 1)
+    ///
+    /// @param sp   Modifiable reference to spi_pins objects
+    ///
+    /// @throws peripheral_in_use if sp.has_conversation()==true on entry
+      void open(spi0_pins & sp);
+
+    /// @brief Closes the conversation if it open.
+    ///
+    /// @post sp.has_conversation()==false
+    /// @post is_open()==false
+    /// @post SPI0 data transfer is inactive (CS TA field is 0)
+      void close();
+
+    /// @brief Return whether the conversation is open for communication or not
+    /// @returns  true if conversation object is open for communication
+    ///           false if it is not open (i.e. it is closed).
+      bool is_open() const;
     };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

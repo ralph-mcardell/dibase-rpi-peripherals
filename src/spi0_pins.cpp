@@ -71,6 +71,10 @@ namespace dibase { namespace rpi {
           ++idx;
         }
       spi0_ctrl::instance().allocated = false;
+      if ( has_conversation() )
+        {
+          open_conversation->close();
+        }
     }
 
     void spi0_pins::construct
@@ -151,8 +155,64 @@ namespace dibase { namespace rpi {
         }
     }
 
+    void spi0_conversation::close()
+    {
+      if ( is_open() )
+        {
+          spi0_ctrl::instance().regs->set_transfer_active(false);
+          pins->set_conversation(nullptr);
+          pins = nullptr;
+        }
+    }
+
+    bool spi0_conversation::is_open() const
+    {
+      return pins!=nullptr;
+    }
+
     spi0_conversation::~spi0_conversation()
     {
+      close();
+    }
+
+    void spi0_conversation::open(spi0_pins & sp)
+    {
+      if ( sp.has_conversation() )
+        {
+          throw peripheral_in_use{"spi0_conversation::open: SPI0 in use by "
+                                  "other open spi0_conversation."
+                                 };
+        }
+      if ( mode==spi0_mode::standard && !sp.has_std_mode_support() )
+        {
+          throw std::invalid_argument{ "spi0_conversation::open: 3-wire SPI "
+                                       "standard mode not supported as "
+                                       "spi0_pins object has not allocated "
+                                       "the MISO line to a GPIO pin"
+                                     };
+        }
+      sp.set_conversation(this);
+      pins = &sp;
+
+     using internal::spi0_registers;
+     using internal::spi0_fifo_clear_action;
+     constexpr register_t cs_reg_mask // Bits NOT to change in SPI0 CS register
+                { spi0_registers::cs_csline_polarity_base_mask      // CSPOL0
+                | (spi0_registers::cs_csline_polarity_base_mask<<1) // CSPOL1
+                };
+      if (mode==spi0_mode::lossi)
+        {
+          spi0_ctrl::instance().regs->lossi_mode_toh = ltoh_reg;
+        }
+      spi0_ctrl::instance().regs->clock = clk_reg;
+      spi0_ctrl::instance().regs->control_and_status 
+                              = ( spi0_ctrl::instance().regs->control_and_status
+                                & cs_reg_mask
+                                )
+                              | (cs_reg & (~cs_reg_mask))
+                              ;
+      spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx_rx);
+      spi0_ctrl::instance().regs->set_transfer_active(true);
     }
 
     spi0_conversation::spi0_conversation
@@ -201,6 +261,9 @@ namespace dibase { namespace rpi {
       ctx_builder.set_read_enable(false);
       ctx_builder.set_lossi_dma_enable(false);
       ctx_builder.set_lossi_long_word(false);
+      ctx_builder.set_chip_select_polarity(false);
+      ctx_builder.set_chip_select_polarity(2U,false);
+
   // Build context, copy across to instance member context register copies.
       cs_reg = ctx_builder.control_and_status;
       clk_reg = ctx_builder.clock;

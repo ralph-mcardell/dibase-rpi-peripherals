@@ -317,3 +317,254 @@ TEST_CASE( "Platform-tests/spi0_conversation/0050/create bad: ltoh too high"
                    , std::out_of_range
                    );
 }
+
+TEST_CASE( "Platform-tests/spi0_conversation/0100/open/close changes states OK"
+         , "Opening spi0_conversation object changes state to open and "
+           "associated spi_pins object to has_conversation, and inverse "
+           "states after closing"
+         )
+{
+  spi0_conversation sc(spi0_slave::chip0, kilohertz(25));
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);  
+  REQUIRE_FALSE(sc.is_open());
+  REQUIRE_FALSE(sp.has_conversation());
+  REQUIRE_FALSE(spi0_ctrl::instance().regs->get_transfer_active());
+  sc.open(sp);
+  CHECK(sc.is_open());
+  CHECK(sp.has_conversation());
+  CHECK(spi0_ctrl::instance().regs->get_transfer_active());
+  sc.close();
+  CHECK_FALSE(sc.is_open());
+  CHECK_FALSE(sp.has_conversation());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_transfer_active());
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0110/open: close when destroyed"
+         , "Destroying an open spi0_conversation object closes it"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);  
+  REQUIRE_FALSE(sp.has_conversation());
+  {
+    spi0_conversation sc(spi0_slave::chip0, kilohertz(25));
+    REQUIRE_FALSE(sc.is_open());
+    sc.open(sp);
+    CHECK(sc.is_open());
+    CHECK(sp.has_conversation());
+    CHECK(spi0_ctrl::instance().regs->get_transfer_active());
+  }
+  CHECK_FALSE(sp.has_conversation());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_transfer_active());
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0120/open: close when spi_pins destroyed"
+         , "Destroying the spi0_pins object associated with an open "
+           "spi0_conversation object closes it"
+         )
+{
+  spi0_conversation sc(spi0_slave::chip0, kilohertz(25));
+  REQUIRE_FALSE(sc.is_open());
+  {
+    spi0_pins sp(rpi_p1_spi0_full_pin_set);  
+    REQUIRE_FALSE(sp.has_conversation());
+    sc.open(sp);
+    CHECK(sc.is_open());
+    CHECK(sp.has_conversation());
+    CHECK(spi0_ctrl::instance().regs->get_transfer_active());
+  }
+  CHECK_FALSE(sc.is_open());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_transfer_active());
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0130/bad: two open objects is an error"
+         , "Opening a spi0_conversation object when another is already open "
+           "throws an exception"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);  
+  spi0_conversation sc(spi0_slave::chip0, kilohertz(25));
+  sc.open(sp);
+  spi0_conversation sc2(spi0_slave::chip1, kilohertz(25));
+  REQUIRE_THROWS_AS(sc2.open(sp), peripheral_in_use);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0140/good: two open objects one after other"
+         , "Opening a spi0_conversation object after closing another is OK"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);  
+  spi0_conversation sc(spi0_slave::chip0, kilohertz(25));
+  sc.open(sp);
+  CHECK(sc.is_open());
+  sc.close();
+  CHECK_FALSE(sc.is_open());
+  spi0_conversation sc2(spi0_slave::chip1, kilohertz(25));
+  sc2.open(sp);
+  CHECK(sc2.is_open());
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0150/bad: std SPI mode with 2-wire only spi0_pins"
+         , "Opening a spi0_conversation object for standard 3-wire SPI mode "
+           "with a 2-wire only spi0_pins object throws"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_2_wire_only_pin_set);
+  {
+    spi0_conversation sc_los(spi0_slave::chip0,kilohertz(25),spi0_mode::lossi);
+    sc_los.open(sp);
+  }
+  {
+    spi0_conversation sc_bid(spi0_slave::chip0,kilohertz(25),spi0_mode::bidirectional);
+    sc_bid.open(sp);
+  }
+  {
+    spi0_conversation sc_std(spi0_slave::chip0,kilohertz(25));
+    REQUIRE_THROWS_AS(sc_std.open(sp), std::invalid_argument);
+  }
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0200/good: open sets clock divider"
+         , "Opening spi0_conversation sets the conversation's clock divider"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  hertz test_frequency(megahertz(1));
+  spi0_conversation sc(spi0_slave::chip0, test_frequency);
+  std::uint32_t expected_cdiv{rpi_apb_core_frequency.count()/test_frequency.count()};
+  spi0_ctrl::instance().regs->set_clock_divider(65536U);
+  sc.open(sp);
+  CHECK(sc.is_open());
+  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
+  sc.close();
+  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0210/good: open sets ltoh in LoSSI mode"
+         , "Opening spi0_conversation only sets the LTOH register to that of "
+         "the conversation if using LoSSI mode"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+
+  std::uint32_t updated_ltoh{10U};
+  std::uint32_t original_ltoh{2U};
+  spi0_ctrl::instance().regs->set_lossi_output_hold_delay(original_ltoh);
+  {
+    spi0_conversation sc_std( spi0_slave::chip0
+                            , kilohertz(25)
+                            , spi0_mode::standard
+                            , spi0_clk_polarity::low
+                            , spi0_clk_phase::middle
+                            , updated_ltoh
+                            ); 
+    sc_std.open(sp);
+    CHECK(spi0_ctrl::instance().regs->get_lossi_output_hold_delay()==original_ltoh);
+  }
+  {
+    spi0_conversation sc_bid( spi0_slave::chip0
+                            , kilohertz(25)
+                            , spi0_mode::bidirectional
+                            , spi0_clk_polarity::low
+                            , spi0_clk_phase::middle
+                            , updated_ltoh
+                            ); 
+    sc_bid.open(sp);
+    CHECK(spi0_ctrl::instance().regs->get_lossi_output_hold_delay()==original_ltoh);
+  }
+  {
+    spi0_conversation sc_los( spi0_slave::chip0
+                            , kilohertz(25)
+                            , spi0_mode::lossi
+                            , spi0_clk_polarity::low
+                            , spi0_clk_phase::middle
+                            , updated_ltoh
+                            );
+    sc_los.open(sp);
+    CHECK(spi0_ctrl::instance().regs->get_lossi_output_hold_delay()==updated_ltoh);
+  }
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0220/good: open leaves CSPOL0,1 alone"
+         , "Opening spi0_conversation does not modify the CS register CSPOL0 "
+           "and CSPOL1 field values"
+         )
+{
+  spi0_conversation sc(spi0_slave::chip0, kilohertz(25));
+  
+  {
+    spi0_pins sp_00(rpi_p1_spi0_full_pin_set);
+    REQUIRE_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
+    REQUIRE_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
+    sc.open(sp_00);
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
+  }
+  {
+    spi0_pins sp_11(rpi_p1_spi0_full_pin_set
+                , spi0_cs_polarity::high, spi0_cs_polarity::high);
+    REQUIRE(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
+    REQUIRE(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
+    sc.open(sp_11);
+    CHECK(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
+    CHECK(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
+  }
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0230/good: open sets CS"
+         , "Opening spi0_conversation sets the CS register CS field to the "
+         "conversation slave chip enable line number"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  {
+    spi0_ctrl::instance().regs->set_chip_select(2U);
+    REQUIRE(spi0_ctrl::instance().regs->get_chip_select()==2U);
+    spi0_conversation sc_0( spi0_slave::chip0, kilohertz(25)); 
+    sc_0.open(sp);
+    CHECK(spi0_ctrl::instance().regs->get_chip_select()==0U);
+  }
+  {
+    spi0_ctrl::instance().regs->set_chip_select(2U);
+    REQUIRE(spi0_ctrl::instance().regs->get_chip_select()==2U);
+    spi0_conversation sc_1( spi0_slave::chip1, kilohertz(25)); 
+    sc_1.open(sp);
+    CHECK(spi0_ctrl::instance().regs->get_chip_select()==1U);
+  }
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0240/good: open sets fields for mode"
+         , "Opening spi0_conversation only sets fields relevant for the "
+           "conversation's specified communication mode"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  {
+    spi0_conversation sc_std( spi0_slave::chip0
+                            , kilohertz(25)
+                            , spi0_mode::standard
+                            ); 
+    sc_std.open(sp);
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_enable());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+  }
+  {
+    spi0_conversation sc_bid( spi0_slave::chip0
+                            , kilohertz(25)
+                            , spi0_mode::bidirectional
+                            ); 
+    sc_bid.open(sp);
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_enable());
+
+  // REN is used in bidirectional mode but start in write mode.
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+  }
+  {
+    spi0_conversation sc_los( spi0_slave::chip0
+                            , kilohertz(25)
+                            , spi0_mode::lossi
+                            );
+    sc_los.open(sp);
+    CHECK(spi0_ctrl::instance().regs->get_lossi_enable());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+  }
+}

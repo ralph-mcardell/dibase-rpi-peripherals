@@ -76,7 +76,6 @@ namespace dibase { namespace rpi {
     /// fields and flags for SPI0 channel control.
       struct spi0_registers
       {
-      private:
         enum 
         { cs_max_chip_id  = 2U        // Maximum chip identifier value
         , cs_chip_select_mask = 3U    // CS register chip select field bit-mask
@@ -136,7 +135,6 @@ namespace dibase { namespace rpi {
         , dc_rpanic_bit = 24U         // Start bit of read panic threshold field
         };
 
-      public:
       /// @brief Physical address of start of BCM2835 SPI0 control registers
         constexpr static physical_address_t 
                             physical_address = peripheral_base_address+0x204000;
@@ -527,7 +525,7 @@ namespace dibase { namespace rpi {
       /// register.
       ///
       /// @param[in] data   8-bit byte to write to transmit FIFO.
-        void transmit_fifo_write(std::uint8_t data)
+        void transmit_fifo_write(std::uint8_t data) volatile
         {
           fifo = data;
         }
@@ -539,7 +537,7 @@ namespace dibase { namespace rpi {
       /// register.
       ///
       /// @returns 8-bit byte read from the receive FIFO
-        std::uint8_t receive_fifo_read()
+        std::uint8_t receive_fifo_read() volatile const
         {
           return fifo;
         }
@@ -551,7 +549,7 @@ namespace dibase { namespace rpi {
       /// 65536 represented as a register value of 0
       ///
       /// @returns SPI0 clock register divisor (CDIV) 16-bit field value
-        register_t get_clock_divider()
+        register_t get_clock_divider() volatile const
         {
           register_t value{clock&clk_divisor_mask};
           return value?value:static_cast<register_t>(clk_divisor_max);
@@ -565,7 +563,7 @@ namespace dibase { namespace rpi {
       /// @param[in] divisor  SPI0 APB clock divisor value [2,65536]
       /// @returns  true if operation performed,
       ///           false if operation not performed as divisor out of range
-        bool set_clock_divider(register_t divisor)
+        bool set_clock_divider(register_t divisor) volatile
         {
           if (clk_divisor_min>divisor || divisor>clk_divisor_max)
             {
@@ -582,7 +580,7 @@ namespace dibase { namespace rpi {
       /// for both transmit and receive.
       ///
       /// @returns Number of _bytes_ to transfer in DMA operation [0,0xffff]
-        register_t get_dma_data_length()
+        register_t get_dma_data_length() volatile const
         {
           return data_length&dlen_len_mask;
         }
@@ -595,7 +593,7 @@ namespace dibase { namespace rpi {
       /// @param[in] len  SPI0 DMA data transfer length [0,65535]
       /// @returns  true if operation performed,
       ///           false if operation not performed as length out of range
-        bool set_dma_data_length(register_t len)
+        bool set_dma_data_length(register_t len) volatile
         {
           if (/*dlen_len_min>len ||*/ len>dlen_len_max)
             {
@@ -612,7 +610,7 @@ namespace dibase { namespace rpi {
       /// is the number of APB clocks to hold the output for.
       ///
       /// @returns Number of APB clocks to hold output for [1,15]
-        register_t get_lossi_output_hold_delay()
+        register_t get_lossi_output_hold_delay() volatile const
         {
           return lossi_mode_toh&ltoh_toh_mask;
         }
@@ -625,7 +623,7 @@ namespace dibase { namespace rpi {
       /// @param[in] delay  SPI0 LoSSI mode output hold delay [1,15] APB clocks
       /// @returns  true if operation performed,
       ///           false if operation not performed as delay out of range
-        bool set_lossi_output_hold_delay(register_t delay)
+        bool set_lossi_output_hold_delay(register_t delay) volatile
         {
           if (ltoh_toh_min>delay || delay>ltoh_toh_max)
             {
@@ -640,7 +638,7 @@ namespace dibase { namespace rpi {
       ///
       /// @returns  Transmit FIFO level at or below which a DREQ signal is 
       ///           issued to the transmit DMA engine
-        register_t get_dma_write_request_threshold()
+        register_t get_dma_write_request_threshold() volatile const
         {
           return dma_controls&dc_tdreq_mask;
         }
@@ -652,7 +650,7 @@ namespace dibase { namespace rpi {
       ///                       [0..255]
       /// @returns  true if operation performed,
       ///           false if operation not performed as threshold out of range
-        bool set_dma_write_request_threshold(register_t threshold)
+        bool set_dma_write_request_threshold(register_t threshold) volatile
         {
           if (/*dc_tdreq_min>threshold ||*/ threshold>dc_tdreq_max)
             {
@@ -666,7 +664,7 @@ namespace dibase { namespace rpi {
       ///
       /// @returns  Transmit FIFO level at or below which a Panic signal is 
       ///           issued to the transmit DMA engine
-        register_t get_dma_write_panic_threshold()
+        register_t get_dma_write_panic_threshold() volatile const
         {
           return (dma_controls&dc_tpanic_mask)>>dc_tpanic_bit;
         }
@@ -678,7 +676,7 @@ namespace dibase { namespace rpi {
       ///                       [0..255]
       /// @returns  true if operation performed,
       ///           false if operation not performed as threshold out of range
-        bool set_dma_write_panic_threshold(register_t threshold)
+        bool set_dma_write_panic_threshold(register_t threshold) volatile
         {
           if (/*dc_tpanic_min>threshold ||*/ threshold>dc_tpanic_max)
             {
@@ -693,7 +691,7 @@ namespace dibase { namespace rpi {
       ///
       /// @returns  Receive FIFO level at or below which a DREQ signal is 
       ///           issued to the receive DMA engine
-        register_t get_dma_read_request_threshold()
+        register_t get_dma_read_request_threshold() volatile const
         {
           return (dma_controls&dc_rdreq_mask)>>dc_rdreq_bit;
         }
@@ -705,7 +703,7 @@ namespace dibase { namespace rpi {
       ///                       [0..255]
       /// @returns  true if operation performed,
       ///           false if operation not performed as threshold out of range
-        bool set_dma_read_request_threshold(register_t threshold)
+        bool set_dma_read_request_threshold(register_t threshold) volatile
         {
           if (/*dc_rdreq_min>threshold ||*/ threshold>dc_rdreq_max)
             {
@@ -720,7 +718,7 @@ namespace dibase { namespace rpi {
       ///
       /// @returns  Receive FIFO level at or below which a Panic signal is 
       ///           issued to the receive DMA engine
-        register_t get_dma_read_panic_threshold()
+        register_t get_dma_read_panic_threshold() volatile const
         {
           return (dma_controls&dc_rpanic_mask)>>dc_rpanic_bit;
         }
@@ -732,7 +730,7 @@ namespace dibase { namespace rpi {
       ///                       [0..255]
       /// @returns  true if operation performed,
       ///           false if operation not performed as threshold out of range
-        bool set_dma_read_panic_threshold(register_t threshold)
+        bool set_dma_read_panic_threshold(register_t threshold) volatile
         {
           if (/*dc_rpanic_min>threshold ||*/ threshold>dc_rpanic_max)
             {

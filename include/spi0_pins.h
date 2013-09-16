@@ -247,6 +247,12 @@ namespace dibase { namespace rpi {
     , start   ///< Clock transitions at start of data bit
     };
 
+  /// @brief Enumeration of LoSSI mode write type
+    enum class spi0_lossi_write
+    { data      ///< Writing LoSSI parameter data to slave device
+    , command   ///< Writing LoSSI command to slave device
+    };
+
   /// @brief Hold a polled conversation with an SPI0 slave device
   ///
   /// spi0_conversation specialisations contain the context of the SPI0
@@ -358,6 +364,19 @@ namespace dibase { namespace rpi {
     /// @returns  true if conversation object is open for communication
     ///           false if it is not open (i.e. it is closed).
       bool is_open() const;
+
+    /// @brief Write a single byte to the transmit FIFO
+    /// @param data Data byte to be written
+    /// @param lossi_write_type Only relevant if using LoSSI communication mode.
+    ///                         Specifies whether this is a LoSSI command or
+    ///                         parameter data write. Default is parameter data.
+    /// @returns  true if byte written to transmit FIFO,
+    ///           false if it could not as FIFO full
+    /// @throws std::logic_error if called when conversation is closed.
+      bool write
+      ( std::uint8_t data
+      , spi0_lossi_write lossi_write_type=spi0_lossi_write::data
+      );
     };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

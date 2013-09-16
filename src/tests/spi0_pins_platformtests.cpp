@@ -707,3 +707,111 @@ TEST_CASE( "Platform-tests/spi0_conversation/0280/good: open clears FIFOs"
   sc.close();
   CHECK(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
 }
+
+TEST_CASE( "Platform-tests/spi0_conversation/0400/good: std: write 1 byte to open conversation"
+         , "Writing one byte to an open standard mode conversation succeeds"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25) ); 
+  sc.open(sp);
+  REQUIRE(sc.is_open());
+  CHECK(sc.write(65U));
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0410/bad: write 1 byte to closed conversation"
+         , "Writing one byte to a closed standard mode conversation fails"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25) ); 
+  REQUIRE_FALSE(sc.is_open());
+  REQUIRE_THROWS_AS(sc.write(65U), std::logic_error);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0420/bad: std: write when full fails"
+         , "Writing one byte to an open standard mode conversation returns "
+           "false if write attempted when transmit FIFO is full"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25) ); 
+  sc.open(sp);
+  REQUIRE(sc.is_open());
+  REQUIRE(spi0_ctrl::instance().regs->get_transfer_active());
+  while(spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+    {
+      spi0_ctrl::instance().regs->transmit_fifo_write(97U);
+    }
+  REQUIRE_FALSE(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
+  CHECK_FALSE(sc.write(65U));
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0430/good: bidir: write 1 byte to open conversation"
+         , "Writing one byte to an open bidirectional mode conversation "
+           "succeeds and sets CS REN bit to 0."
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0
+                      , kilohertz(25)
+                      , spi0_mode::bidirectional
+                      );
+  sc.open(sp);
+  spi0_ctrl::instance().regs->set_read_enable(true);
+  CHECK(spi0_ctrl::instance().regs->get_read_enable());
+  REQUIRE(sc.is_open());
+  CHECK(sc.write(65U));
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0440/good: std: write does not modify REN"
+         , "Writing to an open standard mode conversation does not modify the "
+           "CS REN bit."
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25) );
+  sc.open(sp);
+  spi0_ctrl::instance().regs->set_read_enable(true);
+  CHECK(spi0_ctrl::instance().regs->get_read_enable());
+  REQUIRE(sc.is_open());
+  CHECK(sc.write(65U));
+  CHECK(spi0_ctrl::instance().regs->get_read_enable());
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0450/good: lossi: write data byte to open conversation"
+         , "Writing parameter data byte to an open LoSSI mode conversation "
+           "succeeds"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0
+                      , kilohertz(25)
+                      , spi0_mode::lossi
+                      );
+  sc.open(sp);
+  REQUIRE(sc.is_open());
+  CHECK(sc.write(65U));
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0460/good: lossi: write cmd byte to open conversation"
+         , "Writing command byte to an open LoSSI mode conversation "
+           "succeeds"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0
+                      , kilohertz(25)
+                      , spi0_mode::lossi
+                      );
+  sc.open(sp);
+  REQUIRE(sc.is_open());
+  CHECK(sc.write(65U, spi0_lossi_write::command));
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+}

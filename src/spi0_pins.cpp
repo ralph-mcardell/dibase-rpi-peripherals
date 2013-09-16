@@ -175,6 +175,39 @@ namespace dibase { namespace rpi {
       close();
     }
 
+    bool spi0_conversation::write
+    ( std::uint8_t data
+    , spi0_lossi_write lossi_write_type
+    )
+    {
+      if (!is_open())
+        {
+          throw std::logic_error{ "spi0_conversation::write: Attempt to write "
+                                  "closed conversation."
+                                };
+        }
+      if (spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+        {
+          if (mode==spi0_mode::bidirectional)
+            {
+                spi0_ctrl::instance().regs->set_read_enable(false);
+            }
+          if (mode==spi0_mode::lossi&&lossi_write_type==spi0_lossi_write::data)
+            {
+              spi0_ctrl::instance().regs->transmit_fifo_lossi_write(data);
+            }
+          else
+            {
+              spi0_ctrl::instance().regs->transmit_fifo_write(data);
+            }          
+          return true;
+        }
+      else
+        {
+          return false;
+        }
+    }
+
     void spi0_conversation::open(spi0_pins & sp)
     {
       if ( sp.has_conversation() )

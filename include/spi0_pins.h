@@ -161,12 +161,12 @@ namespace dibase { namespace rpi {
     /// @tparam MOSI  spi0_pin_set MOSI template parameter
     /// @tparam MISO  spi0_pin_set MISO template parameter
     ///
-    /// @param ps     spi0_pin_set specialisation specifying the set of
-    ///               GPIO pins to use for the various SPI0 functions.
-    /// @param cspol0 Chip 0 select polarity. Defaults to chip select
-    ///               line asserted when low (CE0 is low).
-    /// @param cspol1 Chip 1 select polarity. Defaults to chip select
-    ///               line asserted when low (CE1 is low).
+    /// @param[in] ps     spi0_pin_set specialisation specifying the set of
+    ///                   GPIO pins to use for the various SPI0 functions.
+    /// @param[in] cspol0 Chip 0 select polarity. Defaults to chip select
+    ///                   line asserted when low (CE0 is low).
+    /// @param[in] cspol1 Chip 1 select polarity. Defaults to chip select
+    ///                   line asserted when low (CE1 is low).
     ///
     /// @throws std::invalid_argument if any requested pin does not support the
     ///         required special function.
@@ -301,20 +301,22 @@ namespace dibase { namespace rpi {
     ///
     /// @post Object is in a closed state.
     ///
-    /// @param cs     Chip select - which of the two chip enable lines should
-    ///               be asserted during an open conversation.
-    /// @param f      Required frequency of the SPI clock SCLK while
-    ///               communicating [fc/2, fc/65536]. Non-integral values
-    ///               of fc/f rounded down so actual frequency may be higher.
-    /// @param mode   Communications mode. Defaults to spi_std: standard
-    ///               SPI 3-wire mode.
-    /// @param cpol   Clock polarity. Defaults to rest state low
-    /// @param cpha   Clock phase. Defaults to clock transition in middle of
-    ///               data bit.
-    /// @param ltoh   LoSSI mode hold delay (in APB core clock ticks) [1,15]
-    ///               Only relevant for mode==spi0_mode::lossi. Defaults to 1.
-    /// @param fc     APB core frequency \ref frequency type. Should be fixed
-    ///               for a given board. Defaults to rpi_apb_core_frequency.
+    /// @param[in] cs     Chip select - which of the two chip enable lines
+    ///                   should be asserted during an open conversation.
+    /// @param[in] f      Required frequency of the SPI clock SCLK while
+    ///                   communicating [fc/2, fc/65536]. Non-integral values of
+    ///                   fc/f rounded down so actual frequency may be higher.
+    /// @param[in] mode   Communications mode. Defaults to spi_std: standard
+    ///                   SPI 3-wire mode.
+    /// @param[in] cpol   Clock polarity. Defaults to rest state low
+    /// @param[in] cpha   Clock phase. Defaults to clock transition in middle
+    ///                   of data bit.
+    /// @param[in] ltoh   LoSSI mode hold delay (in APB core clock ticks) [1,15]
+    ///                   Only relevant for mode==spi0_mode::lossi.
+    ///                   Defaults to 1.
+    /// @param[in] fc     APB core frequency \ref frequency type. Should be
+    ///                   fixed for a given board.
+    ///                   Defaults to rpi_apb_core_frequency.
     ///
     /// @throws std::invalid_argument if the cs parameter is invalid.
     /// @throws std::out_of_range if the f or ltoh parameters are not in range.
@@ -344,7 +346,7 @@ namespace dibase { namespace rpi {
     /// @post SPI0 transmit and receive FIFOs are clear
     /// @post SPI0 data transfer is active (CS TA field is 1)
     ///
-    /// @param sp   Modifiable reference to spi_pins objects
+    /// @param[in] sp   Modifiable reference to spi_pins objects
     ///
     /// @throws peripheral_in_use if sp.has_conversation()==true on entry
     /// @throws std::invalid_argument if the conversation mode is 
@@ -366,10 +368,11 @@ namespace dibase { namespace rpi {
       bool is_open() const;
 
     /// @brief Write a single byte to the transmit FIFO
-    /// @param data Data byte to be written
-    /// @param lossi_write_type Only relevant if using LoSSI communication mode.
-    ///                         Specifies whether this is a LoSSI command or
-    ///                         parameter data write. Default is parameter data.
+    /// @param[in] data Data byte to be written
+    /// @param[in] lossi_write_type 
+    ///                 Only relevant if using LoSSI communication mode.
+    ///                 Specifies whether this is a LoSSI command or parameter
+    ///                 data write. Default to parameter data write.
     /// @returns  true if byte written to transmit FIFO,
     ///           false if it could not as FIFO full
     /// @throws std::logic_error if called when conversation is closed.
@@ -377,6 +380,23 @@ namespace dibase { namespace rpi {
       ( std::uint8_t data
       , spi0_lossi_write lossi_write_type=spi0_lossi_write::data
       );
+
+    /// @brief Read a single byte from the receive FIFO
+    ///
+    /// When in bidirectional mode a read has to be initiated. This is done
+    /// by calling read when there is no data in the receive FIFO. This sets
+    /// the Read Enable bit in the CS register and writes junk to the FIFO
+    /// register initiate a read transaction and returns false. The data
+    /// should appear in the receive FIFO some time later.
+    ///
+    /// In LoSSI mode data is send to the receive FIFO following the writing
+    /// of a read command to a slave device (using \ref write).
+    ///
+    /// @param[out] data Data byte to receive read value
+    /// @returns  true if byte read from receive FIFO,
+    ///           false if it could not as FIFO empty
+    /// @throws std::logic_error if called when conversation is closed.
+      bool read( std::uint8_t & data );
     };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

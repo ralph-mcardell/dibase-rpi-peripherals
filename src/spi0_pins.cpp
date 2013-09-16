@@ -183,7 +183,7 @@ namespace dibase { namespace rpi {
       if (!is_open())
         {
           throw std::logic_error{ "spi0_conversation::write: Attempt to write "
-                                  "closed conversation."
+                                  "to closed conversation."
                                 };
         }
       if (spi0_ctrl::instance().regs->get_tx_fifo_not_full())
@@ -204,6 +204,33 @@ namespace dibase { namespace rpi {
         }
       else
         {
+          return false;
+        }
+    }
+
+    bool spi0_conversation::read( std::uint8_t & data )
+    {
+      if (!is_open())
+        {
+          throw std::logic_error{ "spi0_conversation::read: Attempt to read "
+                                  "from closed conversation."
+                                };
+        }
+      if (spi0_ctrl::instance().regs->get_rx_fifo_not_empty())
+        {
+          data = spi0_ctrl::instance().regs->receive_fifo_read();
+          return true;
+        }
+      else
+        {// When in bi-directional mode start a read if there is no data in
+        // the receive buffer by setting Read Enable true and writing junk
+        // to the FIFO register. The data should appear in the receive FIFO
+        // some time later.
+          if (mode==spi0_mode::bidirectional)
+            {
+                spi0_ctrl::instance().regs->set_read_enable(true);
+                spi0_ctrl::instance().regs->transmit_fifo_write(data);
+            }
           return false;
         }
     }

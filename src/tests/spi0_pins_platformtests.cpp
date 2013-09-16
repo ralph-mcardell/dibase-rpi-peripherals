@@ -815,3 +815,28 @@ TEST_CASE( "Platform-tests/spi0_conversation/0460/good: lossi: write cmd byte to
   CHECK(sc.write(65U, spi0_lossi_write::command));
   spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
 }
+
+TEST_CASE( "Platform-tests/spi0_conversation/0600/ bad: read 1 byte to closed conversation"
+         , "Reading a byte from a closed standard mode conversation fails"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25) ); 
+  REQUIRE_FALSE(sc.is_open());
+  std::uint8_t data{0U};
+  REQUIRE_THROWS_AS(sc.read(data), std::logic_error);
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0610/bad: std: read when empty fails"
+         , "Reading one byte to an open standard mode conversation returns "
+           "false if read attempted when receive FIFO is empty"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25) ); 
+  sc.open(sp);
+  REQUIRE(sc.is_open());
+  REQUIRE_FALSE(spi0_ctrl::instance().regs->get_rx_fifo_not_empty());
+  std::uint8_t data{0U};
+  CHECK_FALSE(sc.read(data));
+}

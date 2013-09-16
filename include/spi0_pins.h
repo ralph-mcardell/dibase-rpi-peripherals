@@ -332,8 +332,8 @@ namespace dibase { namespace rpi {
 
     /// @brief Open a conversation for communication
     ///
-    /// @post sp.has_conversation()==true
     /// @post is_open()==true
+    /// @post sp.has_conversation()==true
     /// @post Conversation parameters are applied to SPI0
     /// @post SPI0 transmit and receive FIFOs are clear
     /// @post SPI0 data transfer is active (CS TA field is 1)
@@ -341,6 +341,10 @@ namespace dibase { namespace rpi {
     /// @param sp   Modifiable reference to spi_pins objects
     ///
     /// @throws peripheral_in_use if sp.has_conversation()==true on entry
+    /// @throws std::invalid_argument if the conversation mode is 
+    ///         spi0_mode::standard and the sp parameter has no standard mode
+    ///         support (i.e. we want to talk 3-wire SPI and only pins for
+    ///         2-wire modes are provided).
       void open(spi0_pins & sp);
 
     /// @brief Closes the conversation if it open.

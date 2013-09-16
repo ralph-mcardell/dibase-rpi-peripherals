@@ -441,7 +441,7 @@ TEST_CASE( "Platform-tests/spi0_conversation/0200/good: open sets clock divider"
 
 TEST_CASE( "Platform-tests/spi0_conversation/0210/good: open sets ltoh in LoSSI mode"
          , "Opening spi0_conversation only sets the LTOH register to that of "
-         "the conversation if using LoSSI mode"
+           "the conversation if using LoSSI mode"
          )
 {
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
@@ -512,7 +512,7 @@ TEST_CASE( "Platform-tests/spi0_conversation/0220/good: open leaves CSPOL0,1 alo
 
 TEST_CASE( "Platform-tests/spi0_conversation/0230/good: open sets CS"
          , "Opening spi0_conversation sets the CS register CS field to the "
-         "conversation slave chip enable line number"
+           "conversation slave chip enable line number"
          )
 {
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
@@ -555,7 +555,7 @@ TEST_CASE( "Platform-tests/spi0_conversation/0240/good: open sets fields for mod
     sc_bid.open(sp);
     CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_enable());
 
-  // REN is used in bidirectional mode but start in write mode.
+  // REN is used in bidirectional mode but starts in write mode.
     CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
   }
   {
@@ -567,4 +567,143 @@ TEST_CASE( "Platform-tests/spi0_conversation/0240/good: open sets fields for mod
     CHECK(spi0_ctrl::instance().regs->get_lossi_enable());
     CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
   }
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0250/good: open sets CPOL"
+         , "Opening spi0_conversation only sets the CS CPOL register to that of "
+           "the conversation"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  {
+    spi0_ctrl::instance().regs->set_clock_polarity(true);
+    spi0_conversation sc_std( spi0_slave::chip0
+                            , kilohertz(25)
+                            , spi0_mode::standard
+                            , spi0_clk_polarity::low
+                            ); 
+    sc_std.open(sp);
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_clock_polarity());
+  }
+  {
+    REQUIRE_FALSE(spi0_ctrl::instance().regs->get_clock_polarity());
+    spi0_conversation sc_bid( spi0_slave::chip0
+                            , kilohertz(25)
+                            , spi0_mode::standard
+                            , spi0_clk_polarity::high
+                            ); 
+    sc_bid.open(sp);
+    CHECK(spi0_ctrl::instance().regs->get_clock_polarity());
+  }
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0260/good: open sets CPHA"
+         , "Opening spi0_conversation only sets the CS CPHA register to that of "
+           "the conversation"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  {
+    spi0_ctrl::instance().regs->set_clock_phase(true);
+    spi0_conversation sc_std( spi0_slave::chip0
+                            , kilohertz(25)
+                            , spi0_mode::standard
+                            , spi0_clk_polarity::low
+                            , spi0_clk_phase::middle
+                            ); 
+    sc_std.open(sp);
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_clock_phase());
+  }
+  {
+    REQUIRE_FALSE(spi0_ctrl::instance().regs->get_clock_phase());
+    spi0_conversation sc_bid( spi0_slave::chip0
+                            , kilohertz(25)
+                            , spi0_mode::standard
+                            , spi0_clk_polarity::low
+                            , spi0_clk_phase::start
+                            ); 
+    sc_bid.open(sp);
+    CHECK(spi0_ctrl::instance().regs->get_clock_phase());
+  }
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0270/good: open sets common CS state"
+         , "Opening spi0_conversation only sets the CS state that is common to "
+           "all spi0_conversation instances"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  {
+    spi0_conversation sc( spi0_slave::chip0, kilohertz(25) ); 
+    sc.open(sp);
+
+  // Not using DMA
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_dma_enable());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_dma_enable());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_long_word());
+
+  // Not using interrupts
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_done());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_rxr());
+
+  // Not de-asserting CS when done
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_auto_deassert_chip_select());
+
+  // Start in write mode - have to write command in bidirectional mode 1st!
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+
+  // Don't really care about CSPOL and CSPOL2 state - should be zero
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(2U));
+  }
+  {
+    spi0_conversation sc_bid( spi0_slave::chip1
+                            , kilohertz(25)
+                            , spi0_mode::lossi
+                            , spi0_clk_polarity::high
+                            , spi0_clk_phase::start
+                            ); 
+    sc_bid.open(sp);
+
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_dma_enable());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_dma_enable());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_long_word());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_done());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_rxr());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_auto_deassert_chip_select());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity());
+    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(2U));
+  }
+}
+
+TEST_CASE( "Platform-tests/spi0_conversation/0280/good: open clears FIFOs"
+         , "Opening spi0_conversation clears the transmit (and receive) FIFOs"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  {
+    spi0_ctrl::instance().regs->set_transfer_active(true);
+    REQUIRE(spi0_ctrl::instance().regs->get_transfer_active());
+    while(spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+      {
+        spi0_ctrl::instance().regs->transmit_fifo_write(65U);
+      }
+    spi0_ctrl::instance().regs->set_transfer_active(false);
+    REQUIRE_FALSE(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
+    spi0_conversation sc( spi0_slave::chip0, kilohertz(25) ); 
+    sc.open(sp);
+    CHECK(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
+    REQUIRE(spi0_ctrl::instance().regs->get_transfer_active());
+    while(spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+      {
+        spi0_ctrl::instance().regs->transmit_fifo_write(97U);
+      }
+    REQUIRE_FALSE(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
+  }
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25) ); 
+  sc.open(sp);
+  sc.close();
+  CHECK(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
 }

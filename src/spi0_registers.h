@@ -109,6 +109,7 @@ namespace dibase { namespace rpi {
         , cs_lossi_long_mask=0x2000000U// CS register LoSSI long word field bit-mask
         , cs_lossi_long_bit = 25U     // CS register LoSSI long word field bit number
         , cs_csline_polarity_base_mask=0x200000U// CS register CSPOL0 field bit-mask
+        , fifo_lossi_data_bit = 0x100U// LoSSI mode data byte bit 8 value
         , clk_divisor_min = 1U        // Effective minimum clock divisor value
         , clk_divisor_max = 65536U    // Effective maximum clock divisor value, written as 0
         , clk_divisor_mask = 0xffffU  // Low 16-bits of register only
@@ -524,10 +525,30 @@ namespace dibase { namespace rpi {
       /// channel to implicitly write data in 32-bit words to the SPI0 FIFO
       /// register.
       ///
+      /// Note2: In LoSSI mode use transmit_fifo_write to write command bytes
+      ///        and transmit_fifo_lossi_write to write parameter data. 
+      ///
       /// @param[in] data   8-bit byte to write to transmit FIFO.
         void transmit_fifo_write(std::uint8_t data) volatile
         {
           fifo = data;
+        }
+
+      /// @brief Write 8-bit LoSSI data byte to transmit FIFO
+      ///
+      /// Note: Only for poll / interrupt modes. DMA mode uses a DMA write
+      /// channel to implicitly write data in 32-bit words to the SPI0 FIFO
+      /// register.
+      ///
+      /// In LoSSI data bytes have a 1 bit prefix. LoSSI mode slave device 
+      /// commands are prefixed by a 0 so can be written by transmit_fifo_write
+      /// but parameter data have a 1 prefix so transmit_fifo_lossi_write has
+      /// to be used to add it.
+      ///
+      /// @param[in] data   8-bit LoSSI data byte to write to transmit FIFO.
+        void transmit_fifo_lossi_write(std::uint8_t data) volatile
+        {
+          fifo = fifo_lossi_data_bit | data;
         }
 
       /// @brief Read 8-bit byte from receive FIFO

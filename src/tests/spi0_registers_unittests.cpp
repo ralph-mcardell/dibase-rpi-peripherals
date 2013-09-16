@@ -548,6 +548,18 @@ TEST_CASE( "Unit-tests/spi0_registers/0500/transmit_fifo_write"
   CHECK(spi0_regs.fifo==expected);  
 }
 
+TEST_CASE( "Unit-tests/spi0_registers/0500/transmit_fifo_lossi_write"
+         , "transmit_fifo_lossi_write set correct byte + 1 bit data to "
+           "fifo register DATA field"
+         )
+{
+  spi0_registers spi0_regs;
+  std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
+  std::uint8_t expected{255U};
+  spi0_regs.transmit_fifo_lossi_write(expected);
+  CHECK(spi0_regs.fifo==expected+256U);  
+}
+
 TEST_CASE( "Unit-tests/spi0_registers/0510/receive_fifo_read"
          , "receive_fifo_read obtains correct byte data from "
            "fifo register DATA field"

@@ -67,7 +67,6 @@ TEST_CASE( "Platform-tests/spi0_pins/0010/create & destroy with good 2 wire pin 
   CHECK_FALSE(spi0_ctrl::instance().allocated);
 }
 
-
 TEST_CASE( "Platform-tests/spi0_pins/0020/create good, non-default CSPOLn values"
          , "Creating spi0_pins using non-default cspol0,cspol1 parameter "
            "values has the expected result on the SPI0 CS register value"
@@ -96,7 +95,6 @@ TEST_CASE( "Platform-tests/spi0_pins/0020/create good, non-default CSPOLn values
     CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
   }
 }
-
 
 TEST_CASE( "Platform-tests/spi0_pins/0030/create bad: no expected alt-fn"
          , "Creating spi0_pins from an SPI0 pin set with a pin that does not "
@@ -345,6 +343,8 @@ TEST_CASE( "Platform-tests/spi0_pins/0220/read_fifo_needs_reading() false "
   REQUIRE(sp.has_conversation());
   CHECK_FALSE(sp.read_fifo_needs_reading()); 
 }
+
+
 TEST_CASE( "Platform-tests/spi0_conversation/0000/create & destroy good"
          , "Creating spi0_conversation from a good set of parameters leaves "
            "object in the expected state"
@@ -527,15 +527,40 @@ TEST_CASE( "Platform-tests/spi0_conversation/0200/good: open sets clock divider"
          )
 {
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
-  hertz test_frequency(megahertz(1));
-  spi0_conversation sc(spi0_slave::chip0, test_frequency);
-  std::uint32_t expected_cdiv{rpi_apb_core_frequency.count()/test_frequency.count()};
-  spi0_ctrl::instance().regs->set_clock_divider(65536U);
-  sc.open(sp);
-  CHECK(sc.is_open());
-  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
-  sc.close();
-  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
+  { //1MHz should yield a CDIV of 250: even but not a power of 2
+    hertz test_frequency(megahertz(1U));
+    spi0_conversation sc(spi0_slave::chip0, test_frequency);
+    std::uint32_t expected_cdiv{rpi_apb_core_frequency.count()/test_frequency.count()};
+    spi0_ctrl::instance().regs->set_clock_divider(65536U);
+    sc.open(sp);
+    CHECK(sc.is_open());
+    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
+    sc.close();
+    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
+  }
+  { // Are odd CDIV values allowed? 2MHz should yield a divider of 125:
+    hertz test_frequency(megahertz(2U));
+    spi0_conversation sc(spi0_slave::chip0, test_frequency);
+    std::uint32_t expected_cdiv{rpi_apb_core_frequency.count()/test_frequency.count()};
+    spi0_ctrl::instance().regs->set_clock_divider(65536U);
+    sc.open(sp);
+    CHECK(sc.is_open());
+    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
+    sc.close();
+    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
+  }
+  { // Is a CDIV of 1 (i.e. use APB core frequency)?
+    spi0_conversation sc(spi0_slave::chip0, rpi_apb_core_frequency);
+    std::uint32_t expected_cdiv{1U};
+    spi0_ctrl::instance().regs->set_clock_divider(65535U);
+    sc.open(sp);
+    CHECK(sc.is_open());
+    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
+    sc.close();
+    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
+  }
+  spi0_ctrl::instance().regs->set_clock_divider(65535U);
+  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==65535U);
 }
 
 TEST_CASE( "Platform-tests/spi0_conversation/0210/good: open sets ltoh in LoSSI mode"
@@ -962,4 +987,3 @@ TEST_CASE( "Platform-tests/spi0_conversation/0430/good: bidir: read byte from op
   CHECK(spi0_ctrl::instance().regs->get_read_enable());
   spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
 }
-

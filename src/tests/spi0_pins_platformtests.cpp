@@ -245,7 +245,106 @@ TEST_CASE( "Platform-tests/spi0_pins/0050/create bad: pins in use"
   REQUIRE_FALSE(gpio_ctrl::instance().alloc.is_in_use(spi_miso));
 }
 
+TEST_CASE( "Platform-tests/spi0_pins/0100/write_fifo_is_empty() false if no conversation"
+         , "Calling write_fifo_is_empty on a spi0_pins object returns false "
+           "if has_conversation() returns false"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  REQUIRE_FALSE(sp.has_conversation());
+  CHECK_FALSE(sp.write_fifo_is_empty());
+}
 
+TEST_CASE( "Platform-tests/spi0_pins/110/write_fifo_is_empty with conversation"
+         , "Calling write_fifo_is_empty on a spi0_pins object when "
+           "has_conversation() returns true returns true or false depending "
+           "on TX FIFO state"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25));
+  sc.open(sp);
+  REQUIRE(sc.is_open());
+  REQUIRE(sp.has_conversation());
+  CHECK(sp.write_fifo_is_empty());
+  spi0_ctrl::instance().regs->transmit_fifo_write(97U);
+  CHECK_FALSE(sp.write_fifo_is_empty());
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+}
+
+TEST_CASE( "Platform-tests/spi0_pins/0120/write_fifo_has_space()"
+         , "Calling write_fifo_has_space on a spi0_pins object returns false "
+           "if the transmit FIFO if full, true otherwise"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  REQUIRE_FALSE(sp.has_conversation());
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+  CHECK(sp.write_fifo_has_space());
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25));
+  sc.open(sp);
+  REQUIRE(sc.is_open());
+  REQUIRE(sp.has_conversation());
+  CHECK(sp.write_fifo_has_space());
+  bool false_returned_on_full{false};
+  for (int i=0; i!=128; ++i)
+    {
+      spi0_ctrl::instance().regs->transmit_fifo_write(97U);
+      if (!sp.write_fifo_has_space())
+        {
+          false_returned_on_full = true;
+          break;
+        }
+    }
+  CHECK(false_returned_on_full);
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+  CHECK(sp.write_fifo_has_space());
+}
+
+TEST_CASE( "Platform-tests/spi0_pins/0200/read_fifo_is_full() false "
+         , "Calling read_fifo_is_full on a spi0_pins object returns false "
+           "(cannot check otherwise without hardware-assistance)"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  REQUIRE_FALSE(sp.has_conversation());
+  CHECK_FALSE(sp.read_fifo_is_full());
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25));
+  sc.open(sp);
+  REQUIRE(sc.is_open());
+  REQUIRE(sp.has_conversation());
+  CHECK_FALSE(sp.read_fifo_is_full()); 
+}
+
+TEST_CASE( "Platform-tests/spi0_pins/0210/read_fifo_has_data() false "
+         , "Calling read_fifo_has_data on a spi0_pins object returns false "
+           "(cannot check otherwise without hardware-assistance)"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  REQUIRE_FALSE(sp.has_conversation());
+  CHECK_FALSE(sp.read_fifo_has_data());
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25));
+  sc.open(sp);
+  REQUIRE(sc.is_open());
+  REQUIRE(sp.has_conversation());
+  CHECK_FALSE(sp.read_fifo_has_data()); 
+}
+
+TEST_CASE( "Platform-tests/spi0_pins/0220/read_fifo_needs_reading() false "
+         , "Calling read_fifo_needs_reading on a spi0_pins object returns false "
+           "(cannot check otherwise without hardware-assistance)"
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  REQUIRE_FALSE(sp.has_conversation());
+  CHECK_FALSE(sp.read_fifo_needs_reading());
+  spi0_conversation sc( spi0_slave::chip0, kilohertz(25));
+  sc.open(sp);
+  REQUIRE(sc.is_open());
+  REQUIRE(sp.has_conversation());
+  CHECK_FALSE(sp.read_fifo_needs_reading()); 
+}
 TEST_CASE( "Platform-tests/spi0_conversation/0000/create & destroy good"
          , "Creating spi0_conversation from a good set of parameters leaves "
            "object in the expected state"
@@ -740,12 +839,15 @@ TEST_CASE( "Platform-tests/spi0_conversation/0420/bad: std: write when full fail
   sc.open(sp);
   REQUIRE(sc.is_open());
   REQUIRE(spi0_ctrl::instance().regs->get_transfer_active());
-  while(spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+  for (;;)
     {
       spi0_ctrl::instance().regs->transmit_fifo_write(97U);
+      if (!spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+        {
+          CHECK_FALSE(sc.write(65U));
+          break;
+        }
     }
-  REQUIRE_FALSE(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
-  CHECK_FALSE(sc.write(65U));
   spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
 }
 
@@ -840,3 +942,24 @@ TEST_CASE( "Platform-tests/spi0_conversation/0610/bad: std: read when empty fail
   std::uint8_t data{0U};
   CHECK_FALSE(sc.read(data));
 }
+
+TEST_CASE( "Platform-tests/spi0_conversation/0430/good: bidir: read byte from open conversation"
+         , "Reading one byte to an open bidirectional mode conversation "
+           "fails but sets CS REN bit to 1."
+         )
+{
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  spi0_conversation sc( spi0_slave::chip0
+                      , kilohertz(25)
+                      , spi0_mode::bidirectional
+                      );
+  sc.open(sp);
+  spi0_ctrl::instance().regs->set_read_enable(false);
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+  REQUIRE(sc.is_open());
+  std::uint8_t data{0U};
+  CHECK_FALSE(sc.read(data));
+  CHECK(spi0_ctrl::instance().regs->get_read_enable());
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+}
+

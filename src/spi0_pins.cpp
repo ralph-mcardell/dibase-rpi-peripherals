@@ -43,7 +43,6 @@ namespace dibase { namespace rpi {
           }
         return pin_fn_info[0].alt_fn();
       }
-
     }
 
     constexpr auto ce0_idx(0U);
@@ -60,6 +59,31 @@ namespace dibase { namespace rpi {
     bool spi0_pins::has_std_mode_support() const
     {
       return pins[miso_idx]!=spi0_pin_not_used;
+    }
+
+    bool spi0_pins::write_fifo_is_empty() const
+    {
+      return spi0_ctrl::instance().regs->get_transfer_done();
+    }
+
+    bool spi0_pins::write_fifo_has_space() const
+    {
+      return spi0_ctrl::instance().regs->get_tx_fifo_not_full();
+    }
+    
+    bool spi0_pins::read_fifo_is_full() const
+    {
+      return spi0_ctrl::instance().regs->get_rx_fifo_full();
+    }
+
+    bool spi0_pins::read_fifo_has_data() const
+    {
+      return spi0_ctrl::instance().regs->get_rx_fifo_not_empty();
+    }
+
+    bool spi0_pins::read_fifo_needs_reading() const
+    {
+      return spi0_ctrl::instance().regs->get_rx_fifo_needs_reading();
     }
 
     spi0_pins::~spi0_pins()
@@ -228,8 +252,8 @@ namespace dibase { namespace rpi {
         // some time later.
           if (mode==spi0_mode::bidirectional)
             {
-                spi0_ctrl::instance().regs->set_read_enable(true);
-                spi0_ctrl::instance().regs->transmit_fifo_write(data);
+              spi0_ctrl::instance().regs->set_read_enable(true);
+              spi0_ctrl::instance().regs->transmit_fifo_write(data);
             }
           return false;
         }

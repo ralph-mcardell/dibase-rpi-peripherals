@@ -205,6 +205,10 @@ namespace dibase { namespace rpi {
       spi0_pins& operator=(spi0_pins &&) = delete;
 
     /// @brief Query whether there is an open SPI0 conversation
+    ///
+    /// Note that if there is an open conversation then data transfers will
+    /// be active (CS register TA field will be 1).
+    ///
     /// @returns true if there is an open SPI0 conversation, false if not.
       bool has_conversation() const;
 
@@ -216,6 +220,43 @@ namespace dibase { namespace rpi {
     /// @returns  true if standard 3-wire SPI supported,
     ///           false if only 2-wire protocols supported
       bool has_std_mode_support() const;
+
+    /// @brief Query whether there is no data to write from the transmit FIFO.
+    ///
+    /// @returns true if there is no data to write from the transmit FIFO
+    ///          false if the transmit FIFO still contains data to write
+    ///           _or_ if has_conversation()==false.
+      bool write_fifo_is_empty() const;
+
+    /// @brief Query whether there is room for more data in the transmit FIFO.
+    ///
+    /// @returns true if there is space to write data into the transmit FIFO
+    ///          false if the transmit FIFO is full.
+      bool write_fifo_has_space() const;
+
+    /// @brief Query whether there is no room for read data in the receive FIFO.
+    ///
+    /// Note:  When the receive FIFO is full and cannot accept any more
+    ///        incoming data all serial read _and_ write transfers are
+    ///        suspended until some data is read out from the receive FIFO.
+    ///
+    /// @returns true if the receive FIFO is full.
+    ///          false if the receive FIFO still has room for more read data
+      bool read_fifo_is_full() const;
+
+    /// @brief Query whether there is any data to be read from the receive FIFO.
+    ///
+    /// @returns  true if there is data available to read data from the
+    ///           receive FIFO.
+    ///           false if the receive FIFO is empty.
+      bool read_fifo_has_data() const;
+
+    /// @brief Query whether the receive FIFO is approaching being full and
+    ///        needs reading.
+    ///
+    /// @returns  true if the receive FIFO is at least 75% full.
+    ///           false if the receive FIFO is less than 75% full.
+      bool read_fifo_needs_reading() const;
     };
 
   /// @brief Enumeration of valid SPI0 slave devices chip numbers

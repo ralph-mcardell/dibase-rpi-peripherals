@@ -351,7 +351,7 @@ TEST_CASE( "Platform-tests/spi0_conversation/0000/create & destroy good"
          )
 {
   {
-    spi0_conversation sc(spi0_slave::chip0, rpi_apb_core_frequency);
+    spi0_conversation sc(spi0_slave::chip0, hertz(rpi_apb_core_frequency.count()/2));
   }
   {
     hertz min_freq((rpi_apb_core_frequency.count()/65536) + 1);
@@ -538,7 +538,9 @@ TEST_CASE( "Platform-tests/spi0_conversation/0200/good: open sets clock divider"
     sc.close();
     CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
   }
-  { // Are odd CDIV values allowed? 2MHz should yield a divider of 125:
+  { // Odd CDIV values allowed, 2MHz should yield a divider of 125:
+    // BUT bit 0 is ignored and acted on as if it were 0, so a CDIV
+    // value of 125 acts as a CDIV value of 124.
     hertz test_frequency(megahertz(2U));
     spi0_conversation sc(spi0_slave::chip0, test_frequency);
     std::uint32_t expected_cdiv{rpi_apb_core_frequency.count()/test_frequency.count()};
@@ -549,9 +551,9 @@ TEST_CASE( "Platform-tests/spi0_conversation/0200/good: open sets clock divider"
     sc.close();
     CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
   }
-  { // Is a CDIV of 1 (i.e. use APB core frequency)?
-    spi0_conversation sc(spi0_slave::chip0, rpi_apb_core_frequency);
-    std::uint32_t expected_cdiv{1U};
+  { // Is a CDIV of 2 OK?
+    spi0_conversation sc(spi0_slave::chip0, hertz(rpi_apb_core_frequency.count()/2));
+    std::uint32_t expected_cdiv{2U};
     spi0_ctrl::instance().regs->set_clock_divider(65535U);
     sc.open(sp);
     CHECK(sc.is_open());

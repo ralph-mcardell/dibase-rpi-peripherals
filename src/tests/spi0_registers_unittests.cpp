@@ -579,13 +579,13 @@ TEST_CASE( "Unit-tests/spi0_registers/0600/set_clock_divider"
 {
   spi0_registers spi0_regs;
   std::memset(&spi0_regs, 0x00U, sizeof(spi0_regs));
-  dibase::rpi::peripherals::internal::register_t expected{1U};
+  dibase::rpi::peripherals::internal::register_t expected{2U};
   spi0_regs.set_clock_divider(expected);
   CHECK(spi0_regs.clock==expected);  
   spi0_regs.set_clock_divider(65536U);
   CHECK(spi0_regs.clock==0U);  
   CHECK_FALSE(spi0_regs.set_clock_divider(65537U));
-  CHECK_FALSE(spi0_regs.set_clock_divider(0U));
+  CHECK_FALSE(spi0_regs.set_clock_divider(1U));
 }
 
 TEST_CASE( "Unit-tests/spi0_registers/0610/get_clock_divider"

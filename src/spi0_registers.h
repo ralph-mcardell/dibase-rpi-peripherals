@@ -110,7 +110,7 @@ namespace dibase { namespace rpi {
         , cs_lossi_long_bit = 25U     // CS register LoSSI long word field bit number
         , cs_csline_polarity_base_mask=0x200000U// CS register CSPOL0 field bit-mask
         , fifo_lossi_data_bit = 0x100U// LoSSI mode data byte bit 8 value
-        , clk_divisor_min = 1U        // Effective minimum clock divisor value
+        , clk_divisor_min = 2U        // Effective minimum clock divisor value
         , clk_divisor_max = 65536U    // Effective maximum clock divisor value, written as 0
         , clk_divisor_mask = 0xffffU  // Low 16-bits of register only
         , dlen_len_min = 0U           // Minimum DMA transfer byte length

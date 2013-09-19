@@ -58,44 +58,58 @@ namespace
     return response.find_first_of("Yy")==0;
   }
 
-  static bool stop{false};
-  static std::uint64_t rcount{0ULL};
-  static std::uint64_t wcount{0ULL};
-  static unsigned duration_ms{0U};
-  static unsigned actual_cdiv{0U};
-  
-  void do_frequency_test(hertz test_frequency)
+  struct fperf // Frequency test performance data type.
+  {
+    fperf()
+    : rcount{0ULL}
+    , wcount{0ULL}
+    , rfcount{0ULL}
+    , wecount{0ULL}
+    , duration_ms{0U}
+    , actual_cdiv{0U}
+    {}
+    
+    std::uint64_t rcount;
+    std::uint64_t wcount;
+    std::uint64_t rfcount;
+    std::uint64_t wecount;
+    
+    unsigned duration_ms;
+    unsigned actual_cdiv;
+  };
+
+  void do_frequency_test(hertz test_frequency, bool const & stop, fperf & perf)
   {
     spi0_pins sp(rpi_p1_spi0_full_pin_set);
     spi0_conversation sc(spi0_slave::chip0, test_frequency);
     sc.open(sp);
-    actual_cdiv = spi0_ctrl::instance().regs->get_clock_divider();
+    perf.actual_cdiv = spi0_ctrl::instance().regs->get_clock_divider();
+
   // g++ c++ library has non-standard monotonic_clock rather than steady_clock
-    auto t_start(std::chrono::monotonic_clock::now());
-    while (!stop)
+    std::uint8_t data{0U};
+    auto const t_start(std::chrono::monotonic_clock::now());
+    while ( !stop )
       {
+        if ( sp.write_fifo_is_empty() )   ++perf.wecount;
         while (sp.read_fifo_has_data())
           {
-            std::uint8_t data;
-            if (sc.read(data))
-              {
-                ++rcount;
-              }
+            if (sp.read_fifo_is_full())   ++perf.rfcount;
+            if (sc.read(data))            ++perf.rcount;
           }
-        if (sp.write_fifo_has_space())
+        if (sc.write(0x5a))               ++perf.wcount;
+        if (test_frequency.count() < 100000U && !sp.write_fifo_has_space())
           {
-            while (sc.write(0x5a))
-              {
-                ++wcount;
-              }
-          }
-         else
-          {
-            std::this_thread::sleep_for(short_wait_time);
+            std::this_thread::yield();
           }
       }
+    while (sp.read_fifo_has_data() || !sp.write_fifo_is_empty())
+      {
+        if (sp.read_fifo_is_full())   ++perf.rfcount;
+        if (sc.read(data))            ++perf.rcount;
+      }
     auto t_elapsed((std::chrono::monotonic_clock::now()-t_start));
-    duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_elapsed).count();
+    perf.duration_ms = std::chrono::duration_cast
+                        <std::chrono::milliseconds>(t_elapsed).count();
   }
 
   bool test_clock_frequency(hertz f)
@@ -114,19 +128,23 @@ namespace
       }
     std::ostringstream oss;
     oss << "Expect " << f_display << f_units 
-        << " square waveform. Press <enter> when ready...";
+        << " clock waveform. Press <enter> when ready...";
     prompt(oss.str());
-    std::thread spi_run(do_frequency_test, f);
+    bool stop{false};
+    fperf perf;
+    std::thread spi_run(do_frequency_test, f, std::cref(stop), std::ref(perf));
     oss.str("");
     oss << "Has the SCLK output a " << f_display << f_units << " frequency";
     bool result(yn_query(oss.str().c_str()));
     stop = true;
     spi_run.join();
-    stop = false;
-    std::cout << "Wrote " << wcount << " bytes, read " << rcount << " bytes in "
-              << duration_ms << "ms using a CDIV of " << actual_cdiv << "\n";
-    rcount = wcount = 0ULL;
-    duration_ms = actual_cdiv = 0U;
+    std::cout << "Wrote " << perf.wcount 
+              << " bytes (FIFO empty " << perf.wecount 
+              << " times), read " << perf.rcount 
+              << " bytes (FIFO full " << perf.rfcount 
+              << " times) in " << perf.duration_ms 
+              << "ms using a CDIV of " << perf.actual_cdiv 
+              << "\n\n";
     return result;
   }
 
@@ -149,17 +167,66 @@ namespace
     static write_text t;
     t.dummy(); // Keeps compiler quiet
   }
-
-  hertz cdiv_to_hz(std::uint16_t cdiv)
-  {
-    cdiv &= ~1U; // strip LSB
-    double cdivd{cdiv?cdiv:65536};
-    return hertz(unsigned(rpi_apb_core_frequency.count() / cdivd + 0.5));
-  }
 }
 
+TEST_CASE( "Interactive_tests/spi0_pins/0000/read write standard SPI"
+         , "Check the CLK pin frequency is as expected"
+         )
+{
+  welcome();
+  std::cout << "\nSPI0 SPI standard mode write-read test:\n\n";
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  hertz freq(kilohertz(100));
+  spi0_conversation sc(spi0_slave::chip0, freq);
+  sc.open(sp);
+  constexpr unsigned ByteRange{256U};
+  std::array<int, ByteRange> transfer_data;
+  transfer_data.fill(-999); // indicates never written
+  std::uint8_t data{0U};
+  for (unsigned v=0U; v!=ByteRange; ++v)
+    {
+      if (sp.read_fifo_has_data())
+        {
+           if (sc.read(data))
+            {
+              std::cout << "R("<< int(data) << ") ";
+              ++transfer_data[data];
+            }
+        }
+      while (!sp.write_fifo_has_space())
+        {
+          std::this_thread::yield();
+        }
+      if (sc.write(v))
+        {
+          std::cout << "W("<< v << ") ";
+          transfer_data[v] = 0;
+        }
+    }
+ // Drain read data in FIFOs...
+  bool draining{true};
+  while (draining)
+    {
+      if ( draining && sp.write_fifo_is_empty() )
+        { // TX FIFO just noticed to be empty: wait enough time for last
+          // TX item to be definitely clocked into RX FIFO
+          std::this_thread::sleep_for(std::chrono::nanoseconds(std::uint64_t((9.0/freq.count())*1000000000)));
+          draining = false;
+        }
+      while (sc.read(data))
+        {
+          std::cout << "R("<< int(data) << ") ";
+          ++transfer_data[data];
+        }
+    }
+  std::cout << std::endl;
+  for (unsigned i=0U; i!=ByteRange; ++i)
+    {
+      CHECK(transfer_data[i]==1); // implies written and read once
+    }
+}
 
-TEST_CASE( "Interactive_tests/spi0_pins/0000/clock_fequency"
+TEST_CASE( "Interactive_tests/spi0_pins/0010/clock frequency"
          , "Check the CLK pin frequency is as expected"
          )
 {
@@ -171,9 +238,9 @@ TEST_CASE( "Interactive_tests/spi0_pins/0000/clock_fequency"
  
   CHECK(test_clock_frequency(kilohertz(5)));
   CHECK(test_clock_frequency(kilohertz(50)));
+  CHECK(test_clock_frequency(kilohertz(100)));
+  CHECK(test_clock_frequency(kilohertz(200)));
   CHECK(test_clock_frequency(kilohertz(500)));
   CHECK(test_clock_frequency(megahertz(1)));
   CHECK(test_clock_frequency(megahertz(2)));
-  CHECK(test_clock_frequency(cdiv_to_hz(0)));
-  CHECK(test_clock_frequency(cdiv_to_hz(1)));
 }

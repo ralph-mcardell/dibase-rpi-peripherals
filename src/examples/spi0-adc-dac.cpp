@@ -22,7 +22,6 @@
 using namespace dibase::rpi::peripherals;
 
 constexpr static auto  short_delay = std::chrono::microseconds(100);
-bool g_running{ true };  ///< Global flag used to communicate quit request
 
 /// @brief MCP3002 ADC usage modes
 ///
@@ -174,7 +173,7 @@ void output_inverse_of_input(bool const & running)
       mcp3002 adc0(adc_sc, adc_mode::single_ended_ch0);
       mcp48x2<dac_model::mcp4802> dac0(dac_sc, dac_mode::vout_a_x1);
 
-      auto t_sample(std::chrono::monotonic_clock::now());
+      auto t_sample(std::chrono::system_clock::now());
       while (running)
         {
           int in{adc0.get(sp)};
@@ -188,7 +187,7 @@ void output_inverse_of_input(bool const & running)
             { // Set next sample time point
               t_sample += sample_duration;
             }
-          while ( t_sample < std::chrono::monotonic_clock::now() && g_running );
+          while ( t_sample < std::chrono::system_clock::now() );
           std::this_thread::sleep_until( t_sample );
         }
     }

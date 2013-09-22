@@ -258,7 +258,12 @@ namespace dibase { namespace rpi {
   /// @brief Raspberry Pi 19.2MHz fixed oscillator external clock source.
     constexpr fixed_oscillator_clock_source rpi_oscillator{kilohertz{19200}};
 
-  /// @brief Raspberry Pi 250MHz APB core clock frequency
+  /// @brief Raspberry Pi _default_ 250MHz APB core clock frequency
+  ///
+  /// Note: This is a _fixed_ constant value and represents the _defualt_ value
+  /// of the GPU core frequency. It will be _incorrect_ if this value has been
+  /// altered (e.g. by setting gpu_freq or core_freq parameters in the
+  /// Raspberry Pi /boot/config.txt file).
     constexpr hertz rpi_apb_core_frequency(megahertz(250));
 
   } // namespace peripherals closed

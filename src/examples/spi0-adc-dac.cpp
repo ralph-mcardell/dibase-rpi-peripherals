@@ -82,6 +82,11 @@ public:
     (void)am; //keep compiler quiet -- thinks am not used (eh?)
   }
 
+  mcp3002(mcp3002 const &) = delete;
+  mcp3002& operator=(mcp3002 const &) = delete;
+  mcp3002(mcp3002 &&) = delete;
+  mcp3002& operator=(mcp3002 &&) = delete;
+
 /// @brief Receive a sample value from the device.
 /// @param[in]  sp    Valid spi0_pins object used to open an spi0_conversation.
 /// @returns Positive value in the range [0,1023] or -1 if unable to
@@ -166,6 +171,11 @@ public:
   {
     (void)dm; //keep compiler quiet -- thinks dm not used (eh?)
   }
+
+  mcp48x2(mcp48x2 const &) = delete;
+  mcp48x2& operator=(mcp48x2 const &) = delete;
+  mcp48x2(mcp48x2 &&) = delete;
+  mcp48x2& operator=(mcp48x2 &&) = delete;
 
 /// @brief Send a sample value to the device
 /// @param[in]  sp    Valid spi0_pins object used to open an spi0_conversation.

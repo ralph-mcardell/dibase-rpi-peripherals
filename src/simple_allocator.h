@@ -8,6 +8,8 @@
 #ifndef DIBASE_RPI_PERIPHERALS_INTERNAL_SIMPLE_ALLOCATOR_H
 # define DIBASE_RPI_PERIPHERALS_INTERNAL_SIMPLE_ALLOCATOR_H
 
+# include <bitset>
+
 namespace dibase { namespace rpi {
   namespace peripherals
   { namespace internal
@@ -18,15 +20,14 @@ namespace dibase { namespace rpi {
       /// resources specified using resource index values
       ///
       /// @tparam NumRes  Number of resources supported 
-      ///                 (up to bit size of unsigned)
         template <unsigned NumRes>
         class simple_allocator
         {
-          unsigned allocated;
+          std::bitset<NumRes> allocated;
 
         public:
         /// @brief Construct with all resources available for allocation
-          simple_allocator() : allocated{0U} {}
+          simple_allocator() = default;
 
         /// @brief Return whether a resource is marked as in use or not
         /// @param res_idx    0 based resource index value of resource to check
@@ -35,14 +36,14 @@ namespace dibase { namespace rpi {
         ///               OR res_idx is out of range.
           bool is_in_use(unsigned res_idx)
           {
-            return (res_idx<NumRes) && (allocated&(1<<res_idx));
+            return (res_idx<NumRes) && allocated.test(res_idx);
           }
 
         /// @brief Return whether any resource is marked as in use
         /// @returns true if any resource marked as allocated; false if none are
           bool any_in_use()
           {
-            return allocated!=0U;
+            return allocated.any();
           }
 
         /// @brief Allocate a resource marking it as in use
@@ -52,9 +53,9 @@ namespace dibase { namespace rpi {
         ///               not as already allocated or res_idx out of range.
           bool allocate(unsigned res_idx)
           {
-            if ( (res_idx<NumRes) && !is_in_use(res_idx) )
+            if ( (res_idx<NumRes) && !allocated.test(res_idx) )
               {
-                allocated |= (1<<res_idx);
+                allocated.set(res_idx);
                 return true;
               }
             return false;
@@ -69,7 +70,7 @@ namespace dibase { namespace rpi {
           {
             if ( is_in_use(res_idx) )
               {
-                allocated &= ~(1<<res_idx);
+                allocated.reset(res_idx);
                 return true;
               }
             return false;

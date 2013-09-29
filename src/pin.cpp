@@ -40,7 +40,8 @@ namespace dibase { namespace rpi {
       }
     }
 
-    void pin_base::open(pin_id pin, direction_mode dir)
+    pin_base::pin_base(pin_id pin, direction_mode dir)
+    : pin(pin)
     {
       using internal::gpio_pin_fn;
       internal::gpio_ctrl::instance().alloc.allocate(pin);
@@ -50,56 +51,39 @@ namespace dibase { namespace rpi {
                                                          : gpio_pin_fn::input
                                             
                                             );
-      this->pin = pin;
-      this->open_flag = true;
     }
 
-    void pin_base::close()
+    pin_base::~pin_base()
     {
-      if (is_open())
-        {
-          internal::gpio_ctrl::instance().alloc.deallocate(pin);
-          this->open_flag = false;
-        }
+      internal::gpio_ctrl::instance().alloc.deallocate(pin);
     }
 
     void opin::put( bool v )
     {
-      if ( is_open() )
-      {
-        if ( v )
-          {
-            internal::gpio_ctrl::instance().regs->set_pin(get_pin());
-          }
-        else
-          {
-            internal::gpio_ctrl::instance().regs->clear_pin(get_pin());
-          }
-      }
+      if ( v )
+        {
+          internal::gpio_ctrl::instance().regs->set_pin(get_pin());
+        }
+      else
+        {
+          internal::gpio_ctrl::instance().regs->clear_pin(get_pin());
+        }
     }
 
     ipin::~ipin()
     {
       internal::apply_pull(get_pin(), pull_disable);
-      pin_base::close();
     }
 
-    void ipin::open(pin_id pin, unsigned mode)
+    ipin::ipin(pin_id pin, unsigned mode)
+    : pin_base(pin, in)
     {
-      pin_base::open(pin, in);
       internal::apply_pull(pin, mode);
     }
 
     bool ipin::get()
     {
-      if ( is_open() )
-        {
-          return internal::gpio_ctrl::instance().regs->pin_level(get_pin());
-        }
-      else
-        {
-          return false;
-        }
+        return internal::gpio_ctrl::instance().regs->pin_level(get_pin());
     }
   }
 }}

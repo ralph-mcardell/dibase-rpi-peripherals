@@ -45,7 +45,7 @@ namespace dibase { namespace rpi {
     /// the provided pin allocator.
     /// @param[in] in   Open \ref ipin to monitor for edge transitions.
     /// @param[in] mode Which edge transition types raise events.
-    /// @throws std::invalid_argument if \b in not open or mode is invalid.
+    /// @throws std::invalid_argument if \b mode is invalid.
     /// @throws std::runtime_error on failure to open a pin mode set-up file.
     /// @throws std::ios_base::failure on failure or error writing pin
     ///         set-up information.

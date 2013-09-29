@@ -22,42 +22,23 @@ namespace dibase { namespace rpi {
   /// GPIO pin I/O object.
     class pin_base
     {
-    public:
-    /// @brief Query open state of pin objects.
-    /// @return true if pin object is open, false otherwise. 
-      bool is_open() const  { return open_flag; }
-
-    /// @brief Close an open pin object. It is OK to close a closed pin.
-      void close();
-
     protected:
-    /// @brief Initialise pin to being closed.
-      pin_base()
-      : pin(0)
-      , open_flag(false)
-      {}
-
-      pin_base(pin_base const &) = delete;
-      pin_base& operator=(pin_base const &) = delete;
-      pin_base(pin_base &&) = delete;
-      pin_base& operator=(pin_base &&) = delete;
-
     /// @brief open data direction mode flag enumerations
       enum direction_mode
       { in=1      ///< Direction mode value for data input
       , out=2     ///< Direction mode value for data output
       };
 
-    /// @brief Pin object open logic common to input and output pins
-    ///
-    /// Allocates pin and sets pin's GPIO function to input or output as
-    /// specified by the mode parameter.
-    /// @param[in]  pin   Id of GPIO pin to open.
-    /// @param[in]  dir   Data direction mode flag:
-    ///                   in for input pins, out for output pins.
-    /// @exception  bad_pin_alloc if the GPIO pin is in use by this process
-    ///             or elsewhere.
-      void open( pin_id pin, direction_mode dir );
+    /// @brief Initialise pin to being closed.
+      pin_base(pin_id pin, direction_mode dir);
+
+    /// @brief Destroy pin object - deallocates pin
+      ~pin_base();
+
+      pin_base(pin_base const &) = delete;
+      pin_base& operator=(pin_base const &) = delete;
+      pin_base(pin_base &&) = delete;
+      pin_base& operator=(pin_base &&) = delete;
 
     /// @brief Returns the pin id of the GPIO pin open on this object.
       pin_id get_pin() const
@@ -67,7 +48,6 @@ namespace dibase { namespace rpi {
 
     private:
       pin_id pin;     ///< Open GPIO pin's id.
-      bool open_flag; ///< Flag tracking open/close state of pin objects
     };
 
   /// @brief Use a single GPIO pin for output.
@@ -79,33 +59,14 @@ namespace dibase { namespace rpi {
     class opin : public pin_base
     {
     public:
-    /// @brief Create output pin closed to be opened later
-      opin() = default;
-
     /// @brief Create and open a GPIO pin for output
     /// @param[in]  pin   Id of GPIO pin to open for output.
     /// @exception  bad_pin_alloc if the GPIO pin is in use by this process
     ///             or elsewhere.
       explicit opin( pin_id pin )
-      {
-        open( pin );
-      }
-
-    /// @brief Destroy pin object, closing it.
-      ~opin()
-      {
-        pin_base::close();
-      }
-
-    /// @brief Open pin for output.
-    /// @param[in]  pin   Id of GPIO pin to open for output.
-    /// @exception  bad_pin_alloc if the GPIO pin is in use by this process
-    ///             or elsewhere.
-     void open(pin_id pin)
-      {
-        pin_base::open(pin, out);
-      }
-
+      : pin_base(pin, direction_mode::out)
+      {}
+ 
     /// @brief Set an open output pin to the specified state
     /// @param[in]  v Value to output:  true to set pin state high,
     ///                                 false set pin state low
@@ -122,6 +83,7 @@ namespace dibase { namespace rpi {
     class ipin : public pin_base
     {
     friend class pin_edge_event;///< ipin objects can be associated with events
+
     public:
     /// @brief Input open mode flag enumerations
       enum open_mode
@@ -130,30 +92,16 @@ namespace dibase { namespace rpi {
       , pull_down=2         ///< Apply pull down resistor mode value
       };
 
-    /// @brief Create input pin closed to be opened later
-      ipin() = default;
-
     /// @brief Create and open a GPIO pin for input
     /// @param[in]  pin   Id of GPIO pin to open for input.
     /// @param[in]  mode  Open mode for input pin. Specifies pull up/down
     ///                   mode, default is pull_disable (no pull).
     /// @exception  bad_pin_alloc if the GPIO pin is in use by this process
     ///             or elsewhere.
-      explicit ipin( pin_id pin, unsigned mode=0 )
-      {
-        open( pin, mode );
-      }
+      explicit ipin( pin_id pin, unsigned mode=0 );
 
     /// @brief Destroy pin object, closing it.
       ~ipin();
-
-    /// @brief Open pin for input.
-    /// @param[in]  pin   Id of GPIO pin to open for input.
-    /// @param[in]  mode  Open mode for input pin. Specifies pull up/down
-    ///                   mode, default is ipin::pull_disable (no pull).
-    /// @exception  bad_pin_alloc if the GPIO pin is in use by this process
-    ///             or elsewhere.
-      void open(pin_id pin, unsigned mode=0);
 
     /// @brief Return the current state of open input pin
     /// @return true if pin is in a high state

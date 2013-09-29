@@ -87,17 +87,7 @@ namespace dibase { namespace rpi {
     }
 
     pin_edge_event::pin_edge_event(ipin const & in, edge_mode mode)
-    : pin_event_fd{ [](ipin const & in, edge_mode mode)->int
-                    { // check in open here and pass on checks needing pin_id
-                      // as access to ipin::get_pin restricted
-                      if (! in.is_open())
-                        {
-                          throw std::invalid_argument
-                                            {"pin_edge_event: ipin not open."};
-                        }
-                      return open_for_edge_event(in.get_pin(),mode);
-                    }(in,mode)
-                  }
+    : pin_event_fd{open_for_edge_event(in.get_pin(),mode)}
     , id{in.get_pin()}
     {}
     

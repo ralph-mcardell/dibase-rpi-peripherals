@@ -39,7 +39,6 @@ TEST_CASE( "Interactive_tests/pin/out/000/put_true_put_false"
                "Connect pin BCM2835 GPIO" << available_out_pin_id 
             << " to a state monitoring device (LED, voltmeter etc.)\n\n";
   opin o{available_out_pin_id};
-  CHECK(o.is_open()==true);
   std::cout << "Press <Enter> to set BCM2835 GPIO" << available_out_pin_id << " high...";
   std::string dummy;
   std::getline(std::cin, dummy);
@@ -60,7 +59,6 @@ TEST_CASE( "Interactive_tests/pin/in/100/get_true_get_false"
             << " to allow state changing between high voltage and ground "
                "(switch+resistors etc.)\n\n";
   ipin i{available_in_pin_id};
-  CHECK(i.is_open()==true);
   std::cout << "Set BCM2835 GPIO" << available_in_pin_id << " high then press <Enter>...";
   std::string dummy;
   std::getline(std::cin, dummy);
@@ -79,7 +77,6 @@ TEST_CASE( "Interactive_tests/pin/in/110/get_true_get_false_pullup"
             << " to allow state changing between open pull up (high) and "
                "ground (switch+resistors etc.)\n\n";
   ipin i{available_in_pin_id, ipin::pull_up};
-  CHECK(i.is_open()==true);
   std::cout << "Set BCM2835 GPIO" << available_in_pin_id << " high then press <Enter>...";
   std::string dummy;
   std::getline(std::cin, dummy);
@@ -98,7 +95,6 @@ TEST_CASE( "Interactive_tests/pin/in/120/get_true_get_false_pulldown"
             << " to allow state changing between high voltage and and open "
                " pull down (low) (switch+resistors etc.)\n\n";
   ipin i{available_in_pin_id, ipin::pull_down};
-  CHECK(i.is_open()==true);
   std::cout << "Set BCM2835 GPIO" << available_in_pin_id << " high then press <Enter>...";
   std::string dummy;
   std::getline(std::cin, dummy);

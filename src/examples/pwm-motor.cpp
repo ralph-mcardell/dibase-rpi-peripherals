@@ -65,7 +65,7 @@ void vary_motor_speed_and_direction()
       pwm_pin::set_clock( rpi_oscillator
                         , clock_frequency{kilohertz{600}, clock_filter::none}
                         );
-      int power_value{0}; // range [-100,100]; negative values reverse direction
+      int speed_value{0}; // range [-100,100]; negative values reverse direction
       int speed_change{1};// Start by incrementing speed forwards
       unsigned const change_wait_ms{200U}; // Delay between changes
       motor m(gpio_gen1, gpio_gen0);
@@ -73,16 +73,16 @@ void vary_motor_speed_and_direction()
     // speed to 100% in reverse, then to 0...etc. until user bored & quits!
       while (g_running)
         {
-          m.set_speed(power_value/100.0);
-          std::cout << (power_value<0.0?"<<<":">>>")
-                    << std::setw(3) << std::abs(power_value) << "%\r";
+          m.set_speed(speed_value/100.0);
+          std::cout << (speed_value<0.0?"<<<":">>>")
+                    << std::setw(3) << std::abs(speed_value) << "%\r";
           std::cout.flush();
           std::this_thread::sleep_for(std::chrono::milliseconds(change_wait_ms));
-          if ( std::abs(power_value)==100 )
+          if ( std::abs(speed_value)==100 )
             {  // at range ends switch between increase<->decrease
               speed_change *= -1;
             }
-          power_value += speed_change;
+          speed_value += speed_change;
         }
     }
   catch ( std::exception & e )

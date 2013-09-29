@@ -6,7 +6,7 @@
 /// @author Ralph E. McArdell
 //
 
-// ##### Ongoing version. Will be updated when more facilities avaialble #####
+// ##### Ongoing version. Will be updated when more facilities available #####
 
 #include "pin.h"
 
@@ -23,8 +23,8 @@ void switch_oc_output_on_input()
   try
     {
       opin gpio_clk_out(gpio_gclk); // Gertboard J2 GP4 -- connect to RLYn
-      ipin in{spi_ce0_n};           // Gertboard J2 GP8 -- connect to i/p device
-
+      ipin in{sda};                 // Gertboard J2 GP0 -- connect to i/p device
+                                    // (note: GP0 pulled high by default)
   // Open collector state of RLYn follows that of GP8 input value
   // track changes of input state until not running...
       bool in_value{in.get()};
@@ -44,7 +44,7 @@ void switch_oc_output_on_input()
     }
   catch ( std::exception & e )
     {
-      std::cerr << "A problem occured. Description: " << e.what() << "\n";
+      std::cerr << "A problem occurred. Description: " << e.what() << "\n";
     }
 }
 

@@ -47,8 +47,8 @@ enum class adc_mode : std::uint8_t
 /// function.
 class mcp3002
 {
-  spi0_conversation conversation;
-  std::uint8_t      mode;
+  spi0_slave_context  context;
+  std::uint8_t        mode;
 
   constexpr static int   ten_bit_mask = 0x3ff;
   constexpr static int   number_of_upper_bits = 3; // in least significant bits
@@ -60,10 +60,10 @@ class mcp3002
 // Shift of lower bits down to least significant bits (8==bits in a byte)
   constexpr static int   lower_right_shift = 8-number_of_lower_bits;
   
-  std::uint8_t read()
+  std::uint8_t read(spi0_pins & sp)
   {
     std::uint8_t byte{0U};
-    while (!conversation.read(byte))
+    while (!sp.read(byte))
       {
         std::this_thread::sleep_for(short_delay);
       }
@@ -76,7 +76,7 @@ public:
 /// @param{in}  cs    Slave chip select value.
 /// @param[in]  f     SPI SCLK frequency  
   mcp3002(adc_mode am, spi0_slave cs, hertz f)
-  : conversation(cs, f)
+  : context(cs, f)
   , mode{static_cast<std::uint8_t>(am)}
   {
     (void)am; //keep compiler quiet -- thinks am not used (eh?)
@@ -88,24 +88,23 @@ public:
   mcp3002& operator=(mcp3002 &&) = delete;
 
 /// @brief Receive a sample value from the device.
-/// @param[in]  sp    Valid spi0_pins object used to open an spi0_conversation.
+/// @param[in]  sp    Valid spi0_pins object used to open an spi0_slave_context.
 /// @returns Positive value in the range [0,1023] or -1 if unable to
 ///           send request to the device due to the SPI0 transmit FIFO being
 ///           full (unlikely).
   int get(spi0_pins & sp)
   {
-    conversation.open(sp);
+    sp.start_conversing(context);
     int result{-1};
   // Need to write 2 bytes to receive 2 bytes
-    if (conversation.write(mode)&&conversation.write(mode))
+    if (sp.write(mode)&&sp.write(mode))
       {
-        result = read();
+        result = read(sp);
         result <<= upper_left_shift;
-        std::uint8_t lower{read()};
+        std::uint8_t lower{read(sp)};
         result |= (lower>>lower_right_shift);
         result &= ten_bit_mask;
       }
-    conversation.close();
     return result;
   }
 };
@@ -154,8 +153,8 @@ enum class dac_mode : std::uint8_t
 template <dac_model M>
 class mcp48x2
 {
-  spi0_conversation conversation;
-  std::uint8_t      mode;
+  spi0_slave_context  context;
+  std::uint8_t        mode;
 
   constexpr static int  twelve_bit_mask = 0xfff;
   constexpr static int  model_bit_shift = 12-static_cast<int>(M);
@@ -166,7 +165,7 @@ public:
 /// @param{in}  cs    Slave chip select value.
 /// @param[in]  f     SPI SCLK frequency  
   mcp48x2(dac_mode dm, spi0_slave cs, hertz f)
-  : conversation{cs, f} // naked pointer => non-owning
+  : context{cs, f} // naked pointer => non-owning
   , mode{static_cast<std::uint8_t>(dm)}
   {
     (void)dm; //keep compiler quiet -- thinks dm not used (eh?)
@@ -178,7 +177,7 @@ public:
   mcp48x2& operator=(mcp48x2 &&) = delete;
 
 /// @brief Send a sample value to the device
-/// @param[in]  sp    Valid spi0_pins object used to open an spi0_conversation.
+/// @param[in]  sp    Valid spi0_pins object used to open an spi0_slave_context.
 /// @param[in]  v     Value to send to the device in the range [0,255], [0,1023]
 ///                   or [0,4095] depending on M, the type's model parameter.
 ///                   Out of range values are masked to the expected range.
@@ -187,15 +186,14 @@ public:
   bool put(spi0_pins & sp, int v)
   {
     v = (v<<model_bit_shift) & twelve_bit_mask;
-    conversation.open(sp);
-    bool rc{ conversation.write(mode|(v>>8)) // mode + value most sig. 4 bits
-          && conversation.write(v&255)       // value least significant 8 bits
+    sp.start_conversing(context);
+    bool rc{ sp.write(mode|(v>>8)) // mode + value most sig. 4 bits
+          && sp.write(v&255)       // value least significant 8 bits
            };
     while (!sp.write_fifo_is_empty())
       {
         std::this_thread::sleep_for(short_delay);
       }
-    conversation.close();
     return rc;   
   }
 };

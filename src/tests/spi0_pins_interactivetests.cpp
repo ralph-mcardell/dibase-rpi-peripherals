@@ -84,8 +84,8 @@ namespace
   )
   {
     spi0_pins sp(rpi_p1_spi0_full_pin_set);
-    spi0_conversation sc(spi0_slave::chip0, test_frequency);
-    sc.open(sp);
+    spi0_slave_context sc(spi0_slave::chip0, test_frequency);
+    sp.start_conversing(sc);
     perf.actual_cdiv = spi0_ctrl::instance().regs->get_clock_divider();
     std::uint8_t data{0U};
     std::uint64_t rcount_prev{0ULL};
@@ -100,9 +100,9 @@ namespace
         rcount_prev = perf.rcount;
         wcount_prev = perf.wcount;
         if (sp.read_fifo_is_full())   ++perf.rfcount;
-        if (sc.read(data))            ++perf.rcount;
+        if (sp.read(data))            ++perf.rcount;
         if (sp.write_fifo_is_empty()) ++perf.wecount;
-        if (sc.write(0x5a))           ++perf.wcount;
+        if (sp.write(0x5a))           ++perf.wcount;
         if (perf.rcount==rcount_prev && perf.wcount==wcount_prev)
           { // nothing read or written - let something else run...
             std::this_thread::sleep_for(std::chrono::microseconds(2));
@@ -111,7 +111,7 @@ namespace
     while (sp.read_fifo_has_data() || !sp.write_fifo_is_empty())
       {
         if (sp.read_fifo_is_full())   ++perf.rfcount;
-        if (sc.read(data))            ++perf.rcount;
+        if (sp.read(data))            ++perf.rcount;
       }
     auto t_elapsed((std::chrono::monotonic_clock::now()-t_start));
     perf.duration_ms = std::chrono::duration_cast
@@ -214,8 +214,8 @@ TEST_CASE( "Interactive_tests/spi0_pins/0000/read write standard SPI"
   std::cout << "\nSPI0 SPI standard mode write-read test:\n\n";
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
   hertz freq(kilohertz(100));
-  spi0_conversation sc(spi0_slave::chip0, freq);
-  sc.open(sp);
+  spi0_slave_context sc(spi0_slave::chip0, freq);
+  sp.start_conversing(sc);
   constexpr unsigned ByteRange{256U};
   std::array<int, ByteRange> transfer_data;
   transfer_data.fill(-999); // indicates never written
@@ -224,7 +224,7 @@ TEST_CASE( "Interactive_tests/spi0_pins/0000/read write standard SPI"
     {
       if (sp.read_fifo_has_data())
         {
-           if (sc.read(data))
+           if (sp.read(data))
             {
               std::cout << "R("<< int(data) << ") ";
               ++transfer_data[data];
@@ -234,7 +234,7 @@ TEST_CASE( "Interactive_tests/spi0_pins/0000/read write standard SPI"
         {
           std::this_thread::yield();
         }
-      if (sc.write(v))
+      if (sp.write(v))
         {
           std::cout << "W("<< v << ") ";
           transfer_data[v] = 0;
@@ -250,7 +250,7 @@ TEST_CASE( "Interactive_tests/spi0_pins/0000/read write standard SPI"
           std::this_thread::sleep_for(std::chrono::nanoseconds(std::uint64_t((9.0/freq.count())*1000000000)));
           draining = false;
         }
-      while (sc.read(data))
+      while (sp.read(data))
         {
           std::cout << "R("<< int(data) << ") ";
           ++transfer_data[data];

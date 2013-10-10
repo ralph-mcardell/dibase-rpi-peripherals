@@ -51,9 +51,9 @@ namespace dibase { namespace rpi {
     constexpr auto mosi_idx(3U);
     constexpr auto miso_idx(4U);
  
-    bool spi0_pins::has_conversation() const
+    bool spi0_pins::is_conversing() const
     {
-      return open_conversation!=nullptr;
+      return mode!=spi0_mode::none;
     }
 
     bool spi0_pins::has_std_mode_support() const
@@ -95,9 +95,9 @@ namespace dibase { namespace rpi {
           ++idx;
         }
       spi0_ctrl::instance().allocated = false;
-      if ( has_conversation() )
+      if ( is_conversing() )
         {
-          open_conversation->close();
+          stop_conversing();
         }
     }
 
@@ -177,40 +177,62 @@ namespace dibase { namespace rpi {
                                                       );
           ++idx;
         }
+      stop_conversing();
     }
 
-    void spi0_conversation::close()
+    void spi0_pins::stop_conversing()
     {
-      if ( is_open() )
+      spi0_ctrl::instance().regs->set_transfer_active(false);
+      mode = spi0_mode::none;
+    }
+
+    void spi0_pins::start_conversing(spi0_slave_context const & c)
+    {
+      stop_conversing(); // Stop data transfer while we fiddle with registers
+      if (c.mode==spi0_mode::none)
         {
-          spi0_ctrl::instance().regs->set_transfer_active(false);
-          pins->set_conversation(nullptr);
-          pins = nullptr;
+          return;
         }
+
+      if ( c.mode==spi0_mode::standard && !has_std_mode_support() )
+        {
+          throw std::invalid_argument{ "spi0_pins::apply_cooverstaion: 3-wire "
+                                       "SPI standard mode not supported as "
+                                       "the MISO lines has not allocated to a "
+                                       "GPIO pin"
+                                     };
+        }
+
+     using internal::spi0_registers;
+     using internal::spi0_fifo_clear_action;
+     constexpr register_t cs_reg_mask // Bits NOT to change in SPI0 CS register
+                { spi0_registers::cs_csline_polarity_base_mask      // CSPOL0
+                | (spi0_registers::cs_csline_polarity_base_mask<<1) // CSPOL1
+                };
+      if (c.mode==spi0_mode::lossi)
+        {
+          spi0_ctrl::instance().regs->lossi_mode_toh = c.ltoh_reg;
+        }
+      spi0_ctrl::instance().regs->clock = c.clk_reg;
+      spi0_ctrl::instance().regs->control_and_status 
+                              = ( spi0_ctrl::instance().regs->control_and_status
+                                & cs_reg_mask
+                                )
+                              | (c.cs_reg & (~cs_reg_mask))
+                              ;
+      spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx_rx);
+      mode = c.mode;
+      spi0_ctrl::instance().regs->set_transfer_active(true);
     }
 
-    bool spi0_conversation::is_open() const
-    {
-      return pins!=nullptr;
-    }
-
-    spi0_conversation::~spi0_conversation()
-    {
-      close();
-    }
-
-    bool spi0_conversation::write
+    bool spi0_pins::write
     ( std::uint8_t data
     , spi0_lossi_write lossi_write_type
     )
     {
-      if (!is_open())
-        {
-          throw std::logic_error{ "spi0_conversation::write: Attempt to write "
-                                  "to closed conversation."
-                                };
-        }
-      if (spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+       if ( mode!=spi0_mode::none 
+         && spi0_ctrl::instance().regs->get_tx_fifo_not_full()
+          )
         {
           if (mode==spi0_mode::bidirectional)
             {
@@ -232,14 +254,13 @@ namespace dibase { namespace rpi {
         }
     }
 
-    bool spi0_conversation::read( std::uint8_t & data )
+    bool spi0_pins::read( std::uint8_t & data )
     {
-      if (!is_open())
+      if (mode==spi0_mode::none)
         {
-          throw std::logic_error{ "spi0_conversation::read: Attempt to read "
-                                  "from closed conversation."
-                                };
+          return false;
         }
+      
       if (spi0_ctrl::instance().regs->get_rx_fifo_not_empty())
         {
           data = spi0_ctrl::instance().regs->receive_fifo_read();
@@ -259,47 +280,7 @@ namespace dibase { namespace rpi {
         }
     }
 
-    void spi0_conversation::open(spi0_pins & sp)
-    {
-      if ( sp.has_conversation() )
-        {
-          throw peripheral_in_use{"spi0_conversation::open: SPI0 in use by "
-                                  "other open spi0_conversation."
-                                 };
-        }
-      if ( mode==spi0_mode::standard && !sp.has_std_mode_support() )
-        {
-          throw std::invalid_argument{ "spi0_conversation::open: 3-wire SPI "
-                                       "standard mode not supported as "
-                                       "spi0_pins object has not allocated "
-                                       "the MISO line to a GPIO pin"
-                                     };
-        }
-      sp.set_conversation(this);
-      pins = &sp;
-
-     using internal::spi0_registers;
-     using internal::spi0_fifo_clear_action;
-     constexpr register_t cs_reg_mask // Bits NOT to change in SPI0 CS register
-                { spi0_registers::cs_csline_polarity_base_mask      // CSPOL0
-                | (spi0_registers::cs_csline_polarity_base_mask<<1) // CSPOL1
-                };
-      if (mode==spi0_mode::lossi)
-        {
-          spi0_ctrl::instance().regs->lossi_mode_toh = ltoh_reg;
-        }
-      spi0_ctrl::instance().regs->clock = clk_reg;
-      spi0_ctrl::instance().regs->control_and_status 
-                              = ( spi0_ctrl::instance().regs->control_and_status
-                                & cs_reg_mask
-                                )
-                              | (cs_reg & (~cs_reg_mask))
-                              ;
-      spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx_rx);
-      spi0_ctrl::instance().regs->set_transfer_active(true);
-    }
-
-    spi0_conversation::spi0_conversation
+    spi0_slave_context::spi0_slave_context
     ( spi0_slave cs
     , hertz f
     , spi0_mode mode
@@ -309,14 +290,13 @@ namespace dibase { namespace rpi {
     , hertz fc
     )
     : mode{mode}
-    , pins{nullptr}
     {
       using internal::spi0_registers;
       spi0_registers ctx_builder;
       ctx_builder.control_and_status = 0U;
       if (!ctx_builder.set_chip_select(static_cast<register_t>(cs)))
         {
-          throw std::invalid_argument("spi0_conversation::spi0_conversation: "
+          throw std::invalid_argument("spi0_slave_context::spi0_slave_context: "
                                       "Bad cs parameter value."
                                      );
         }
@@ -325,13 +305,13 @@ namespace dibase { namespace rpi {
       ctx_builder.set_clock_phase(cpha==spi0_clk_phase::start);
       if (!ctx_builder.set_lossi_output_hold_delay(ltoh))
         {
-          throw std::out_of_range( "spi0_conversation::spi0_conversation: "
+          throw std::out_of_range( "spi0_slave_context::spi0_slave_context: "
                                    "ltoh parameter not in the range [1,15]."
                                  );
         }
        if (!ctx_builder.set_clock_divider(fc.count()/f.count()))
         {
-          throw std::out_of_range( "spi0_conversation::spi0_conversation: f "
+          throw std::out_of_range( "spi0_slave_context::spi0_slave_context: f "
                                    "parameter not in the range [fc/65536,fc]."
                                  );
         }

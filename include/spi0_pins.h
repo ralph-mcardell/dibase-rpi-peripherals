@@ -81,10 +81,6 @@ namespace dibase { namespace rpi {
   /// @brief 2-wire mode only 4-pin SPI0 pin set provided by Raspberry Pi's P1
   /// connector
     constexpr spi0_pin_set<8U, 7U, 11U, 10U>    rpi_p1_spi0_2_wire_only_pin_set;
-  
-  /// @brief Type representing a conversation between the SPI0 master device
-  /// and an SPI slave device.
-    class spi0_conversation;
 
   /// @brief Enumeration of SPI0 chip select polarity options
     enum class spi0_cs_polarity
@@ -92,7 +88,112 @@ namespace dibase { namespace rpi {
     , high  ///< Active (asserted) high
     };
 
-  /// @brief Use a set of 4 or 5 GPIO pins for use with the SPI0 peripheral
+  /// @brief Enumeration of SPI0 communication modes
+    enum class spi0_mode
+    { none          ///< Indicates not communicating with any slave device
+    , standard      ///< Standard 3-wire SPI mode - uses MOSI _and_ MISO
+    , bidirectional ///< 2-wire SPI bidirectional mode - does not use MISO
+    , lossi         ///< 2-wire LoSSI mode - does not use MISO
+    };
+
+  /// @brief Enumeration of LoSSI mode write type
+    enum class spi0_lossi_write
+    { data      ///< Writing LoSSI parameter data to slave device
+    , command   ///< Writing LoSSI command to slave device
+    };
+
+  /// @brief Enumeration of valid SPI0 slave devices chip numbers
+  /// 
+  /// Note that only 2 devices are directly supported. Although the field is
+  /// 2 bits in size value 2 de-selects all (both) devices and 3 (11 binary)
+  /// is marked as 'reserved'.
+    enum class spi0_slave
+    { chip0 = 0U  ///< Device addressed by CS = 0 (assert CE0, de-assert CE1)
+    , chip1 = 1U  ///< Device addressed by CS = 1 (de-assert CE0, assert CE1)
+    };
+
+  /// @brief Enumeration of SPI0 clock polarity options
+    enum class spi0_clk_polarity
+    { low   ///< Rest state of clock low
+    , high  ///< Rest state of clock high
+    };
+
+  /// @brief Enumeration of SPI0 clock phase options.
+    enum class spi0_clk_phase
+    { middle  ///< Clock transitions at middle of data bit
+    , start   ///< Clock transitions at start of data bit
+    };
+
+  /// @brief SPI0 peripheral slave device context
+  ///
+  /// spi0_slave_context objects contain context data for the SPI0
+  /// peripheral SPI master <-> SPI slave device that defines how to perform
+  /// raw communication with a specific slave device. A context is defined
+  /// from construction parameters which include:
+  ///
+  /// - the slave's chip select value (0 or 1)
+  /// - the required SPI0 clock frequency
+  /// - the clock polarity and phase (defaults to low at rest, start of clock)
+  /// - the communication mode (standard 3-wire SPI, bidirectional 2-wire SPI, 
+  ///   or LoSSI 2-wire, or none at all) (defaults to standard 3-wire SPI)
+  /// - the APB core frequency - which is fixed for a specific board boot
+  ///   configuration and defaults to rpi_apb_core_frequency.
+  ///
+  /// An spi0_slave_context's is applied to the SPI0 peripheral when starting
+  /// to converse with a slave chip via a spi0_pins object.
+  ///
+  /// Note that spi0_slave_context objects hold SPI0 peripheral register values
+  /// representing the slave context's definition parameters along with the
+  /// communication mode. As all of these are value types spi0_slave_context
+  /// objects can be copied and assigned.
+    class spi0_slave_context
+    {
+    friend class spi0_pins;
+
+      std::uint32_t cs_reg;
+      std::uint32_t clk_reg;
+      std::uint32_t ltoh_reg;
+      spi0_mode     mode;
+
+    public:
+    /// @brief Construct from slave context parameters
+    ///
+    /// The context defines which slave device to communicate with and how to 
+    /// do so. Most of the parameters have defaults.
+    ///
+    /// @post Object is in a closed state.
+    ///
+    /// @param[in] cs     Chip select - which of the two chip enable lines
+    ///                   should be asserted during an open conversation.
+    /// @param[in] f      Required frequency of the SPI clock SCLK while
+    ///                   communicating [fc/2, fc/65536]. Non-integral values of
+    ///                   fc/f rounded down so actual frequency may be higher.
+    /// @param[in] mode   Communications mode. Defaults to spi_std: standard
+    ///                   SPI 3-wire mode.
+    /// @param[in] cpol   Clock polarity. Defaults to rest state low
+    /// @param[in] cpha   Clock phase. Defaults to clock transition in middle
+    ///                   of data bit.
+    /// @param[in] ltoh   LoSSI mode hold delay (in APB core clock ticks) [1,15]
+    ///                   Only relevant for mode==spi0_mode::lossi.
+    ///                   Defaults to 1.
+    /// @param[in] fc     APB core frequency \ref frequency type. Should be
+    ///                   fixed for a given board boot configuration.
+    ///                   Defaults to rpi_apb_core_frequency.
+    ///
+    /// @throws std::invalid_argument if the cs parameter is invalid.
+    /// @throws std::out_of_range if the f or ltoh parameters are not in range.
+      spi0_slave_context
+      ( spi0_slave cs
+      , hertz f
+      , spi0_mode         mode  = spi0_mode::standard
+      , spi0_clk_polarity cpol  = spi0_clk_polarity::low
+      , spi0_clk_phase    cpha  = spi0_clk_phase::middle
+      , std::uint32_t     ltoh  = 1U
+      , hertz             fc    = rpi_apb_core_frequency
+      );
+    };
+
+  /// @brief Use a set of 4 or 5 GPIO pins with the SPI0 peripheral.
   ///
   /// The control lines for the SPI0 serial interface peripheral may be
   /// output to a set of GPIO pins as special functions SPI0_CE0_N, SPI0_CE1_N,
@@ -117,21 +218,14 @@ namespace dibase { namespace rpi {
   /// Note that no attempt is made to see if the SPI0 peripheral is in use
   /// externally by other processes.
   ///
-  /// Once constructed the spi0_pins object may be used to open
-  /// spi0_conversation objects (one at a time).
+  /// Once constructed spi0_slave_context may be used with the spi0_pins object
+  /// to allow communicating with slave devices.
     class spi0_pins
     {
-    friend class spi0_conversation;
-
       constexpr static unsigned number_of_pins = 5U;
 
-      spi0_conversation *                       open_conversation;
       std::array<pin_id_int_t, number_of_pins>  pins;
-
-      void set_conversation(spi0_conversation * sp) 
-      {
-        open_conversation = sp;
-      }
+      spi0_mode                                 mode;
 
       void construct
       ( pin_id ce0
@@ -151,7 +245,8 @@ namespace dibase { namespace rpi {
     /// @post The pins in the spi0_pin_set are marked as in use (note: does
     ///       not include a pin for the MISO SPI0 function if it has a value of
     ///       spi0_pin_not_used.
-    /// @post The object has no associated spi0_conversation.
+    /// @post The object is not conversing with a slave device (is_conversing() 
+    ///       == false).
     /// @post The SPI0 peripheral CS register has chip select polarity bits
     ///       set appropriately for the cspol0, cspol1 parameter values. 
     ///
@@ -185,7 +280,6 @@ namespace dibase { namespace rpi {
       , spi0_cs_polarity  cspol0 = spi0_cs_polarity::low
       , spi0_cs_polarity  cspol1 = spi0_cs_polarity::low
       )
-      : open_conversation{nullptr}
       {
         construct ( pin_id(ps.ce0()), pin_id(ps.ce1())
                   , pin_id(ps.sclk()), pin_id(ps.mosi()), pin_id(ps.miso())
@@ -193,8 +287,8 @@ namespace dibase { namespace rpi {
                   );
       }
 
-    /// @brief Destroy: close any SPI0 conversation and de-allocate GPIO pins.
-    /// @post Any open spi0_conversation is closed.
+    /// @brief Destroy: Stop any SPI0 conversation and de-allocate GPIO pins.
+    /// @post Any conversation is stopped (CS register TA field set to 0)
     /// @post The pins allocated during construction are marked as free.
     /// @post The SPI0 peripheral is marked as free.
       ~spi0_pins();
@@ -204,13 +298,69 @@ namespace dibase { namespace rpi {
       spi0_pins(spi0_pins &&) = delete;
       spi0_pins& operator=(spi0_pins &&) = delete;
 
-    /// @brief Query whether there is an open SPI0 conversation
+    /// @brief Applies a spi0_slave_context, replacing any existing context and
+    /// starts data transfers (CS register TA field == 1).
     ///
-    /// Note that if there is an open conversation then data transfers will
-    /// be active (CS register TA field will be 1).
+    /// Note: passing a slave context with a communication mode of
+    ///       spi0_mode::none will stop communication by setting the Transfer
+    ///       Active field to false. No other changes to control fields for
+    ///       an applied slave context are made. In general it is simpler to
+    ///       call stop_conversing.
     ///
-    /// @returns true if there is an open SPI0 conversation, false if not.
-      bool has_conversation() const;
+    /// @post The SPI0 data transfer context will be that represented by the
+    ///       object passed for the c parameter.
+    ///
+    /// @param  c   Conversation object specifying context for conversation.
+    /// @throws std::invalid_argument if slave context is for 3-wire
+    ///         standard mode and only 2-wire mode pins have been allocated
+    ///         (i.e. c.mode==spi0_mode::standard && !has_std_mode_support()).
+      void  start_conversing(spi0_slave_context const & c);
+
+    /// @brief Stop data transfers.
+    /// @post Transfer Active field is false, stopping further data transfer
+    ///       Communication mode is set to spi0_mode::none for the purposes of
+    ///       reads and writes.
+      void  stop_conversing();
+
+    /// @brief Write a single byte to the transmit FIFO
+    /// @param[in] data Data byte to be written
+    /// @param[in] lossi_write_type 
+    ///                 Only relevant if using LoSSI communication mode.
+    ///                 Specifies whether this is a LoSSI command or parameter
+    ///                 data write. Default to parameter data write.
+    /// @returns  true if byte written to transmit FIFO,
+    ///           false if it could not as FIFO full or communication mode is
+    ///           spi0_mode::none and conversation is stopped.
+      bool write
+      ( std::uint8_t data
+      , spi0_lossi_write lossi_write_type=spi0_lossi_write::data
+      );
+
+    /// @brief Read a single byte from the receive FIFO
+    ///
+    /// When in bidirectional mode a read has to be initiated. This is done
+    /// by calling read when there is no data in the receive FIFO. This sets
+    /// the Read Enable bit in the CS register and writes junk to the FIFO
+    /// register initiate a read transaction and returns false. The data
+    /// should appear in the receive FIFO some time later.
+    ///
+    /// In LoSSI mode data is send to the receive FIFO following the writing
+    /// of a read command to a slave device (using \ref write).
+    ///
+    /// @param[out] data Data byte to receive read value
+    /// @returns  true if byte read from receive FIFO,
+    ///           false if it could not as FIFO empty or communication mode is
+    ///           spi0_mode::none and conversation is stopped.
+      bool read( std::uint8_t & data );
+
+    /// @brief Query whether there is an on going conversation.
+    ///
+    /// Note that an ongoing conversation is one in which the communication
+    /// mode is not spi0_mode::none. If there is an ongoing conversation then
+    /// data transfers will be active (CS register TA field will be 1) .
+    ///
+    /// @returns true if there is an ongoing SPI0 conversation, false if not.
+      bool is_conversing() const;
 
     /// @brief Query whether SPI standard 3-wire protocol is supported
     ///
@@ -257,187 +407,6 @@ namespace dibase { namespace rpi {
     /// @returns  true if the receive FIFO is at least 75% full.
     ///           false if the receive FIFO is less than 75% full.
       bool read_fifo_needs_reading() const;
-    };
-
-  /// @brief Enumeration of valid SPI0 slave devices chip numbers
-  /// 
-  /// Note that only 2 devices are directly supported. Although the field is
-  /// 2 bits in size value 2 de-selects all (both) devices and 3 (11 binary)
-  /// is marked as 'reserved'.
-    enum class spi0_slave
-    { chip0 = 0U  ///< Device addressed by CS = 0 (assert CE0, de-assert CE1)
-    , chip1 = 1U  ///< Device addressed by CS = 1 (de-assert CE0, assert CE1)
-    };
-
-  /// @brief Enumeration of SPI0 communication modes
-    enum class spi0_mode
-    { standard      ///< Standard 3-wire SPI mode - uses MOSI _and_ MISO
-    , bidirectional ///< 2-wire SPI bidirectional mode - does not use MISO
-    , lossi         ///< 2-wire LoSSI mode - does not use MISO
-    };
-
-  /// @brief Enumeration of SPI0 clock polarity options
-    enum class spi0_clk_polarity
-    { low   ///< Rest state of clock low
-    , high  ///< Rest state of clock high
-    };
-
-  /// @brief Enumeration of SPI0 clock phase options.
-    enum class spi0_clk_phase
-    { middle  ///< Clock transitions at middle of data bit
-    , start   ///< Clock transitions at start of data bit
-    };
-
-  /// @brief Enumeration of LoSSI mode write type
-    enum class spi0_lossi_write
-    { data      ///< Writing LoSSI parameter data to slave device
-    , command   ///< Writing LoSSI command to slave device
-    };
-
-  /// @brief Hold a polled conversation with an SPI0 slave device
-  ///
-  /// spi0_conversation specialisations contain the context of the SPI0
-  /// peripheral SPI master <-> SPI slave device that defines how to perform
-  /// raw communication with the slave device. The context includes:
-  ///
-  /// - the slave's chip select value (0 or 1)
-  /// - the required SPI0 clock frequency
-  /// - the clock polarity and phase (defaults to low at rest, start of clock)
-  /// - the communication mode (standard 3-wire SPI, bidirectional 2-wire SPI, 
-  ///   or LoSSI 2-wire) (defaults to standard 3-wire SPI)
-  /// - the APB core frequency - which is fixed for a specific board and
-  ///   defaults to rpi_apb_core_frequency.
-  ///
-  /// An spi0_conversation's communication context is only applied when the
-  /// conversation object is opened, at which point it must be associated with
-  /// an spi0_pins object. Only one conversation object may be open at one time.
-  /// On opening the FIFOs are cleared and transfer active (TA) field is set
-  /// true (active).
-  ///
-  /// When closed the transfer active (TA) field is set false (inactive)
-  /// and the spi0_pins object association removed.
-  ///
-  /// When first created the conversation object is in the closed state. When
-  /// destroyed the conversation object is closed. If the associated spi0_pins
-  /// object is destroyed then a currently open spi0_conversation object will
-  /// be closed.
-  ///
-  /// This scheme allows many conversation objects to exist - more than the two
-  /// the SPI slave addressing scheme would imply allowing more slave devices
-  /// to be supported (assuming the additional hardware is present to allow
-  /// such extensions).
-    class spi0_conversation
-    {
-      std::uint32_t cs_reg;
-      std::uint32_t clk_reg;
-      std::uint32_t ltoh_reg;
-      spi0_mode     mode;
-      spi0_pins *   pins;
-
-    public:
-    /// @brief Construct from conversation context parameters
-    ///
-    /// The context defines which slave device to communicate with and how to 
-    /// do so. Most of the parameters have defaults.
-    ///
-    /// @post Object is in a closed state.
-    ///
-    /// @param[in] cs     Chip select - which of the two chip enable lines
-    ///                   should be asserted during an open conversation.
-    /// @param[in] f      Required frequency of the SPI clock SCLK while
-    ///                   communicating [fc/2, fc/65536]. Non-integral values of
-    ///                   fc/f rounded down so actual frequency may be higher.
-    /// @param[in] mode   Communications mode. Defaults to spi_std: standard
-    ///                   SPI 3-wire mode.
-    /// @param[in] cpol   Clock polarity. Defaults to rest state low
-    /// @param[in] cpha   Clock phase. Defaults to clock transition in middle
-    ///                   of data bit.
-    /// @param[in] ltoh   LoSSI mode hold delay (in APB core clock ticks) [1,15]
-    ///                   Only relevant for mode==spi0_mode::lossi.
-    ///                   Defaults to 1.
-    /// @param[in] fc     APB core frequency \ref frequency type. Should be
-    ///                   fixed for a given board.
-    ///                   Defaults to rpi_apb_core_frequency.
-    ///
-    /// @throws std::invalid_argument if the cs parameter is invalid.
-    /// @throws std::out_of_range if the f or ltoh parameters are not in range.
-      spi0_conversation
-      ( spi0_slave cs
-      , hertz f
-      , spi0_mode         mode  = spi0_mode::standard
-      , spi0_clk_polarity cpol  = spi0_clk_polarity::low
-      , spi0_clk_phase    cpha  = spi0_clk_phase::middle
-      , std::uint32_t     ltoh  = 1U
-      , hertz             fc    = rpi_apb_core_frequency
-      );
-
-    /// @brief Destroy: close if conversation open.
-      ~spi0_conversation();
-
-      spi0_conversation(spi0_conversation const &) = delete;
-      spi0_conversation& operator=(spi0_conversation const &) = delete;
-      spi0_conversation(spi0_conversation &&) = delete;
-      spi0_conversation& operator=(spi0_conversation &&) = delete;
-
-    /// @brief Open a conversation for communication
-    ///
-    /// @post is_open()==true
-    /// @post sp.has_conversation()==true
-    /// @post Conversation parameters are applied to SPI0
-    /// @post SPI0 transmit and receive FIFOs are clear
-    /// @post SPI0 data transfer is active (CS TA field is 1)
-    ///
-    /// @param[in] sp   Modifiable reference to spi_pins objects
-    ///
-    /// @throws peripheral_in_use if sp.has_conversation()==true on entry
-    /// @throws std::invalid_argument if the conversation mode is 
-    ///         spi0_mode::standard and the sp parameter has no standard mode
-    ///         support (i.e. we want to talk 3-wire SPI and only pins for
-    ///         2-wire modes are provided).
-      void open(spi0_pins & sp);
-
-    /// @brief Closes the conversation if it open.
-    ///
-    /// @post sp.has_conversation()==false
-    /// @post is_open()==false
-    /// @post SPI0 data transfer is inactive (CS TA field is 0)
-      void close();
-
-    /// @brief Return whether the conversation is open for communication or not
-    /// @returns  true if conversation object is open for communication
-    ///           false if it is not open (i.e. it is closed).
-      bool is_open() const;
-
-    /// @brief Write a single byte to the transmit FIFO
-    /// @param[in] data Data byte to be written
-    /// @param[in] lossi_write_type 
-    ///                 Only relevant if using LoSSI communication mode.
-    ///                 Specifies whether this is a LoSSI command or parameter
-    ///                 data write. Default to parameter data write.
-    /// @returns  true if byte written to transmit FIFO,
-    ///           false if it could not as FIFO full
-    /// @throws std::logic_error if called when conversation is closed.
-      bool write
-      ( std::uint8_t data
-      , spi0_lossi_write lossi_write_type=spi0_lossi_write::data
-      );
-
-    /// @brief Read a single byte from the receive FIFO
-    ///
-    /// When in bidirectional mode a read has to be initiated. This is done
-    /// by calling read when there is no data in the receive FIFO. This sets
-    /// the Read Enable bit in the CS register and writes junk to the FIFO
-    /// register initiate a read transaction and returns false. The data
-    /// should appear in the receive FIFO some time later.
-    ///
-    /// In LoSSI mode data is send to the receive FIFO following the writing
-    /// of a read command to a slave device (using \ref write).
-    ///
-    /// @param[out] data Data byte to receive read value
-    /// @returns  true if byte read from receive FIFO,
-    ///           false if it could not as FIFO empty
-    /// @throws std::logic_error if called when conversation is closed.
-      bool read( std::uint8_t & data );
     };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

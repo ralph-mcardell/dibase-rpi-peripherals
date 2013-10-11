@@ -33,9 +33,14 @@ public:
       set_speed(0.0);
     }
 
+    motor(motor const &) = delete;
+    motor& operator=(motor const &) = delete;
+    motor(motor &&) = delete;
+    motor& operator=(motor &&) = delete;
+
     // -1.0 (full reverse) - 0 (stop) - 1.0 (full forward)
     void set_speed(double speed);
- 
+
     ~motor()
     {
       set_speed(0.0);  

@@ -206,12 +206,13 @@ namespace
   }
 }
 
-TEST_CASE( "Interactive_tests/spi0_pins/0000/read write standard SPI"
-         , "Check the CLK pin frequency is as expected"
+TEST_CASE( "Interactive_tests/spi0_pins/0000/single byte read write standard SPI"
+         , "Check loop-backed data read matches that written using single byte "
+           "read and write overloads"
          )
 {
   welcome();
-  std::cout << "\nSPI0 SPI standard mode write-read test:\n\n";
+  std::cout << "\nSPI0 SPI standard mode single-byte write-read test:\n\n";
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
   hertz freq(kilohertz(100));
   spi0_slave_context sc(spi0_slave::chip0, freq);
@@ -260,6 +261,65 @@ TEST_CASE( "Interactive_tests/spi0_pins/0000/read write standard SPI"
   for (unsigned i=0U; i!=ByteRange; ++i)
     {
       CHECK(transfer_data[i]==1); // implies written and read once
+    }
+}
+
+TEST_CASE( "Interactive_tests/spi0_pins/0010/multi byte read write standard SPI"
+         , "Check loop-backed data read matches that written using multi-byte "
+           "read and write overloads"
+         )
+{
+  welcome();
+  std::cout << "\nSPI0 SPI standard mode multi-byte write-read test:\n\n";
+  spi0_pins sp(rpi_p1_spi0_full_pin_set);
+  hertz freq(kilohertz(100));
+  spi0_slave_context sc(spi0_slave::chip0, freq);
+  sp.start_conversing(sc);
+  constexpr unsigned ByteRange{256U};
+  std::uint8_t write_buffer[ByteRange] = {};
+  std::uint8_t read_buffer[ByteRange] = {};
+  for (unsigned v=0U; v!=ByteRange; ++v)
+    {
+      write_buffer[v] = v;
+    }
+
+  std::size_t write_bytes_remaining{ByteRange};
+  std::size_t read_bytes_remaining{ByteRange};
+  std::uint8_t * write_pos{write_buffer};
+  std::uint8_t * read_pos{read_buffer};
+  while (write_bytes_remaining!=0 || read_bytes_remaining!=0)
+    {
+      if (sp.read_fifo_has_data())
+        {
+          auto bytes_read = sp.read(read_pos,read_bytes_remaining);
+          read_bytes_remaining -= bytes_read;
+          REQUIRE(read_bytes_remaining<=ByteRange); // Read too many bytes
+          while (bytes_read--)
+            {
+              REQUIRE(read_pos!=(read_buffer+ByteRange));
+              std::cout << "R("<< int(*read_pos) << ") ";
+              ++read_pos;
+            }
+        }
+      if (write_bytes_remaining==0U) continue; // no more to write
+      while (!sp.write_fifo_has_space())
+        {
+          std::this_thread::yield();
+        }
+      auto bytes_written = sp.write(write_pos, write_bytes_remaining);
+      write_bytes_remaining -= bytes_written;
+      REQUIRE(write_bytes_remaining<=ByteRange); // Wrote too many bytes
+      while (bytes_written--)
+        {
+          REQUIRE(write_pos!=(write_buffer+ByteRange));
+          std::cout << "W("<< int(*write_pos) << ") ";
+          ++write_pos;
+        }
+    }
+  std::cout << std::endl;
+  for (unsigned i=0U; i!=ByteRange; ++i)
+    {
+      CHECK(read_buffer[i]==i);
     }
 }
 

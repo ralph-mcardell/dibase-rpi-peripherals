@@ -336,6 +336,22 @@ namespace dibase { namespace rpi {
       , spi0_lossi_write lossi_write_type=spi0_lossi_write::data
       );
 
+    /// @brief Write bytes from buffer to the transmit FIFO
+    ///
+    /// Note: For LoSSI mode only multiple parameter writes are supported.
+    /// Write command  bytes using the single-byte overload of write with
+    /// lossi_write_type==spi0_lossi_write::command.
+    ///
+    /// @param[in] data   Pointer to data bytes to be written
+    /// @param[in] count  Maximum number of bytes to write
+    /// @returns  Number of bytes actually written. Less than count if FIFO
+    ///           fills. Zero if FIFO full or communication mode is
+    ///           spi0_mode::none and conversation is stopped.
+      std::size_t write
+      ( std::uint8_t const * pdata
+      , std::size_t count
+      );
+
     /// @brief Read a single byte from the receive FIFO
     ///
     /// When in bidirectional mode a read has to be initiated. This is done
@@ -351,7 +367,37 @@ namespace dibase { namespace rpi {
     /// @returns  true if byte read from receive FIFO,
     ///           false if it could not as FIFO empty or communication mode is
     ///           spi0_mode::none and conversation is stopped.
-      bool read( std::uint8_t & data );
+      bool read(std::uint8_t & data);
+
+    /// @brief Read bytes from the receive FIFO into a buffer
+    ///
+    /// When in bidirectional mode a read has to be initiated. This is done
+    /// by calling read when there is no data in the receive FIFO. This sets
+    /// the Read Enable bit in the CS register and writes junk to the FIFO
+    /// register initiate a read transaction and returns false. The data
+    /// should appear in the receive FIFO some time later.
+    ///
+    /// In LoSSI mode data is send to the receive FIFO following the writing
+    /// of a read command to a slave device (using \ref write).
+    ///
+    /// @param[out] data  Data buffer to receive read values
+    /// @param[in] count  Maximum number of bytes to read
+    /// @param[out] ppending_count 
+    ///                   Only relevant for bidirectional mode. Defaults to
+    ///                   nullptr. Pointer to std::size_t that will have the
+    ///                   count of pending reads 'queued' up by performing
+    ///                   writes of junk written to it.
+    /// @returns  true if byte read from receive FIFO,
+    ///           false if it could not as FIFO empty or communication mode is
+    ///           spi0_mode::none and conversation is stopped.
+    /// @returns  Number of bytes actually read. Less than count if FIFO
+    ///           empties. Zero if FIFO empty or communication mode is
+    ///           spi0_mode::none and conversation is stopped.
+      std::size_t read
+      ( std::uint8_t * pdata
+      , std::size_t count
+      , std::size_t * ppending_count=nullptr
+      );
 
     /// @brief Query whether there is an on going conversation.
     ///

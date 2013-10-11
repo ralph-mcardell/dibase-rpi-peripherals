@@ -493,18 +493,12 @@ TEST_CASE( "Platform-tests/spi0_pins/1050/bad: std SPI mode ctx with 2-wire only
          )
 {
   spi0_pins sp(rpi_p1_spi0_2_wire_only_pin_set);
-  {
-    spi0_slave_context sc_los(spi0_slave::chip0,kilohertz(25),spi0_mode::lossi);
-    sp.start_conversing(sc_los);
-  }
-  {
-    spi0_slave_context sc_bid(spi0_slave::chip0,kilohertz(25),spi0_mode::bidirectional);
-    sp.start_conversing(sc_bid);
-  }
-  {
-    spi0_slave_context sc_std(spi0_slave::chip0,kilohertz(25));
-    REQUIRE_THROWS_AS(sp.start_conversing(sc_std), std::invalid_argument);
-  }
+  spi0_slave_context sc_los(spi0_slave::chip0,kilohertz(25),spi0_mode::lossi);
+  sp.start_conversing(sc_los);
+  spi0_slave_context sc_bid(spi0_slave::chip0,kilohertz(25),spi0_mode::bidirectional);
+  sp.start_conversing(sc_bid);
+  spi0_slave_context sc_std(spi0_slave::chip0,kilohertz(25));
+  REQUIRE_THROWS_AS(sp.start_conversing(sc_std), std::invalid_argument);
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1100/good: Start conversing sets clock divider"
@@ -513,37 +507,34 @@ TEST_CASE( "Platform-tests/spi0_pins/1100/good: Start conversing sets clock divi
          )
 {
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
-  { //1MHz should yield a CDIV of 250: even but not a power of 2
-    hertz test_frequency(megahertz(1U));
-    spi0_slave_context sc(spi0_slave::chip0, test_frequency);
-    std::uint32_t expected_cdiv{rpi_apb_core_frequency.count()/test_frequency.count()};
-    spi0_ctrl::instance().regs->set_clock_divider(65536U);
-    sp.start_conversing(sc);
-    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
-    sp.stop_conversing();
-    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
-  }
-  { // Odd CDIV values allowed, 2MHz should yield a divider of 125:
-    // BUT bit 0 is ignored and acted on as if it were 0, so a CDIV
-    // value of 125 acts as a CDIV value of 124.
-    hertz test_frequency(megahertz(2U));
-    spi0_slave_context sc(spi0_slave::chip0, test_frequency);
-    std::uint32_t expected_cdiv{rpi_apb_core_frequency.count()/test_frequency.count()};
-    spi0_ctrl::instance().regs->set_clock_divider(65536U);
-    sp.start_conversing(sc);
-    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
-    sp.stop_conversing();
-    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
-  }
-  { // Is a CDIV of 2 OK?
-    spi0_slave_context sc(spi0_slave::chip0, hertz(rpi_apb_core_frequency.count()/2));
-    std::uint32_t expected_cdiv{2U};
-    spi0_ctrl::instance().regs->set_clock_divider(65535U);
-    sp.start_conversing(sc);
-    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
-    sp.stop_conversing();
-    CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_cdiv);
-  }
+//1MHz should yield a CDIV of 250: even but not a power of 2
+  hertz test_freq1Mhz(megahertz(1U));
+  spi0_slave_context sc1Mhz(spi0_slave::chip0, test_freq1Mhz);
+  std::uint32_t expected_1MHz_cdiv{rpi_apb_core_frequency.count()/test_freq1Mhz.count()};
+  spi0_ctrl::instance().regs->set_clock_divider(65536U);
+  sp.start_conversing(sc1Mhz);
+  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_1MHz_cdiv);
+  sp.stop_conversing();
+  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_1MHz_cdiv);
+// Odd CDIV values allowed, 2MHz should yield a divider of 125:
+// BUT bit 0 is ignored and acted on as if it were 0, so a CDIV
+// value of 125 acts as a CDIV value of 124.
+  hertz test_frequ2Mhz(megahertz(2U));
+  spi0_slave_context sc2Mhz(spi0_slave::chip0, test_frequ2Mhz);
+  std::uint32_t expected_2Mhz_cdiv{rpi_apb_core_frequency.count()/test_frequ2Mhz.count()};
+  spi0_ctrl::instance().regs->set_clock_divider(65536U);
+  sp.start_conversing(sc2Mhz);
+  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_2Mhz_cdiv);
+  sp.stop_conversing();
+  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_2Mhz_cdiv);
+// Is a CDIV of 2 OK?
+  spi0_slave_context sc_max_freq(spi0_slave::chip0, hertz(rpi_apb_core_frequency.count()/2));
+  std::uint32_t expected_min_cdiv{2U};
+  spi0_ctrl::instance().regs->set_clock_divider(65535U);
+  sp.start_conversing(sc_max_freq);
+  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_min_cdiv);
+  sp.stop_conversing();
+  CHECK(spi0_ctrl::instance().regs->get_clock_divider()==expected_min_cdiv);
   spi0_ctrl::instance().regs->set_clock_divider(65535U);
   CHECK(spi0_ctrl::instance().regs->get_clock_divider()==65535U);
 }
@@ -558,40 +549,34 @@ TEST_CASE( "Platform-tests/spi0_pins/1110/good: start_conversing sets ltoh in Lo
   std::uint32_t updated_ltoh{10U};
   std::uint32_t original_ltoh{2U};
   spi0_ctrl::instance().regs->set_lossi_output_hold_delay(original_ltoh);
-  {
-    spi0_slave_context sc_std( spi0_slave::chip0
-                            , kilohertz(25)
-                            , spi0_mode::standard
-                            , spi0_clk_polarity::low
-                            , spi0_clk_phase::middle
-                            , updated_ltoh
-                            ); 
-    sp.start_conversing(sc_std);
-    CHECK(spi0_ctrl::instance().regs->get_lossi_output_hold_delay()==original_ltoh);
-  }
-  {
-    spi0_slave_context sc_bid( spi0_slave::chip0
-                            , kilohertz(25)
-                            , spi0_mode::bidirectional
-                            , spi0_clk_polarity::low
-                            , spi0_clk_phase::middle
-                            , updated_ltoh
-                            ); 
-    sp.start_conversing(sc_bid);
-    CHECK(spi0_ctrl::instance().regs->get_lossi_output_hold_delay()==original_ltoh);
-  }
-  {
-    spi0_slave_context sc_los( spi0_slave::chip0
-                            , kilohertz(25)
-                            , spi0_mode::lossi
-                            , spi0_clk_polarity::low
-                            , spi0_clk_phase::middle
-                            , updated_ltoh
-                            );
-    sp.start_conversing(sc_los);
-    CHECK(spi0_ctrl::instance().regs->get_lossi_output_hold_delay()==updated_ltoh);
-  }
-}
+  spi0_slave_context sc_std( spi0_slave::chip0
+                          , kilohertz(25)
+                          , spi0_mode::standard
+                          , spi0_clk_polarity::low
+                          , spi0_clk_phase::middle
+                          , updated_ltoh
+                          ); 
+  sp.start_conversing(sc_std);
+  CHECK(spi0_ctrl::instance().regs->get_lossi_output_hold_delay()==original_ltoh);
+  spi0_slave_context sc_bid( spi0_slave::chip0
+                          , kilohertz(25)
+                          , spi0_mode::bidirectional
+                          , spi0_clk_polarity::low
+                          , spi0_clk_phase::middle
+                          , updated_ltoh
+                          ); 
+  sp.start_conversing(sc_bid);
+  CHECK(spi0_ctrl::instance().regs->get_lossi_output_hold_delay()==original_ltoh);
+  spi0_slave_context sc_los( spi0_slave::chip0
+                          , kilohertz(25)
+                          , spi0_mode::lossi
+                          , spi0_clk_polarity::low
+                          , spi0_clk_phase::middle
+                          , updated_ltoh
+                          );
+  sp.start_conversing(sc_los);
+  CHECK(spi0_ctrl::instance().regs->get_lossi_output_hold_delay()==updated_ltoh);
+ }
 
 TEST_CASE( "Platform-tests/spi0_pins/1120/good: start_conversing leaves CSPOL0,1 alone"
          , "Opening spi0_slave_context does not modify the CS register CSPOL0 "
@@ -609,8 +594,8 @@ TEST_CASE( "Platform-tests/spi0_pins/1120/good: start_conversing leaves CSPOL0,1
     CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
   }
   {
-    spi0_pins sp_11(rpi_p1_spi0_full_pin_set
-                , spi0_cs_polarity::high, spi0_cs_polarity::high);
+    spi0_pins sp_11( rpi_p1_spi0_full_pin_set
+                   , spi0_cs_polarity::high, spi0_cs_polarity::high);
     REQUIRE(spi0_ctrl::instance().regs->get_chip_select_polarity(0));
     REQUIRE(spi0_ctrl::instance().regs->get_chip_select_polarity(1));
     sp_11.start_conversing(sc);
@@ -625,20 +610,16 @@ TEST_CASE( "Platform-tests/spi0_pins/1130/good: start_conversing sets CS"
          )
 {
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
-  {
-    spi0_ctrl::instance().regs->set_chip_select(2U);
-    REQUIRE(spi0_ctrl::instance().regs->get_chip_select()==2U);
-    spi0_slave_context sc_0( spi0_slave::chip0, kilohertz(25)); 
-    sp.start_conversing(sc_0);
-    CHECK(spi0_ctrl::instance().regs->get_chip_select()==0U);
-  }
-  {
-    spi0_ctrl::instance().regs->set_chip_select(2U);
-    REQUIRE(spi0_ctrl::instance().regs->get_chip_select()==2U);
-    spi0_slave_context sc_1( spi0_slave::chip1, kilohertz(25)); 
-    sp.start_conversing(sc_1);
-    CHECK(spi0_ctrl::instance().regs->get_chip_select()==1U);
-  }
+  spi0_ctrl::instance().regs->set_chip_select(2U);
+  REQUIRE(spi0_ctrl::instance().regs->get_chip_select()==2U);
+  spi0_slave_context sc_0( spi0_slave::chip0, kilohertz(25)); 
+  sp.start_conversing(sc_0);
+  CHECK(spi0_ctrl::instance().regs->get_chip_select()==0U);
+  spi0_ctrl::instance().regs->set_chip_select(2U);
+  REQUIRE(spi0_ctrl::instance().regs->get_chip_select()==2U);
+  spi0_slave_context sc_1( spi0_slave::chip1, kilohertz(25)); 
+  sp.start_conversing(sc_1);
+  CHECK(spi0_ctrl::instance().regs->get_chip_select()==1U);
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1140/good: start_conversing sets fields for mode"
@@ -647,35 +628,29 @@ TEST_CASE( "Platform-tests/spi0_pins/1140/good: start_conversing sets fields for
          )
 {
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
-  {
-    spi0_slave_context sc_std( spi0_slave::chip0
-                            , kilohertz(25)
-                            , spi0_mode::standard
-                            ); 
-    sp.start_conversing(sc_std);
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_enable());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
-  }
-  {
-    spi0_slave_context sc_bid( spi0_slave::chip0
-                            , kilohertz(25)
-                            , spi0_mode::bidirectional
-                            ); 
-    sp.start_conversing(sc_bid);
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_enable());
+  spi0_slave_context sc_std( spi0_slave::chip0
+                          , kilohertz(25)
+                          , spi0_mode::standard
+                          ); 
+  sp.start_conversing(sc_std);
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_enable());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+  spi0_slave_context sc_bid( spi0_slave::chip0
+                          , kilohertz(25)
+                          , spi0_mode::bidirectional
+                          ); 
+  sp.start_conversing(sc_bid);
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_enable());
 
-  // REN is used in bidirectional mode but starts in write mode.
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
-  }
-  {
-    spi0_slave_context sc_los( spi0_slave::chip0
-                            , kilohertz(25)
-                            , spi0_mode::lossi
-                            );
-    sp.start_conversing(sc_los);
-    CHECK(spi0_ctrl::instance().regs->get_lossi_enable());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
-  }
+// REN is used in bidirectional mode but starts in write mode.
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+   spi0_slave_context sc_los( spi0_slave::chip0
+                          , kilohertz(25)
+                          , spi0_mode::lossi
+                          );
+  sp.start_conversing(sc_los);
+  CHECK(spi0_ctrl::instance().regs->get_lossi_enable());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1150/good: start_conversing sets CPOL"
@@ -684,26 +659,22 @@ TEST_CASE( "Platform-tests/spi0_pins/1150/good: start_conversing sets CPOL"
          )
 {
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
-  {
-    spi0_ctrl::instance().regs->set_clock_polarity(true);
-    spi0_slave_context sc_std( spi0_slave::chip0
-                            , kilohertz(25)
-                            , spi0_mode::standard
-                            , spi0_clk_polarity::low
-                            ); 
-    sp.start_conversing(sc_std);
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_clock_polarity());
-  }
-  {
-    REQUIRE_FALSE(spi0_ctrl::instance().regs->get_clock_polarity());
-    spi0_slave_context sc_bid( spi0_slave::chip0
-                            , kilohertz(25)
-                            , spi0_mode::standard
-                            , spi0_clk_polarity::high
-                            ); 
-    sp.start_conversing(sc_bid);
-    CHECK(spi0_ctrl::instance().regs->get_clock_polarity());
-  }
+  spi0_ctrl::instance().regs->set_clock_polarity(true);
+  spi0_slave_context sc_std( spi0_slave::chip0
+                          , kilohertz(25)
+                          , spi0_mode::standard
+                          , spi0_clk_polarity::low
+                          ); 
+  sp.start_conversing(sc_std);
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_clock_polarity());
+  REQUIRE_FALSE(spi0_ctrl::instance().regs->get_clock_polarity());
+  spi0_slave_context sc_bid( spi0_slave::chip0
+                          , kilohertz(25)
+                          , spi0_mode::standard
+                          , spi0_clk_polarity::high
+                          ); 
+  sp.start_conversing(sc_bid);
+  CHECK(spi0_ctrl::instance().regs->get_clock_polarity());
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1160/good: start_conversing sets CPHA"
@@ -712,28 +683,24 @@ TEST_CASE( "Platform-tests/spi0_pins/1160/good: start_conversing sets CPHA"
          )
 {
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
-  {
-    spi0_ctrl::instance().regs->set_clock_phase(true);
-    spi0_slave_context sc_std( spi0_slave::chip0
-                            , kilohertz(25)
-                            , spi0_mode::standard
-                            , spi0_clk_polarity::low
-                            , spi0_clk_phase::middle
-                            ); 
-    sp.start_conversing(sc_std);
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_clock_phase());
-  }
-  {
-    REQUIRE_FALSE(spi0_ctrl::instance().regs->get_clock_phase());
-    spi0_slave_context sc_bid( spi0_slave::chip0
-                            , kilohertz(25)
-                            , spi0_mode::standard
-                            , spi0_clk_polarity::low
-                            , spi0_clk_phase::start
-                            ); 
-    sp.start_conversing(sc_bid);
-    CHECK(spi0_ctrl::instance().regs->get_clock_phase());
-  }
+  spi0_ctrl::instance().regs->set_clock_phase(true);
+  spi0_slave_context sc_std( spi0_slave::chip0
+                          , kilohertz(25)
+                          , spi0_mode::standard
+                          , spi0_clk_polarity::low
+                          , spi0_clk_phase::middle
+                          ); 
+  sp.start_conversing(sc_std);
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_clock_phase());
+  REQUIRE_FALSE(spi0_ctrl::instance().regs->get_clock_phase());
+  spi0_slave_context sc_bid( spi0_slave::chip0
+                          , kilohertz(25)
+                          , spi0_mode::standard
+                          , spi0_clk_polarity::low
+                          , spi0_clk_phase::start
+                          ); 
+  sp.start_conversing(sc_bid);
+  CHECK(spi0_ctrl::instance().regs->get_clock_phase());
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1170/good: start_conversing sets common CS state"
@@ -742,48 +709,44 @@ TEST_CASE( "Platform-tests/spi0_pins/1170/good: start_conversing sets common CS 
          )
 {
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
-  {
-    spi0_slave_context sc( spi0_slave::chip0, kilohertz(25) ); 
-    sp.start_conversing(sc);
+  spi0_slave_context sc( spi0_slave::chip0, kilohertz(25) ); 
+  sp.start_conversing(sc);
 
-  // Not using DMA
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_dma_enable());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_dma_enable());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_long_word());
+// Not using DMA
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_dma_enable());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_dma_enable());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_long_word());
 
-  // Not using interrupts
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_done());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_rxr());
+// Not using interrupts
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_done());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_rxr());
 
-  // Not de-asserting CS when done
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_auto_deassert_chip_select());
+// Not de-asserting CS when done
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_auto_deassert_chip_select());
 
-  // Start in write mode - have to write command in bidirectional mode 1st!
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+// Start in write mode - have to write command in bidirectional mode 1st!
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
 
-  // Don't really care about CSPOL and CSPOL2 state - should be zero
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(2U));
-  }
-  {
-    spi0_slave_context sc_bid( spi0_slave::chip1
-                            , kilohertz(25)
-                            , spi0_mode::lossi
-                            , spi0_clk_polarity::high
-                            , spi0_clk_phase::start
-                            ); 
-    sp.start_conversing(sc_bid);
+// Don't really care about CSPOL and CSPOL2 state - should be zero
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(2U));
+  spi0_slave_context sc_bid( spi0_slave::chip1
+                          , kilohertz(25)
+                          , spi0_mode::lossi
+                          , spi0_clk_polarity::high
+                          , spi0_clk_phase::start
+                          ); 
+  sp.start_conversing(sc_bid);
 
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_dma_enable());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_dma_enable());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_long_word());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_done());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_rxr());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_auto_deassert_chip_select());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity());
-    CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(2U));
-  }
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_dma_enable());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_dma_enable());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_lossi_long_word());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_done());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_interrupt_on_rxr());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_auto_deassert_chip_select());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity());
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_chip_select_polarity(2U));
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1180/good: start_conversing clears FIFOs"
@@ -791,28 +754,26 @@ TEST_CASE( "Platform-tests/spi0_pins/1180/good: start_conversing clears FIFOs"
          )
 {
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
-  {
-    spi0_ctrl::instance().regs->set_transfer_active(true);
-    REQUIRE(spi0_ctrl::instance().regs->get_transfer_active());
-    while(spi0_ctrl::instance().regs->get_tx_fifo_not_full())
-      {
-        spi0_ctrl::instance().regs->transmit_fifo_write(65U);
-      }
-    spi0_ctrl::instance().regs->set_transfer_active(false);
-    REQUIRE_FALSE(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
-    spi0_slave_context sc( spi0_slave::chip0, kilohertz(25) ); 
-    sp.start_conversing(sc);
-    CHECK(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
-    REQUIRE(spi0_ctrl::instance().regs->get_transfer_active());
-    while(spi0_ctrl::instance().regs->get_tx_fifo_not_full())
-      {
-        spi0_ctrl::instance().regs->transmit_fifo_write(97U);
-      }
-    REQUIRE_FALSE(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
-  }
+  spi0_ctrl::instance().regs->set_transfer_active(true);
+  REQUIRE(spi0_ctrl::instance().regs->get_transfer_active());
+  while(spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+    {
+      spi0_ctrl::instance().regs->transmit_fifo_write(65U);
+    }
+  spi0_ctrl::instance().regs->set_transfer_active(false);
+  REQUIRE_FALSE(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
+  spi0_slave_context sc0( spi0_slave::chip0, kilohertz(25) ); 
+  sp.start_conversing(sc0);
+  CHECK(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
+  REQUIRE(spi0_ctrl::instance().regs->get_transfer_active());
+  while(spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+    {
+      spi0_ctrl::instance().regs->transmit_fifo_write(97U);
+    }
+  REQUIRE_FALSE(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
   CHECK_FALSE(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
-  spi0_slave_context sc( spi0_slave::chip0, kilohertz(25) ); 
-  sp.start_conversing(sc);
+  spi0_slave_context sc1( spi0_slave::chip0, kilohertz(25) ); 
+  sp.start_conversing(sc1);
   CHECK(spi0_ctrl::instance().regs->get_tx_fifo_not_full());
 }
 
@@ -825,6 +786,9 @@ TEST_CASE( "Platform-tests/spi0_pins/1400/good: std: write 1 byte to open conver
   sp.start_conversing(sc);
   CHECK(sp.write(65U));
   spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+  std::uint8_t data{66U}; 
+  CHECK(sp.write(&data, 1)==1U);
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1410/bad: write 1 byte. not conversing"
@@ -834,6 +798,8 @@ TEST_CASE( "Platform-tests/spi0_pins/1410/bad: write 1 byte. not conversing"
   spi0_pins sp(rpi_p1_spi0_full_pin_set);
   REQUIRE_FALSE(sp.is_conversing());
   CHECK_FALSE(sp.write(65U));
+  std::uint8_t data{66U}; 
+  CHECK(sp.write(&data, 1)==0U);
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1420/bad: std: write when full fails"
@@ -851,6 +817,8 @@ TEST_CASE( "Platform-tests/spi0_pins/1420/bad: std: write when full fails"
       if (!spi0_ctrl::instance().regs->get_tx_fifo_not_full())
         {
           CHECK_FALSE(sp.write(65U));
+          std::uint8_t data{66U}; 
+          CHECK(sp.write(&data, 1)==0U);
           break;
         }
     }
@@ -873,6 +841,12 @@ TEST_CASE( "Platform-tests/spi0_pins/1430/good: bidir: write 1 byte to conversat
   CHECK(sp.write(65U));
   CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
   spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+  spi0_ctrl::instance().regs->set_read_enable(true);
+  CHECK(spi0_ctrl::instance().regs->get_read_enable());
+  std::uint8_t data{66U}; 
+  CHECK(sp.write(&data, 1)==1U);
+  CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1440/good: std: write does not modify REN"
@@ -886,6 +860,12 @@ TEST_CASE( "Platform-tests/spi0_pins/1440/good: std: write does not modify REN"
   spi0_ctrl::instance().regs->set_read_enable(true);
   CHECK(spi0_ctrl::instance().regs->get_read_enable());
   CHECK(sp.write(65U));
+  CHECK(spi0_ctrl::instance().regs->get_read_enable());
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+  spi0_ctrl::instance().regs->set_read_enable(true);
+  CHECK(spi0_ctrl::instance().regs->get_read_enable());
+  std::uint8_t data{66U}; 
+  CHECK(sp.write(&data, 1)==1U);
   CHECK(spi0_ctrl::instance().regs->get_read_enable());
   spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
 }
@@ -902,9 +882,12 @@ TEST_CASE( "Platform-tests/spi0_pins/1450/good: lossi: write data byte to conver
   sp.start_conversing(sc);
   CHECK(sp.write(65U));
   spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+  std::uint8_t data{66U}; 
+  CHECK(sp.write(&data, 1)==1U);
+  spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
 }
 
-TEST_CASE( "Platform-tests/spi0_pins/0460/good: lossi: write cmd byte to conversation"
+TEST_CASE( "Platform-tests/spi0_pins/1460/good: lossi: write cmd byte to conversation"
          , "Writing command byte to a LoSSI mode conversation succeeds"
          )
 {
@@ -916,6 +899,7 @@ TEST_CASE( "Platform-tests/spi0_pins/0460/good: lossi: write cmd byte to convers
   sp.start_conversing(sc);
   CHECK(sp.write(65U, spi0_lossi_write::command));
   spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
+// Note: not supported by multi-byte write from buffer write overload.
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1600/ bad: read 1 byte, not conversing"
@@ -927,8 +911,8 @@ TEST_CASE( "Platform-tests/spi0_pins/1600/ bad: read 1 byte, not conversing"
   std::uint8_t data{0U};
   REQUIRE_FALSE(sp.is_conversing());
   CHECK_FALSE(sp.read(data));
+  CHECK(sp.read(&data,1)==0U);
 }
-
 
 TEST_CASE( "Platform-tests/spi0_pins/1610/bad: std: read when empty fails"
          , "Reading one byte from a standard mode conversation returns "
@@ -941,6 +925,7 @@ TEST_CASE( "Platform-tests/spi0_pins/1610/bad: std: read when empty fails"
   REQUIRE_FALSE(spi0_ctrl::instance().regs->get_rx_fifo_not_empty());
   std::uint8_t data{0U};
   CHECK_FALSE(sp.read(data));
+  CHECK(sp.read(&data,1)==0U);
 }
 
 TEST_CASE( "Platform-tests/spi0_pins/1620/good: bidir: read byte from conversation"
@@ -958,6 +943,9 @@ TEST_CASE( "Platform-tests/spi0_pins/1620/good: bidir: read byte from conversati
   CHECK_FALSE(spi0_ctrl::instance().regs->get_read_enable());
   std::uint8_t data{0U};
   CHECK_FALSE(sp.read(data));
+  std::size_t pending_reads{0U};
+  CHECK(sp.read(&data,1,&pending_reads)==0U);
+  CHECK(pending_reads==1U);
   CHECK(spi0_ctrl::instance().regs->get_read_enable());
   spi0_ctrl::instance().regs->clear_fifo(spi0_fifo_clear_action::clear_tx);
 }

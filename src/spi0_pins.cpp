@@ -230,28 +230,61 @@ namespace dibase { namespace rpi {
     , spi0_lossi_write lossi_write_type
     )
     {
-       if ( mode!=spi0_mode::none 
-         && spi0_ctrl::instance().regs->get_tx_fifo_not_full()
-          )
+      if (spi0_ctrl::instance().regs->get_tx_fifo_not_full())
         {
-          if (mode==spi0_mode::bidirectional)
+          switch (mode)
             {
-                spi0_ctrl::instance().regs->set_read_enable(false);
-            }
-          if (mode==spi0_mode::lossi&&lossi_write_type==spi0_lossi_write::data)
-            {
-              spi0_ctrl::instance().regs->transmit_fifo_lossi_write(data);
-            }
-          else
-            {
+            case spi0_mode::standard:
               spi0_ctrl::instance().regs->transmit_fifo_write(data);
-            }          
-          return true;
+              return true;
+
+            case spi0_mode::bidirectional:
+              spi0_ctrl::instance().regs->set_read_enable(false);
+              spi0_ctrl::instance().regs->transmit_fifo_write(data);
+              return true;
+
+            case spi0_mode::lossi:
+              if (lossi_write_type==spi0_lossi_write::data)
+                {
+                  spi0_ctrl::instance().regs->transmit_fifo_lossi_write(data);
+                }
+              else
+                {
+                  spi0_ctrl::instance().regs->transmit_fifo_write(data);
+                }
+              return true;
+
+            default: // spi0_mode::none and any weird values...
+              break;
+            };
         }
-      else
+      return false;
+    }
+
+    std::size_t  spi0_pins::write
+    ( std::uint8_t const * pdata
+    , std::size_t count
+    )
+    {
+      std::size_t bytes_written{0U};
+      switch (mode)
         {
-          return false;
-        }
+        case spi0_mode::bidirectional:
+          spi0_ctrl::instance().regs->set_read_enable(false);
+         /* Intentional drop-through */
+        case spi0_mode::standard:
+        case spi0_mode::lossi:
+          while (count-- && spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+            {
+              spi0_ctrl::instance().regs->transmit_fifo_write(*pdata++);
+              ++bytes_written;
+            }
+          break;
+
+        default: // spi0_mode::none and any weird values...
+          break;
+        };
+      return bytes_written;
     }
 
     bool spi0_pins::read( std::uint8_t & data )
@@ -278,6 +311,46 @@ namespace dibase { namespace rpi {
             }
           return false;
         }
+    }
+
+    std::size_t spi0_pins::read
+    ( std::uint8_t * pdata
+    , std::size_t count
+    , std::size_t * ppending_count
+    )
+    {
+      std::size_t bytes_read{0U};
+      if (mode==spi0_mode::none)
+        {
+          return bytes_read;
+        }
+      
+      while (count-- && spi0_ctrl::instance().regs->get_rx_fifo_not_empty())
+        {
+          *pdata++ = spi0_ctrl::instance().regs->receive_fifo_read();
+          ++bytes_read;
+        }
+
+    // When in bi-directional mode if not all requested bytes could be read
+    // queue up to remaining count reads by setting Read Enable true and
+    // writing junk to the FIFO register. The data should appear in the receive
+    // FIFO some time later.
+      if (mode==spi0_mode::bidirectional)
+        {
+          ++count; // undo last read-loop iteration post decrement
+          std::size_t pending_count{0U};
+          spi0_ctrl::instance().regs->set_read_enable(true);
+          while (count-- && spi0_ctrl::instance().regs->get_tx_fifo_not_full())
+            {
+              spi0_ctrl::instance().regs->transmit_fifo_write(*pdata);
+              ++pending_count;
+            }
+          if (ppending_count)
+            {
+              *ppending_count = pending_count;
+            }
+        }
+      return bytes_read;
     }
 
     spi0_slave_context::spi0_slave_context

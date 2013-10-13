@@ -26,7 +26,7 @@ void count_pulses()
     {
       ipin in{gpio_gclk};           // Gertboard J2 GP4 -- connect to i/p device
 
-      pin_edge_event pin_evt(in, pin_edge_event::falling);
+      pin_edge_event pin_evt(in, pin_edge_event::rising);
       constexpr auto timeout(std::chrono::milliseconds{65});
 
       while (g_running)
@@ -57,14 +57,12 @@ void display_frequency()
       while ( t_sample < std::chrono::system_clock::now() );
       auto sample_t0(std::chrono::system_clock::now());
       std::this_thread::sleep_until( t_sample );
-      unsigned cnt{g_count.load()};
+      unsigned cnt{g_count.exchange(0U)};
       auto sample_t(std::chrono::system_clock::now()-sample_t0);
-      
-      g_count.store(0U);
-      std::cout << "Frequency: " << std::setw(8) 
-                << (float(cnt)*std::chrono::system_clock::period::den)
-                    /(sample_t.count()*std::chrono::system_clock::period::num)
-                << "Hz (count=" << cnt << ", sample_t = " << sample_t.count()
+      unsigned freq((float(cnt)*std::chrono::system_clock::period::den)
+                    /(sample_t.count()*std::chrono::system_clock::period::num));
+      std::cout << "Frequency: " << std::setw(5) << freq << "Hz (count=" 
+                << std::setw(4) << cnt << ", sample_t = " << sample_t.count()
                 << "*[" << std::chrono::system_clock::period::num << '/'
                 << std::chrono::system_clock::period::den << "])"
                 <<"\r";

@@ -57,6 +57,24 @@ namespace dibase { namespace rpi {
         {
           return mem;
         }
+
+      public:
+        raw_phymem_ptr(raw_phymem_ptr const &) = delete;
+        raw_phymem_ptr & operator=(raw_phymem_ptr const &) = delete;
+
+      /// @brief Move construction: copies temporary other's mapped memory
+      /// pointer & length values to this's values and nulls/zero temporary's
+      /// values 
+      ///
+      /// @param[in] tmp  Temporary other object to move (steal guts) from
+        raw_phymem_ptr(raw_phymem_ptr && tmp);
+
+      /// @brief Move assignment: copies temporary other's mapped memory
+      /// pointer & length values to this's values and nulls/zero temporary's
+      /// values 
+      ///
+      /// @param[in] tmp  Temporary other object to move (steal guts) from
+        raw_phymem_ptr & operator=(raw_phymem_ptr && tmp);
       };
 
     /// @brief Typed physical memory smart pointer class template

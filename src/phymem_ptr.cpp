@@ -53,6 +53,23 @@ namespace dibase { namespace rpi {
         length = mapped_length;
       }
 
+      raw_phymem_ptr::raw_phymem_ptr(raw_phymem_ptr && tmp)
+      : mem{tmp.mem}
+      , length{tmp.length}
+      {
+        tmp.mem = MAP_FAILED;
+        tmp.length = 0;
+      }
+
+      raw_phymem_ptr & raw_phymem_ptr::operator=(raw_phymem_ptr && tmp)
+      {
+        mem = tmp.mem;
+        length = tmp.length;
+        tmp.mem = MAP_FAILED;
+        tmp.length = 0;
+        return *this;
+      }
+
       raw_phymem_ptr::~raw_phymem_ptr()
       {
         if ( MAP_FAILED != mem )

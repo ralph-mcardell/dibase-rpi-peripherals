@@ -22,11 +22,14 @@
 #include "catch.hpp"
 
 #include "phymem_ptr.h"
+#include <array>
 #include <sys/mman.h>
 
 size_t const PeripheralsBlockSize(4096);
 off_t  const PeripheralsBaseAddress(0x20000000);
 off_t  const GpioBaseAddress( PeripheralsBaseAddress+0x200000);
+off_t  const Bsc0BaseAddress( PeripheralsBaseAddress+0x205000);
+off_t  const Bsc1BaseAddress( PeripheralsBaseAddress+0x804000);
 
 typedef unsigned int volatile PeripheralAccessType;
 
@@ -170,5 +173,103 @@ TEST_CASE( "Platform_tests/phymem_ptr/subscript-1"
 
   REQUIRE( smart_peripheral_ptr.get() != null_peripheral_ptr );
   REQUIRE( smart_peripheral_ptr[1] == *(smart_peripheral_ptr.get()+1) );
+}
+
+TEST_CASE( "Platform_tests/phymem_ptr/move"
+         , "A temporary phymem_ptr can be moved correctly to another"
+         )
+{
+  unsigned * null_ptr(nullptr);
+  unsigned * raw_ptr(nullptr);
+
+  {
+    phymem_ptr<unsigned> 
+            ptr(phymem_ptr<unsigned>(GpioBaseAddress, PeripheralsBlockSize));
+    REQUIRE( ptr.get() != null_ptr );
+    raw_ptr = ptr.get();
+    REQUIRE( ptr[1] == *(ptr.get()+1) );
+    REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == 0 );
+    REQUIRE( munlock((const void*)raw_ptr, PeripheralsBlockSize) == 0 );
+  }
+
+// Check to ensure mapped region has been unmapped on destruction:
+//    Attempting to mlock non-mapped region should fail: 
+//        mlock returns -1 and sets errno to ENOMEM.
+  errno = 0;
+  REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == -1 );
+  REQUIRE( errno == ENOMEM );
+  
+}
+
+TEST_CASE( "Platform_tests/phymem_ptr/move volatile"
+         , "A temporary phymem_ptr to volatile data can be moved to another"
+         )
+{
+  PeripheralAccessType * null_ptr(nullptr);
+  PeripheralAccessType * raw_ptr(nullptr);
+
+  {
+    phymem_ptr<PeripheralAccessType> 
+            ptr(phymem_ptr<PeripheralAccessType>(GpioBaseAddress, PeripheralsBlockSize));
+    REQUIRE( ptr.get() != null_ptr );
+    raw_ptr = ptr.get();
+    REQUIRE( ptr[1] == *(ptr.get()+1) );
+    REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == 0 );
+    REQUIRE( munlock((const void*)raw_ptr, PeripheralsBlockSize) == 0 );
+  }
+
+// Check to ensure mapped region has been unmapped on destruction:
+//    Attempting to mlock non-mapped region should fail: 
+//        mlock returns -1 and sets errno to ENOMEM.
+  errno = 0;
+  REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == -1 );
+  REQUIRE( errno == ENOMEM );
+  
+}
+
+TEST_CASE( "Platform_tests/phymem_ptr/std::array"
+         , "Can create and initialise a std::array of phymem_ptrs to volatile "
+           "data"
+         )
+{
+  PeripheralAccessType * null_ptr(nullptr);
+  PeripheralAccessType * raw_ptr_array[3] = {nullptr, nullptr, nullptr};
+
+  {
+    std::array<phymem_ptr<PeripheralAccessType>,3>
+            ptr_array = 
+              { { phymem_ptr<PeripheralAccessType>(GpioBaseAddress, PeripheralsBlockSize)
+                , phymem_ptr<PeripheralAccessType>(Bsc0BaseAddress, PeripheralsBlockSize)
+                , phymem_ptr<PeripheralAccessType>(Bsc1BaseAddress, PeripheralsBlockSize)
+                }
+              };
+    REQUIRE( ptr_array[0].get() != null_ptr );
+    REQUIRE( ptr_array[1].get() != null_ptr );
+    REQUIRE( ptr_array[2].get() != null_ptr );
+    raw_ptr_array[0] = ptr_array[0].get();
+    raw_ptr_array[1] = ptr_array[1].get();
+    raw_ptr_array[2] = ptr_array[2].get();
+
+    REQUIRE( mlock((const void*)raw_ptr_array[0], PeripheralsBlockSize) == 0 );
+    REQUIRE( mlock((const void*)raw_ptr_array[1], PeripheralsBlockSize) == 0 );
+    REQUIRE( mlock((const void*)raw_ptr_array[2], PeripheralsBlockSize) == 0 );
+    REQUIRE( munlock((const void*)raw_ptr_array[0], PeripheralsBlockSize) == 0 );
+    REQUIRE( munlock((const void*)raw_ptr_array[1], PeripheralsBlockSize) == 0 );
+    REQUIRE( munlock((const void*)raw_ptr_array[2], PeripheralsBlockSize) == 0 );
+  }
+
+// Check to ensure mapped regions have all been unmapped on destruction:
+//    Attempting to mlock non-mapped region should fail: 
+//        mlock returns -1 and sets errno to ENOMEM.
+  errno = 0;
+  REQUIRE( mlock((const void*)raw_ptr_array[0], PeripheralsBlockSize) == -1 );
+  REQUIRE( errno == ENOMEM );
+  errno = 0;
+  REQUIRE( mlock((const void*)raw_ptr_array[1], PeripheralsBlockSize) == -1 );
+  REQUIRE( errno == ENOMEM );
+  errno = 0;
+  REQUIRE( mlock((const void*)raw_ptr_array[2], PeripheralsBlockSize) == -1 );
+  REQUIRE( errno == ENOMEM );
+  
 }
 

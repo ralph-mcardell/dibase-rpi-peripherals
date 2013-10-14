@@ -48,11 +48,20 @@ namespace dibase { namespace rpi {
       ///             region cannot be mapped.
         raw_phymem_ptr(physical_address_t phy_addr, std::size_t length);
 
-      /// @brief Destructor: unmaps using munmap mapped physical memory region.
+      /// Default construction: Construct with null pointer (no mapped memory) 
+      /// and zero length.
+        raw_phymem_ptr()
+        : mem(nullptr)
+        , length(0)
+        {}
+
+
+        /// @brief Destructor: unmaps using munmap mapped physical memory region.
         ~raw_phymem_ptr();
         
       /// @brief Accessor. Untyped access to mapped memory region.
-      /// @return Untyped pointer to start of mapped memory region
+      /// @return Untyped pointer to start of mapped memory region, or nullptr
+      ///         if default constructed and nothing assigned to object.
         void * get() 
         {
           return mem;
@@ -108,6 +117,10 @@ namespace dibase { namespace rpi {
         phymem_ptr(physical_address_t phy_addr, std::size_t length) 
         : raw_phymem_ptr(phy_addr, length)
         {}
+
+      /// Default construction: Construct with null pointer (no mapped memory) 
+      /// and zero length.
+        phymem_ptr() = default;
 
       /// @brief Accessor. Typed access to mapped memory region start.
       /// @return Typed pointer to start of mapped memory region

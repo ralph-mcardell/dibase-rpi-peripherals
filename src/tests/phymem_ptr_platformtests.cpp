@@ -175,8 +175,8 @@ TEST_CASE( "Platform_tests/phymem_ptr/subscript-1"
   REQUIRE( smart_peripheral_ptr[1] == *(smart_peripheral_ptr.get()+1) );
 }
 
-TEST_CASE( "Platform_tests/phymem_ptr/move"
-         , "A temporary phymem_ptr can be moved correctly to another"
+TEST_CASE( "Platform_tests/phymem_ptr/move construct"
+         , "A temporary phymem_ptr can be moved-constructed to another"
          )
 {
   unsigned * null_ptr(nullptr);
@@ -201,8 +201,38 @@ TEST_CASE( "Platform_tests/phymem_ptr/move"
   
 }
 
-TEST_CASE( "Platform_tests/phymem_ptr/move volatile"
-         , "A temporary phymem_ptr to volatile data can be moved to another"
+TEST_CASE( "Platform_tests/phymem_ptr/move assign"
+         , "A temporary phymem_ptr can be moved-assigned to another"
+         )
+{
+  unsigned * null_ptr(nullptr);
+  unsigned * raw_ptr(nullptr);
+
+  {
+    phymem_ptr<unsigned> ptr;
+    CHECK(ptr.get()==null_ptr);
+
+    ptr = phymem_ptr<unsigned>(GpioBaseAddress, PeripheralsBlockSize);
+    REQUIRE( ptr.get() != null_ptr );
+
+    raw_ptr = ptr.get();
+    REQUIRE( ptr[1] == *(ptr.get()+1) );
+    REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == 0 );
+    REQUIRE( munlock((const void*)raw_ptr, PeripheralsBlockSize) == 0 );
+  }
+
+// Check to ensure mapped region has been unmapped on destruction:
+//    Attempting to mlock non-mapped region should fail: 
+//        mlock returns -1 and sets errno to ENOMEM.
+  errno = 0;
+  REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == -1 );
+  REQUIRE( errno == ENOMEM );
+  
+}
+
+TEST_CASE( "Platform_tests/phymem_ptr/move construct volatile"
+         , "A temporary phymem_ptr to volatile data can be moved-assigned to "
+           "another"
          )
 {
   PeripheralAccessType * null_ptr(nullptr);
@@ -227,7 +257,38 @@ TEST_CASE( "Platform_tests/phymem_ptr/move volatile"
   
 }
 
-TEST_CASE( "Platform_tests/phymem_ptr/std::array"
+TEST_CASE( "Platform_tests/phymem_ptr/move assign volatile"
+         , "A temporary phymem_ptr to volatile data can be moved-assigned to "
+           "another"
+         )
+{
+  PeripheralAccessType * null_ptr(nullptr);
+  PeripheralAccessType * raw_ptr(nullptr);
+
+  {
+    phymem_ptr<PeripheralAccessType> ptr;
+    CHECK(ptr.get()==null_ptr);
+
+    ptr = phymem_ptr<PeripheralAccessType>(GpioBaseAddress, PeripheralsBlockSize);
+    REQUIRE( ptr.get() != null_ptr );
+
+    REQUIRE( ptr.get() != null_ptr );
+    raw_ptr = ptr.get();
+    REQUIRE( ptr[1] == *(ptr.get()+1) );
+    REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == 0 );
+    REQUIRE( munlock((const void*)raw_ptr, PeripheralsBlockSize) == 0 );
+  }
+
+// Check to ensure mapped region has been unmapped on destruction:
+//    Attempting to mlock non-mapped region should fail: 
+//        mlock returns -1 and sets errno to ENOMEM.
+  errno = 0;
+  REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == -1 );
+  REQUIRE( errno == ENOMEM );
+  
+}
+
+TEST_CASE( "Platform_tests/phymem_ptr/std::array, move construct"
          , "Can create and initialise a std::array of phymem_ptrs to volatile "
            "data"
          )
@@ -246,6 +307,54 @@ TEST_CASE( "Platform_tests/phymem_ptr/std::array"
     REQUIRE( ptr_array[0].get() != null_ptr );
     REQUIRE( ptr_array[1].get() != null_ptr );
     REQUIRE( ptr_array[2].get() != null_ptr );
+    raw_ptr_array[0] = ptr_array[0].get();
+    raw_ptr_array[1] = ptr_array[1].get();
+    raw_ptr_array[2] = ptr_array[2].get();
+
+    REQUIRE( mlock((const void*)raw_ptr_array[0], PeripheralsBlockSize) == 0 );
+    REQUIRE( mlock((const void*)raw_ptr_array[1], PeripheralsBlockSize) == 0 );
+    REQUIRE( mlock((const void*)raw_ptr_array[2], PeripheralsBlockSize) == 0 );
+    REQUIRE( munlock((const void*)raw_ptr_array[0], PeripheralsBlockSize) == 0 );
+    REQUIRE( munlock((const void*)raw_ptr_array[1], PeripheralsBlockSize) == 0 );
+    REQUIRE( munlock((const void*)raw_ptr_array[2], PeripheralsBlockSize) == 0 );
+  }
+
+// Check to ensure mapped regions have all been unmapped on destruction:
+//    Attempting to mlock non-mapped region should fail: 
+//        mlock returns -1 and sets errno to ENOMEM.
+  errno = 0;
+  REQUIRE( mlock((const void*)raw_ptr_array[0], PeripheralsBlockSize) == -1 );
+  REQUIRE( errno == ENOMEM );
+  errno = 0;
+  REQUIRE( mlock((const void*)raw_ptr_array[1], PeripheralsBlockSize) == -1 );
+  REQUIRE( errno == ENOMEM );
+  errno = 0;
+  REQUIRE( mlock((const void*)raw_ptr_array[2], PeripheralsBlockSize) == -1 );
+  REQUIRE( errno == ENOMEM );
+  
+}
+
+TEST_CASE( "Platform_tests/phymem_ptr/std::array, move assign"
+         , "Can create a std::array of default constructed phymem_ptrs to "
+           "volatile data and move-assign phymem_ptrs to them later"
+         )
+{
+  PeripheralAccessType * null_ptr(nullptr);
+  PeripheralAccessType * raw_ptr_array[3] = {nullptr, nullptr, nullptr};
+
+  {
+    std::array<phymem_ptr<PeripheralAccessType>,3> ptr_array;
+    REQUIRE( ptr_array[0].get() == null_ptr );
+    REQUIRE( ptr_array[1].get() == null_ptr );
+    REQUIRE( ptr_array[2].get() == null_ptr );
+
+    ptr_array[0] = phymem_ptr<PeripheralAccessType>(GpioBaseAddress, PeripheralsBlockSize);
+    ptr_array[1] = phymem_ptr<PeripheralAccessType>(Bsc0BaseAddress, PeripheralsBlockSize);
+    ptr_array[2] = phymem_ptr<PeripheralAccessType>(Bsc1BaseAddress, PeripheralsBlockSize);
+    REQUIRE( ptr_array[0].get() != null_ptr );
+    REQUIRE( ptr_array[1].get() != null_ptr );
+    REQUIRE( ptr_array[2].get() != null_ptr );
+
     raw_ptr_array[0] = ptr_array[0].get();
     raw_ptr_array[1] = ptr_array[1].get();
     raw_ptr_array[2] = ptr_array[2].get();

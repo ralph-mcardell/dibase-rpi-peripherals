@@ -20,7 +20,7 @@ namespace dibase { namespace rpi {
       ( physical_address_t phy_addr
       , std::size_t mapped_length
       )
-      : mem(MAP_FAILED)
+      : mem(nullptr)
       , length(0)
       {
         char const * DevMemPath{"/dev/mem"};
@@ -45,6 +45,7 @@ namespace dibase { namespace rpi {
                   );
         if ( MAP_FAILED == mem )
           {
+            mem = nullptr;
             throw std::system_error( errno
                                    , std::system_category()
                                    , "mmap failed mapping physical memory area."
@@ -57,7 +58,7 @@ namespace dibase { namespace rpi {
       : mem{tmp.mem}
       , length{tmp.length}
       {
-        tmp.mem = MAP_FAILED;
+        tmp.mem = nullptr;
         tmp.length = 0;
       }
 
@@ -65,14 +66,14 @@ namespace dibase { namespace rpi {
       {
         mem = tmp.mem;
         length = tmp.length;
-        tmp.mem = MAP_FAILED;
+        tmp.mem = nullptr;
         tmp.length = 0;
         return *this;
       }
 
       raw_phymem_ptr::~raw_phymem_ptr()
       {
-        if ( MAP_FAILED != mem )
+        if ( mem != nullptr )
           {
             munmap( mem, length );
           }

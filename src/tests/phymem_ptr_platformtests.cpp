@@ -23,6 +23,7 @@
 
 #include "phymem_ptr.h"
 #include <array>
+#include <utility>
 #include <sys/mman.h>
 
 size_t const PeripheralsBlockSize(4096);
@@ -198,7 +199,6 @@ TEST_CASE( "Platform_tests/phymem_ptr/move construct"
   errno = 0;
   REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == -1 );
   REQUIRE( errno == ENOMEM );
-  
 }
 
 TEST_CASE( "Platform_tests/phymem_ptr/move assign"
@@ -227,7 +227,6 @@ TEST_CASE( "Platform_tests/phymem_ptr/move assign"
   errno = 0;
   REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == -1 );
   REQUIRE( errno == ENOMEM );
-  
 }
 
 TEST_CASE( "Platform_tests/phymem_ptr/move construct volatile"
@@ -254,7 +253,6 @@ TEST_CASE( "Platform_tests/phymem_ptr/move construct volatile"
   errno = 0;
   REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == -1 );
   REQUIRE( errno == ENOMEM );
-  
 }
 
 TEST_CASE( "Platform_tests/phymem_ptr/move assign volatile"
@@ -286,6 +284,42 @@ TEST_CASE( "Platform_tests/phymem_ptr/move assign volatile"
   REQUIRE( mlock((const void*)raw_ptr, PeripheralsBlockSize) == -1 );
   REQUIRE( errno == ENOMEM );
   
+}
+
+TEST_CASE( "Platform_tests/phymem_ptr/move construction clears source object"
+         , "Move constructing clears the source objects state"
+         )
+{
+  PeripheralAccessType * null_ptr(nullptr);
+  phymem_ptr<PeripheralAccessType> src(GpioBaseAddress, PeripheralsBlockSize);
+  REQUIRE(src.get()!=null_ptr);
+  
+// Expect compile error: copying not allowed, copy constructor deleted  
+//phymem_ptr<PeripheralAccessType> tgt(src);
+
+  phymem_ptr<PeripheralAccessType> tgt(std::move(src)); // Move allowed
+
+  CHECK(src.get()==null_ptr);
+  CHECK(tgt.get()!=null_ptr);
+}
+
+TEST_CASE( "Platform_tests/phymem_ptr/move assign clears source object"
+         , "Move assigning clears the source objects state"
+         )
+{
+  PeripheralAccessType * null_ptr(nullptr);
+  phymem_ptr<PeripheralAccessType> src(GpioBaseAddress, PeripheralsBlockSize);
+  phymem_ptr<PeripheralAccessType> tgt;
+  REQUIRE(src.get()!=null_ptr);
+  CHECK(tgt.get()==null_ptr);
+
+// Expect compile error: copying not allowed, assignment operator deleted
+//tgt = src;
+     
+  tgt = std::move(src); // Move allowed
+
+  CHECK(src.get()==null_ptr);
+  CHECK(tgt.get()!=null_ptr);
 }
 
 TEST_CASE( "Platform_tests/phymem_ptr/std::array, move construct"
@@ -331,7 +365,6 @@ TEST_CASE( "Platform_tests/phymem_ptr/std::array, move construct"
   errno = 0;
   REQUIRE( mlock((const void*)raw_ptr_array[2], PeripheralsBlockSize) == -1 );
   REQUIRE( errno == ENOMEM );
-  
 }
 
 TEST_CASE( "Platform_tests/phymem_ptr/std::array, move assign"
@@ -379,6 +412,5 @@ TEST_CASE( "Platform_tests/phymem_ptr/std::array, move assign"
   errno = 0;
   REQUIRE( mlock((const void*)raw_ptr_array[2], PeripheralsBlockSize) == -1 );
   REQUIRE( errno == ENOMEM );
-  
 }
 

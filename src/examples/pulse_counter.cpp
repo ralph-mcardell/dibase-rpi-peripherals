@@ -48,6 +48,7 @@ void display_frequency()
 {
   constexpr auto sample_duration(std::chrono::milliseconds{50});
   auto t_sample(std::chrono::system_clock::now());
+  auto sample_t0(std::chrono::system_clock::now());
   while (g_running)
     {
       do
@@ -55,10 +56,11 @@ void display_frequency()
           t_sample += sample_duration;
         }
       while ( t_sample < std::chrono::system_clock::now() );
-      auto sample_t0(std::chrono::system_clock::now());
       std::this_thread::sleep_until( t_sample );
       unsigned cnt{g_count.exchange(0U)};
-      auto sample_t(std::chrono::system_clock::now()-sample_t0);
+      auto sample_t1(std::chrono::system_clock::now());
+      auto sample_t(sample_t1-sample_t0);
+      sample_t0 = sample_t1;
       unsigned freq((float(cnt)*std::chrono::system_clock::period::den)
                     /(sample_t.count()*std::chrono::system_clock::period::num));
       std::cout << "Frequency: " << std::setw(5) << freq << "Hz (count=" 

@@ -64,7 +64,7 @@ namespace dibase { namespace rpi {
     ///   - TA=0 (inactive)     : de-asserts both CE0 and CE1
     ///   - TA=1 (active), CS=0 : asserts CE0, de-asserts CE1
     ///   - TA=1 (active), CS=1 : de-asserts CE0, asserts CE1
-    ///   - TA=1 (active), CS=1 : de-asserts both CE0 and CE1
+    ///   - TA=1 (active), CS=2 : de-asserts both CE0 and CE1
     ///
     /// and:
     ///   - CSPOL0=0 : CE0 asserted when low

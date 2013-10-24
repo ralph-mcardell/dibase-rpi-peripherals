@@ -22,8 +22,8 @@ using namespace dibase::rpi::peripherals::internal;
 typedef uint32_t RegisterType;
 typedef unsigned char Byte;
 
-// Register byte offsets, see BCM2835 peripherals manual PWM Address Map table
-// in section 9.6 Control and Status Registers
+// Register byte offsets, see BCM2835 peripherals manual SPI Address Map table
+// in section 10.5 SPI Register Map
 enum RegisterOffsets 
 {   CS_OFFSET=0x00, FIFO_OFFSET=0x04, CLK_OFFSET=0x08
 , DLEN_OFFSET=0x0C, LTOH_OFFSET=0x10,  DC_OFFSET=0x14

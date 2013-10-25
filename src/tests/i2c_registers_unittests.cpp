@@ -81,10 +81,72 @@ TEST_CASE( "Unit-tests/i2c_registers/0020/get_interrupt_on_done"
   i2c_registers i2c_regs;
   std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
   CHECK(i2c_regs.get_interrupt_on_done()==false);
-  i2c_regs.control=1U<<7;
+  i2c_regs.control=1U<<8;
   CHECK(i2c_regs.get_interrupt_on_done()==true);
-  i2c_regs.control=~(1U<<7);
+  i2c_regs.control=~(1U<<8);
   CHECK(i2c_regs.get_interrupt_on_done()==false);
   i2c_regs.control=~0U;
   CHECK(i2c_regs.get_interrupt_on_done()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0030/get_interrupt_on_txw"
+         , "get_interrupt_on_txw returns the expected value for the set C "
+           "register INTT field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  CHECK(i2c_regs.get_interrupt_on_txw()==false);
+  i2c_regs.control=1U<<9;
+  CHECK(i2c_regs.get_interrupt_on_txw()==true);
+  i2c_regs.control=~(1U<<9);
+  CHECK(i2c_regs.get_interrupt_on_txw()==false);
+  i2c_regs.control=~0U;
+  CHECK(i2c_regs.get_interrupt_on_txw()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0040/get_interrupt_on_rxr"
+         , "get_interrupt_on_rxr returns the expected value for the set C "
+           "register INTT field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  CHECK(i2c_regs.get_interrupt_on_rxr()==false);
+  i2c_regs.control=1U<<10;
+  CHECK(i2c_regs.get_interrupt_on_rxr()==true);
+  i2c_regs.control=~(1U<<10);
+  CHECK(i2c_regs.get_interrupt_on_rxr()==false);
+  i2c_regs.control=~0U;
+  CHECK(i2c_regs.get_interrupt_on_rxr()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0050/get_enable"
+         , "get_enable returns the expected value for the set C "
+           "register INTT field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  CHECK(i2c_regs.get_enable()==false);
+  i2c_regs.control=1U<<15;
+  CHECK(i2c_regs.get_enable()==true);
+  i2c_regs.control=~(1U<<15);
+  CHECK(i2c_regs.get_enable()==false);
+  i2c_regs.control=~0U;
+  CHECK(i2c_regs.get_enable()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0110/set_transfer_type"
+         , "set_transfer_type sets the expected value for the set C "
+           "register READ field"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  i2c_regs.set_transfer_type(i2c_transfer_type::read);
+  CHECK(i2c_regs.control==i2c_regs.c_read_mask);
+  i2c_regs.control=~0U;
+  i2c_regs.set_transfer_type(i2c_transfer_type::write);
+  CHECK(i2c_regs.control==~i2c_regs.c_read_mask);
 }

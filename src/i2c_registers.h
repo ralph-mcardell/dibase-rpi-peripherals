@@ -47,9 +47,12 @@ namespace dibase { namespace rpi {
     /// fields and flags for BSC channels' control.
       struct i2c_registers
       {
-        enum 
-        { c_read_mask         = 1U
-        , c_int_on_done_mask  = 0x80U
+        enum : register_t
+        { c_read_mask         =      1U ///< C register READ field mask value
+        , c_int_on_done_mask  =  0x100U ///< C register INTD field mask value
+        , c_int_on_tx_mask    =  0x200U ///< C register INTT field mask value
+        , c_int_on_rx_mask    =  0x400U ///< C register INTR field mask value
+        , c_enable_mask       = 0x8000U ///< C register I2CEN field mask value
         };
 
       /// @brief Physical address of start of BCM2835 BSC0 control registers
@@ -74,14 +77,13 @@ namespace dibase { namespace rpi {
         register_t  data_delay;   ///< BSC Master Data Delay, DEL
         register_t  clk_stretch;  ///< BSC Clock Stretch Time out, CLKT
 
-      /// @brief Return the type of I2C data transfer
-      /// @returns  i2c_transfer_type::read for a read packet transfer, 
-      ///           i2c_transfer_type::write for a write packet transfer.
+      /// @brief Return the I2C read/write packet transfer type setting
+      /// @returns  i2c_transfer_type::read for read packet transfer, 
+      ///           i2c_transfer_type::write for write packet transfer.
         i2c_transfer_type  get_transfer_type() const volatile
         {
           return static_cast<i2c_transfer_type>(control&c_read_mask);
         }
-
 
       /// @brief Return the currently set interrupt on done value
       /// @returns  true if an interrupt is generated when DONE==true.
@@ -89,6 +91,47 @@ namespace dibase { namespace rpi {
         bool get_interrupt_on_done() volatile const
         {
           return control & c_int_on_done_mask;
+        }
+
+      /// @brief Return the currently set interrupt on TXW condition value
+      ///
+      /// Note: TXW is short for Transmit FIFO needs Writing 
+      ///(approaching being full)
+      ///
+      /// @returns  true if an interrupt is generated on TXW conditions.
+      ///           false if no such interrupt is generated.
+        bool get_interrupt_on_txw() volatile const
+        {
+          return control & c_int_on_tx_mask;
+        }
+
+      /// @brief Return the currently set interrupt on RXR condition value
+      ///
+      /// Note: RXR is short for Receive FIFO needs Reading 
+      ///(approaching being empty)
+      ///
+      /// @returns  true if an interrupt is generated on RXR conditions.
+      ///           false if no such interrupt is generated.
+        bool get_interrupt_on_rxr() volatile const
+        {
+          return control & c_int_on_rx_mask;
+        }
+
+      /// @brief Return the BSC/I2C controller enable state
+      ///
+      /// @returns  true if I2C/BSC controller is enabled.
+      ///           false if I2C/BSC controller is disabled.
+        bool get_enable() volatile const
+        {
+          return control & c_enable_mask;
+        }
+
+      /// @brief Set the I2C read/write packet transfer type
+      /// @param type   i2c_transfer_type::read for read packet transfer, 
+      ///               i2c_transfer_type::write for write packet transfer.
+        void set_transfer_type(i2c_transfer_type type) volatile
+        {
+          control = (control & ~c_read_mask) | static_cast<register_t>(type);
         }
       };
     } // namespace internal closed

@@ -61,7 +61,7 @@ namespace dibase { namespace rpi {
       struct pwm_registers
       {
       private:
-        enum
+        enum : register_t
         { ctl_enable    = 0x1   ///< Control register: PWM channel enable
         , ctl_mode_ser  = 0x2   ///< Control register: serialiser mode
         , ctl_rptl      = 0x4   ///< Control register: repeat last data

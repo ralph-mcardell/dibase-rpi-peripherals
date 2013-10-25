@@ -76,7 +76,7 @@ namespace dibase { namespace rpi {
     /// fields and flags for SPI0 channel control.
       struct spi0_registers
       {
-        enum 
+        enum : register_t
         { cs_max_chip_id  = 2U        // Maximum chip identifier value
         , cs_chip_select_mask = 3U    // CS register chip select field bit-mask
         , cs_clock_phase_mask = 4U    // CS register clock phase field bit-mask

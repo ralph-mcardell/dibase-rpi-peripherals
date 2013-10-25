@@ -83,7 +83,7 @@ namespace dibase { namespace rpi {
       struct clock_record
       {
       private:
-        enum
+        enum : register_t
         { ctrl_enab_mask = (1U<<4)
         , ctrl_kill_mask = (1U<<5)
         , ctrl_busy_mask = (1U<<7)

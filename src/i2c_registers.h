@@ -49,10 +49,16 @@ namespace dibase { namespace rpi {
       {
         enum : register_t
         { c_read_mask         =      1U ///< C register READ field mask value
+        , c_clear_fifo        =   0x30U ///< C register CLEAR field value 11b
+        , c_start_transfer    =   0x80U ///< C register ST field value 1b
         , c_int_on_done_mask  =  0x100U ///< C register INTD field mask value
-        , c_int_on_tx_mask    =  0x200U ///< C register INTT field mask value
-        , c_int_on_rx_mask    =  0x400U ///< C register INTR field mask value
+        , c_int_on_done_bit   =      8U ///< C register INTD field bit number
+        , c_int_on_txw_mask   =  0x200U ///< C register INTT field mask value
+        , c_int_on_txw_bit    =      9U ///< C register INTT field bit number
+        , c_int_on_rxr_mask   =  0x400U ///< C register INTR field mask value
+        , c_int_on_rxr_bit    =     10U ///< C register INTR field bit number
         , c_enable_mask       = 0x8000U ///< C register I2CEN field mask value
+        , c_enable_bit        =     15U ///< C register I2CEN field bit number
         };
 
       /// @brief Physical address of start of BCM2835 BSC0 control registers
@@ -102,7 +108,7 @@ namespace dibase { namespace rpi {
       ///           false if no such interrupt is generated.
         bool get_interrupt_on_txw() volatile const
         {
-          return control & c_int_on_tx_mask;
+          return control & c_int_on_txw_mask;
         }
 
       /// @brief Return the currently set interrupt on RXR condition value
@@ -114,7 +120,7 @@ namespace dibase { namespace rpi {
       ///           false if no such interrupt is generated.
         bool get_interrupt_on_rxr() volatile const
         {
-          return control & c_int_on_rx_mask;
+          return control & c_int_on_rxr_mask;
         }
 
       /// @brief Return the BSC/I2C controller enable state
@@ -132,6 +138,69 @@ namespace dibase { namespace rpi {
         void set_transfer_type(i2c_transfer_type type) volatile
         {
           control = (control & ~c_read_mask) | static_cast<register_t>(type);
+        }
+
+      /// @brief Set generate interrupt on done state
+      /// @param[in]  generate Pass true to have interrupts generated when 
+      ///                      DONE is true (get_transfer_done()==true)
+      ///                      Pass false not to generate interrupts when DONE
+      ///                      is true
+        void set_interrupt_on_done(bool generate) volatile
+        {
+          control = (control & ~c_int_on_done_mask) 
+                   | (generate<<c_int_on_done_bit);
+        }
+
+      /// @brief Set generate interrupt on TXW condition
+      ///
+      /// Note: TXW is short for Transmit FIFO needs Writing 
+      ///(approaching being full)
+      ///
+      /// @param[in]  generate Pass true to have interrupts generated when 
+      ///                      TXW is true (get_tx_fifo_needs_writing()==true)
+      ///                      Pass false not to generate interrupts when TXW
+      ///                      is true
+        void set_interrupt_on_txw(bool generate) volatile
+        {
+          control = (control & ~c_int_on_txw_mask) 
+                   | (generate<<c_int_on_txw_bit);
+        }
+
+      /// @brief Set generate interrupt on RXR condition
+      ///
+      /// Note: RXR is short for Receive FIFO needs Reading 
+      ///(approaching being empty)
+      ///
+      /// @param[in]  generate Pass true to have interrupts generated when 
+      ///                      RXR is true (get_rx_fifo_needs_reading()==true)
+      ///                      Pass false not to generate interrupts when RXR
+      ///                      is true
+        void set_interrupt_on_rxr(bool generate) volatile
+        {
+          control = (control & ~c_int_on_rxr_mask) 
+                   | (generate<<c_int_on_rxr_bit);
+        }
+
+      /// @brief Set enable/disable state if I2C/BSC controller
+      ///
+      /// @param[in]  enable  Pass true to enable the controller, false to
+      ///                     disable the controller.
+        void set_enable(bool enable) volatile
+        {
+          control = (control & ~c_enable_mask) 
+                   | (enable<<c_enable_bit);
+        }
+
+      /// @brief Clear I2C/BSC FIFO
+        void clear_fifo() volatile
+        {
+          control |= c_clear_fifo;
+        }
+
+      /// @brief Start a new I2C data transfer
+        void start_transfer() volatile
+        {
+          control |= c_start_transfer;
         }
       };
     } // namespace internal closed

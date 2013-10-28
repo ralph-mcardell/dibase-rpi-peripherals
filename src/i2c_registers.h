@@ -59,6 +59,16 @@ namespace dibase { namespace rpi {
         , c_int_on_rxr_bit    =     10U ///< C register INTR field bit number
         , c_enable_mask       = 0x8000U ///< C register I2CEN field mask value
         , c_enable_bit        =     15U ///< C register I2CEN field bit number
+        , s_xfer_active_mask  =      1U ///< S register TA field mask value
+        , s_xfer_done_mask    =      2U ///< S register DONE field mask value
+        , s_xfer_txw_mask     =      4U ///< S register TXW field mask value
+        , s_xfer_rxr_mask     =      8U ///< S register RXR field mask value
+        , s_xfer_txd_mask     =   0x10U ///< S register TXD field mask value
+        , s_xfer_rxd_mask     =   0x20U ///< S register RXD field mask value
+        , s_xfer_txe_mask     =   0x40U ///< S register TXE field mask value
+        , s_xfer_rxf_mask     =   0x80U ///< S register RXF field mask value
+        , s_ack_err_mask      =  0x100U ///< S register ERR field mask value
+        , s_clk_timeout_mask  =  0x200U ///< S register CLKT field mask value
         };
 
       /// @brief Physical address of start of BCM2835 BSC0 control registers
@@ -201,6 +211,154 @@ namespace dibase { namespace rpi {
         void start_transfer() volatile
         {
           control |= c_start_transfer;
+        }
+
+      /// @brief Return the currently set transfer active value
+      /// @returns  true if transfer is active.
+      ///           false if transfer is not active.
+        bool get_transfer_active() volatile const
+        {
+          return status & s_xfer_active_mask;
+        }
+
+      /// @brief Return the currently set transfer done value
+      ///
+      /// This bit field is cleared by clear_transfer_done, which writes a 1
+      /// to the S register DONE field.
+      ///
+      /// @returns  true if transfer is complete
+      ///           false if transfer is in progress
+        bool get_transfer_done() volatile const
+        {
+          return status & s_xfer_done_mask;
+        }
+
+      /// @brief Return the currently set FIFO need writing (TXW) flag value
+      ///
+      /// Note: has meaning only when write is under way
+      ///
+      /// Cleared by writing sufficient data to FIFO
+      ///
+      /// @returns  true if the FIFO near to being empty
+      ///           false if the FIFO still quite full
+        bool get_tx_fifo_needs_writing() volatile const
+        {
+          return status & s_xfer_txw_mask;
+        }
+
+      /// @brief Return the currently set FIFO need reading (RXR) flag value
+      ///
+      /// Note: has meaning only when read is under way
+      ///
+      /// Cleared by reading sufficient data from FIFO
+      ///
+      /// @returns  true if the FIFO near to being full
+      ///           false if the FIFO still quite empty
+        bool get_rx_fifo_needs_reading() volatile const
+        {
+          return status & s_xfer_rxr_mask;
+        }
+
+      /// @brief Return the currently set FIFO can accept data (TXD) flag value
+      ///
+      /// Note: has meaning only when write is under way
+      ///
+      /// Cleared when sufficient data clocked out of FIFO
+      ///
+      /// @returns  true if the FIFO can accept at least 1 byte
+      ///           false if the FIFO is full and cannot accept any more data
+        bool get_tx_fifo_not_full() volatile const
+        {
+          return status & s_xfer_txd_mask;
+        }
+
+      /// @brief Return the currently set FIFO contains data (RXD) flag value
+      ///
+      /// Note: has meaning only when read is under way
+      ///
+      /// Cleared by reading sufficient data from FIFO
+      ///
+      /// @returns  true if the FIFO contains at least 1 byte
+      ///           false if the FIFO empty
+        bool get_rx_fifo_not_empty() volatile const
+        {
+          return status & s_xfer_rxd_mask;
+        }
+
+      /// @brief Return the currently set FIFO empty (TXE) flag value
+      ///
+      /// Note: has meaning only when write is under way
+      ///
+      /// Cleared when more data written to FIFO
+      ///
+      /// @returns  true if the FIFO contains no data to transmit
+      ///           false if the FIFO contains data to transmit
+        bool get_tx_fifo_empty() volatile const
+        {
+          return status & s_xfer_txe_mask;
+        }
+
+      /// @brief Return the currently set FIFO full (RXF) flag value
+      ///
+      /// Note: has meaning only when read is under way
+      ///
+      /// Cleared by reading sufficient data from FIFO
+      ///
+      /// @returns  true if the FIFO full and no further data can be received
+      ///           false if the FIFO is not full
+        bool get_rx_fifo_full() volatile const
+        {
+          return status & s_xfer_rxf_mask;
+        }
+
+      /// @brief Return the value of the slave acknowledgement error (ERR) flag
+      ///
+      /// Cleared by clear_slave_ack_error, which write 1 to the S register ERR
+      /// field.
+      ///
+      /// @returns  true if a slave has not acknowledged its address
+      ///           false no errors detected
+        bool get_slave_ack_error() volatile const
+        {
+          return status & s_ack_err_mask;
+        }
+
+      /// @brief Return the value of the clock stretch time out (CLKT) flag
+      ///
+      /// Cleared by clear_clock_timeout, which write 1 to the S register CLKT
+      /// field.
+      ///
+      /// @returns  true if a slave has held the SCL signal low for longer than
+      ///           specified by the CLKT register.
+      ///           false no errors detected
+        bool get_clock_timeout() volatile const
+        {
+          return status & s_clk_timeout_mask;
+        }
+
+      /// @brief Clear transfer done state (S register DONE field==1).
+      ///
+      /// Cleared by writing a 1 the S register DONE field.
+        void clear_transfer_done() volatile
+        {
+          status |= s_xfer_done_mask;
+        }
+
+      /// @brief Clear slave acknowledgement error state 
+      ///(S register ERR field==1).
+      ///
+      /// Cleared by writing a 1 the S register ERR field.
+        void clear_slave_ack_error() volatile
+        {
+          status |= s_ack_err_mask;
+        }
+
+      /// @brief Clear clock stretch time out state (S register CLKT field==1).
+      ///
+      /// Cleared by writing a 1 the S register CLKT field.
+        void clear_clock_timeout() volatile
+        {
+          status |= s_clk_timeout_mask;
         }
       };
     } // namespace internal closed

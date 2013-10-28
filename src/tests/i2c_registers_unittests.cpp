@@ -235,3 +235,212 @@ TEST_CASE( "Unit-tests/i2c_registers/0170/set_enable"
   i2c_regs.set_enable(false);
   CHECK(i2c_regs.control==~i2c_regs.c_enable_mask);
 }
+
+TEST_CASE( "Unit-tests/i2c_registers/0200/get_transfer_active"
+         , "get_transfer_active returns the expected value for the S "
+           "register TA field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.s_xfer_active_mask==1U); // S register bit 0
+  CHECK(i2c_regs.get_transfer_active()==false);
+  i2c_regs.status=i2c_regs.s_xfer_active_mask;
+  CHECK(i2c_regs.get_transfer_active()==true);
+  i2c_regs.status=~i2c_regs.s_xfer_active_mask;
+  CHECK(i2c_regs.get_transfer_active()==false);
+  i2c_regs.status=~0U;
+  CHECK(i2c_regs.get_transfer_active()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0210/get_transfer_done"
+         , "get_transfer_done returns the expected value for the S "
+           "register DONE field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.s_xfer_done_mask==(1U<<1U)); // S register bit 1
+  CHECK(i2c_regs.get_transfer_done()==false);
+  i2c_regs.status=i2c_regs.s_xfer_done_mask;
+  CHECK(i2c_regs.get_transfer_done()==true);
+  i2c_regs.status=~i2c_regs.s_xfer_done_mask;
+  CHECK(i2c_regs.get_transfer_done()==false);
+  i2c_regs.status=~0U;
+  CHECK(i2c_regs.get_transfer_done()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0220/get_tx_fifo_needs_writing"
+         , "get_tx_fifo_needs_writing returns the expected value for the S "
+           "register TXW field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.s_xfer_txw_mask==(1U<<2U)); // S register bit 2
+  CHECK(i2c_regs.get_tx_fifo_needs_writing()==false);
+  i2c_regs.status=i2c_regs.s_xfer_txw_mask;
+  CHECK(i2c_regs.get_tx_fifo_needs_writing()==true);
+  i2c_regs.status=~i2c_regs.s_xfer_txw_mask;
+  CHECK(i2c_regs.get_tx_fifo_needs_writing()==false);
+  i2c_regs.status=~0U;
+  CHECK(i2c_regs.get_tx_fifo_needs_writing()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0230/get_rx_fifo_needs_reading"
+         , "get_rx_fifo_needs_reading returns the expected value for the S "
+           "register RXR field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.s_xfer_rxr_mask==(1U<<3U)); // S register bit 3
+  CHECK(i2c_regs.get_rx_fifo_needs_reading()==false);
+  i2c_regs.status=i2c_regs.s_xfer_rxr_mask;
+  CHECK(i2c_regs.get_rx_fifo_needs_reading()==true);
+  i2c_regs.status=~i2c_regs.s_xfer_rxr_mask;
+  CHECK(i2c_regs.get_rx_fifo_needs_reading()==false);
+  i2c_regs.status=~0U;
+  CHECK(i2c_regs.get_rx_fifo_needs_reading()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0240/get_tx_fifo_not_full"
+         , "get_tx_fifo_not_full returns the expected value for the S "
+           "register TXD field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.s_xfer_txd_mask==(1U<<4U)); // S register bit 4
+  CHECK(i2c_regs.get_tx_fifo_not_full()==false);
+  i2c_regs.status=i2c_regs.s_xfer_txd_mask;
+  CHECK(i2c_regs.get_tx_fifo_not_full()==true);
+  i2c_regs.status=~i2c_regs.s_xfer_txd_mask;
+  CHECK(i2c_regs.get_tx_fifo_not_full()==false);
+  i2c_regs.status=~0U;
+  CHECK(i2c_regs.get_tx_fifo_not_full()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0250/get_rx_fifo_not_empty"
+         , "get_rx_fifo_not_empty returns the expected value for the S "
+           "register RXD field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.s_xfer_rxd_mask==(1U<<5U)); // S register bit 5
+  CHECK(i2c_regs.get_rx_fifo_not_empty()==false);
+  i2c_regs.status=i2c_regs.s_xfer_rxd_mask;
+  CHECK(i2c_regs.get_rx_fifo_not_empty()==true);
+  i2c_regs.status=~i2c_regs.s_xfer_rxd_mask;
+  CHECK(i2c_regs.get_rx_fifo_not_empty()==false);
+  i2c_regs.status=~0U;
+  CHECK(i2c_regs.get_rx_fifo_not_empty()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0260/get_tx_fifo_empty"
+         , "get_tx_fifo_empty returns the expected value for the S "
+           "register TXE field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.s_xfer_txe_mask==(1U<<6U)); // S register bit 6
+  CHECK(i2c_regs.get_tx_fifo_empty()==false);
+  i2c_regs.status=i2c_regs.s_xfer_txe_mask;
+  CHECK(i2c_regs.get_tx_fifo_empty()==true);
+  i2c_regs.status=~i2c_regs.s_xfer_txe_mask;
+  CHECK(i2c_regs.get_tx_fifo_empty()==false);
+  i2c_regs.status=~0U;
+  CHECK(i2c_regs.get_tx_fifo_empty()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0270/get_rx_fifo_full"
+         , "get_rx_fifo_full returns the expected value for the S "
+           "register RXF field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.s_xfer_rxf_mask==(1U<<7U)); // S register bit 7
+  CHECK(i2c_regs.get_rx_fifo_full()==false);
+  i2c_regs.status=i2c_regs.s_xfer_rxf_mask;
+  CHECK(i2c_regs.get_rx_fifo_full()==true);
+  i2c_regs.status=~i2c_regs.s_xfer_rxf_mask;
+  CHECK(i2c_regs.get_rx_fifo_full()==false);
+  i2c_regs.status=~0U;
+  CHECK(i2c_regs.get_rx_fifo_full()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0280/get_slave_ack_error"
+         , "get_slave_ack_error returns the expected value for the S "
+           "register ERR field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.s_ack_err_mask==(1U<<8U)); // S register bit 8
+  CHECK(i2c_regs.get_slave_ack_error()==false);
+  i2c_regs.status=i2c_regs.s_ack_err_mask;
+  CHECK(i2c_regs.get_slave_ack_error()==true);
+  i2c_regs.status=~i2c_regs.s_ack_err_mask;
+  CHECK(i2c_regs.get_slave_ack_error()==false);
+  i2c_regs.status=~0U;
+  CHECK(i2c_regs.get_slave_ack_error()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0290/get_clock_timeout"
+         , "get_clock_timeout returns the expected value for the S "
+           "register CLKT field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.s_clk_timeout_mask==(1U<<9U)); // S register bit 9
+  CHECK(i2c_regs.get_clock_timeout()==false);
+  i2c_regs.status=i2c_regs.s_clk_timeout_mask;
+  CHECK(i2c_regs.get_clock_timeout()==true);
+  i2c_regs.status=~i2c_regs.s_clk_timeout_mask;
+  CHECK(i2c_regs.get_clock_timeout()==false);
+  i2c_regs.status=~0U;
+  CHECK(i2c_regs.get_clock_timeout()==true);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0300/clear_transfer_done"
+         , "clear_transfer_done writes 1 to S register DONE field"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  i2c_regs.clear_transfer_done();
+  CHECK(i2c_regs.status==i2c_regs.s_xfer_done_mask);
+  i2c_regs.status=~i2c_regs.s_xfer_done_mask;
+  i2c_regs.clear_transfer_done();
+  CHECK(i2c_regs.status==~0U);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0310/clear_slave_ack_error"
+         , "clear_slave_ack_error writes 1 to S register ERR field"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  i2c_regs.clear_slave_ack_error();
+  CHECK(i2c_regs.status==i2c_regs.s_ack_err_mask);
+  i2c_regs.status=~i2c_regs.s_ack_err_mask;
+  i2c_regs.clear_slave_ack_error();
+  CHECK(i2c_regs.status==~0U);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0320/clear_clock_timeout"
+         , "clear_clock_timeout writes 1 to S register CLKT field"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  i2c_regs.clear_clock_timeout();
+  CHECK(i2c_regs.status==i2c_regs.s_clk_timeout_mask);
+  i2c_regs.status=~i2c_regs.s_clk_timeout_mask;
+  i2c_regs.clear_clock_timeout();
+  CHECK(i2c_regs.status==~0U);
+}

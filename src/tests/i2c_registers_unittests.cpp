@@ -444,3 +444,119 @@ TEST_CASE( "Unit-tests/i2c_registers/0320/clear_clock_timeout"
   i2c_regs.clear_clock_timeout();
   CHECK(i2c_regs.status==~0U);
 }
+
+TEST_CASE( "Unit-tests/i2c_registers/0400/get_data_length"
+         , "get_data_length returns the DLEN register value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.dlen_mask==65535U); // lower 16 bits of register
+  CHECK(i2c_regs.get_data_length()==0U);
+  i2c_regs.data_length = ~0U;
+  CHECK(i2c_regs.get_data_length()==i2c_regs.dlen_mask);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0410/set_data_length"
+         , "set_data_length sets the DLEN register value and returns true OR "
+           "returns false"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.dlen_mask==65535U); // lower 16 bits of register
+  CHECK(i2c_regs.set_data_length(i2c_regs.dlen_mask));
+  CHECK(i2c_regs.data_length==i2c_regs.dlen_mask);
+  CHECK(i2c_regs.set_data_length(0U));
+  CHECK(i2c_regs.data_length==0U);
+  CHECK_FALSE(i2c_regs.set_data_length(~0U));
+  CHECK(i2c_regs.data_length==0U);
+  CHECK_FALSE(i2c_regs.set_data_length(i2c_regs.dlen_mask+1));
+  CHECK(i2c_regs.data_length==0U);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0500/get_slave_address"
+         , "get_slave_address returns the A register value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.a_mask==127U); // lower 7 bits of register
+  CHECK(i2c_regs.get_slave_address()==0U);
+  i2c_regs.slave_addrs = ~0U;
+  CHECK(i2c_regs.get_slave_address()==i2c_regs.a_mask);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0510/set_slave_address"
+         , "set_slave_address sets the A register value and returns true OR "
+           "returns false"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.a_mask==127U); // lower 7 bits of register
+  CHECK(i2c_regs.set_slave_address(i2c_regs.a_mask));
+  CHECK(i2c_regs.slave_addrs==i2c_regs.a_mask);
+  CHECK(i2c_regs.set_slave_address(0U));
+  CHECK(i2c_regs.slave_addrs==0U);
+  CHECK_FALSE(i2c_regs.set_slave_address(~0U));
+  CHECK(i2c_regs.slave_addrs==0U);
+  CHECK_FALSE(i2c_regs.set_slave_address(i2c_regs.a_mask+1));
+  CHECK(i2c_regs.slave_addrs==0U);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0600/transmit_fifo_write"
+         , "transmit_fifo_write set correct byte data to "
+           "FIFO register DATA field"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x00U, sizeof(i2c_regs));
+  std::uint8_t expected{255U};
+  i2c_regs.transmit_fifo_write(expected);
+  CHECK(i2c_regs.fifo==expected);  
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0610/receive_fifo_read"
+         , "receive_fifo_read obtains correct byte data from "
+           "FIFO register DATA field"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x00U, sizeof(i2c_regs));
+  std::uint8_t expected{255U};
+  i2c_regs.fifo = expected;
+  CHECK(i2c_regs.receive_fifo_read()==expected);  
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0700/set_clock_divider"
+         , "set_clock_divider sets correct value in the "
+           "clock register CDIV field"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x00U, sizeof(i2c_regs));
+  dibase::rpi::peripherals::internal::register_t expected{2U};
+  i2c_regs.set_clock_divider(expected);
+  CHECK(i2c_regs.clk_div==expected);  
+  i2c_regs.set_clock_divider(32768U);
+  CHECK(i2c_regs.clk_div==0U);  
+  CHECK_FALSE(i2c_regs.set_clock_divider(32769U));
+  CHECK_FALSE(i2c_regs.set_clock_divider(1U));
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0710/get_clock_divider"
+         , "get_clock_divider obtains correct value from the "
+           "clock register CDIV field"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x00U, sizeof(i2c_regs));
+  dibase::rpi::peripherals::internal::register_t expected{1U};
+  i2c_regs.clk_div = expected;
+  CHECK(i2c_regs.get_clock_divider()==expected);
+  i2c_regs.clk_div = expected|0xffff8000U;
+  CHECK(i2c_regs.get_clock_divider()==expected);
+  i2c_regs.clk_div = 0U;
+  CHECK(i2c_regs.get_clock_divider()==32768U);  
+}

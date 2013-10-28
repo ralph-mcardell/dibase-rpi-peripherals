@@ -69,6 +69,15 @@ namespace dibase { namespace rpi {
         , s_xfer_rxf_mask     =   0x80U ///< S register RXF field mask value
         , s_ack_err_mask      =  0x100U ///< S register ERR field mask value
         , s_clk_timeout_mask  =  0x200U ///< S register CLKT field mask value
+        , dlen_mask           = 0xFFFFU ///< DLEN register mask value
+        , a_mask              =   0x7FU ///< A register mask value
+        , clk_divisor_min     = 2U      ///< Effective minimum clock divisor value
+        , clk_divisor_max     = 32768U  ///< Effective maximum clock divisor value, written as 0
+        , clk_divisor_mask    = 0x7FFFU ///< CDIV register DIV field mask value
+                                        ///< (Low 15-bits of register only, in
+                                        ///< line with documented 32768 maximum
+                                        ///< divider value rather than 
+                                        ///< documented DIV field bits 15:0)
         };
 
       /// @brief Physical address of start of BCM2835 BSC0 control registers
@@ -359,6 +368,113 @@ namespace dibase { namespace rpi {
         void clear_clock_timeout() volatile
         {
           status |= s_clk_timeout_mask;
+        }
+
+      /// @brief Get the bytes remaining in the current transfer.
+      ///
+      /// If called when a transfer is in progress (get_transfer_active()==true)
+      /// the remaining bytes to transfer is returned. If called when a
+      /// transfer has just completed (get_transfer_done()==true), 0 is
+      /// returned. If called when both get_transfer_active() and
+      /// get_transfer_done() return false then the last value written to the
+      /// DELN register (e.g. by calling set_data_length()) is returned.
+      ///
+      /// @returns Bytes remaining on current I2C data transfer (0..65535)
+        register_t get_data_length() volatile const
+        {
+          return data_length & dlen_mask;
+        }
+
+      /// @brief Set the bytes for forthcoming I2C transfers.
+      ///
+      /// Setting a data length value applies until changed, even over
+      /// multiple transfers.
+      ///
+      /// @param[in] len Data transfer byte length (0..65535)
+      /// @returns  true if len parameter value in the range [0,65535] 
+      ///           false if len parameter value out of range and nothing
+      ///           written to the DLEN register
+        bool set_data_length(register_t len) volatile
+        {
+          if ( len > dlen_mask )
+            {
+              return false;
+            }
+          data_length = len;
+          return true;
+        }
+
+      /// @brief Get current value of the slave address (A) register.
+      ///
+      /// @returns I2C slave device address value in the A register (0..127)
+        register_t get_slave_address() volatile const
+        {
+          return slave_addrs & a_mask;
+        }
+
+      /// @brief Set the value of the slave address (A) register.
+      ///
+      /// Setting an I2C slave device address continues to apply even over
+      /// multiple transfers.
+      ///
+      /// @param[in] addrs I2C slave device address to set (0..127)
+      /// @returns  true if addrs parameter value in the range [0,127] 
+      ///           false if addrs parameter value out of range and nothing
+      ///           written to the A register
+        bool set_slave_address(register_t addrs) volatile
+        {
+          if ( addrs > a_mask )
+            {
+              return false;
+            }
+          slave_addrs = addrs;
+          return true;
+        }
+
+      /// @brief Write 8-bit byte to the FIFO
+      ///
+      /// @param[in] data   8-bit byte to write to FIFO for transmission.
+        void transmit_fifo_write(std::uint8_t data) volatile
+        {
+          fifo = data;
+        }
+
+      /// @brief Read 8-bit byte from the FIFO
+      /// @returns 8-bit byte of received data read from the FIFO
+        std::uint8_t receive_fifo_read() volatile const
+        {
+          return fifo;
+        }
+
+      /// @brief Return currently set I2C/BSC master clock divisor value
+      ///
+      /// Note: values will be even, in the range [0,32768]. A value of 
+      /// 32768 represented as a register value of 0
+      ///
+      /// @returns BSC master clock register divisor (CDIV) 15-bit field value
+        register_t get_clock_divider() volatile const
+        {
+          register_t value{clk_div&clk_divisor_mask};
+          return value?value:static_cast<register_t>(clk_divisor_max);
+        }
+
+      /// @brief Set I2C/BSC master clock divisor value. 
+      /// Divides the system APB clock.
+      ///
+      /// Note: Values should be even, in the range [2,32768]. Odd values will
+      /// be rounded down.
+      ///
+      /// @param[in] divisor  BSC master APB clock divisor value [2,32768]
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as divisor out of range
+        bool set_clock_divider(register_t divisor) volatile
+        {
+          if (clk_divisor_min>divisor || divisor>clk_divisor_max)
+            {
+              return false;
+            }
+          clk_div = divisor&clk_divisor_mask;
+          return true;
         }
       };
     } // namespace internal closed

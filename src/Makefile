@@ -16,6 +16,7 @@ SRC_FILES = phymem_ptr.cpp\
             clock_ctrl.cpp\
             pwm_ctrl.cpp\
             spi0_ctrl.cpp\
+            i2c_ctrl.cpp\
             pin_id.cpp\
             rpi_info.cpp\
             pin_alloc.cpp\

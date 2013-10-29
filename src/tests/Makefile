@@ -26,7 +26,8 @@ PLATTEST_SRC_FILES = phymem_ptr_platformtests.cpp\
                     pin_edge_event_platformtests.cpp\
                     clock_pin_platformtests.cpp\
                     pwm_pin_platformtests.cpp\
-                    spi0_pins_platformtests.cpp
+                    spi0_pins_platformtests.cpp\
+                    i2c_ctrl_platformtests.cpp
 UNITTEST_SRC_FILE = gpio_registers_unittests.cpp\
                     clock_registers_unittests.cpp\
                     pwm_registers_unittests.cpp\

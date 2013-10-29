@@ -560,3 +560,102 @@ TEST_CASE( "Unit-tests/i2c_registers/0710/get_clock_divider"
   i2c_regs.clk_div = 0U;
   CHECK(i2c_regs.get_clock_divider()==32768U);  
 }
+
+TEST_CASE( "Unit-tests/i2c_registers/0800/get_read_delay"
+         , "get_read_delay returns the DEL register REDL field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.del_redl_mask==65535U); // lower 16 bits of register
+  REQUIRE(i2c_regs.del_max==65535U); // All field values valid
+  CHECK(i2c_regs.get_read_delay()==0U);
+  i2c_regs.data_delay = ~0U;
+  CHECK(i2c_regs.get_read_delay()==i2c_regs.del_max);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0810/get_write_delay"
+         , "get_write_delay returns the DEL register FEDL field value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.del_fedl_bit==16U); 
+  REQUIRE((i2c_regs.del_fedl_mask>>i2c_regs.del_fedl_bit)==65535U); 
+  REQUIRE(i2c_regs.del_max==65535U); // All field values valid
+  CHECK(i2c_regs.get_write_delay()==0U);
+  i2c_regs.data_delay = ~0U;
+  CHECK(i2c_regs.get_write_delay()==(i2c_regs.del_max));
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0820/set_read_delay"
+         , "set_read_delay sets the DEL register REDL field value and returns "
+           "true OR returns false"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.del_redl_mask==65535U); // lower 16 bits of register
+  REQUIRE(i2c_regs.del_max==65535U); // All field values valid
+  CHECK(i2c_regs.set_read_delay(i2c_regs.del_max));
+  CHECK(i2c_regs.data_delay==i2c_regs.del_redl_mask);
+  i2c_regs.data_delay = ~0U;
+  CHECK(i2c_regs.set_read_delay(0U));
+  CHECK(i2c_regs.data_delay==~i2c_regs.del_redl_mask);
+  CHECK_FALSE(i2c_regs.set_read_delay(~0U));
+  CHECK(i2c_regs.data_delay==~i2c_regs.del_redl_mask);
+  CHECK_FALSE(i2c_regs.set_read_delay(i2c_regs.del_max+1));
+  CHECK(i2c_regs.data_delay==~i2c_regs.del_redl_mask);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0830/set_write_delay"
+         , "set_write_delay sets the DEL register FEDL field value and returns "
+           "true OR returns false"
+         )
+{
+  i2c_registers i2c_regs; 
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.del_fedl_bit==16U); 
+  REQUIRE((i2c_regs.del_fedl_mask>>i2c_regs.del_fedl_bit)==65535U); 
+  REQUIRE(i2c_regs.del_max==65535U); // All field values valid
+  CHECK(i2c_regs.set_write_delay(i2c_regs.del_max));
+  CHECK(i2c_regs.data_delay==i2c_regs.del_fedl_mask);
+  i2c_regs.data_delay = ~0U;
+  CHECK(i2c_regs.set_write_delay(0U));
+  CHECK(i2c_regs.data_delay==~i2c_regs.del_fedl_mask);
+  CHECK_FALSE(i2c_regs.set_write_delay(~0U));
+  CHECK(i2c_regs.data_delay==~i2c_regs.del_fedl_mask);
+  CHECK_FALSE(i2c_regs.set_write_delay(i2c_regs.del_max+1));
+  CHECK(i2c_regs.data_delay==~i2c_regs.del_fedl_mask);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0900/get_clock_stretch_timeout"
+         , "get_clock_stretch_timeout returns the CLKT register TOUT field "
+           "value"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.clkt_tout_mask==65535U); // lower 16 bits of register
+  CHECK(i2c_regs.get_clock_stretch_timeout()==0U);
+  i2c_regs.clk_stretch = ~0U;
+  CHECK(i2c_regs.get_clock_stretch_timeout()==i2c_regs.clkt_tout_mask);
+}
+
+TEST_CASE( "Unit-tests/i2c_registers/0910/set_clock_stretch_timeout"
+         , "set_clock_stretch_timeout sets the CLKT register TOUT field value "
+           "and returns true OR returns false"
+         )
+{
+  i2c_registers i2c_regs;
+  std::memset(&i2c_regs, 0x0, sizeof(i2c_regs));
+  REQUIRE(i2c_regs.clkt_tout_mask==65535U); // lower 16 bits of register
+  CHECK(i2c_regs.set_clock_stretch_timeout(i2c_regs.clkt_tout_mask));
+  CHECK(i2c_regs.clk_stretch==i2c_regs.clkt_tout_mask);
+  CHECK(i2c_regs.set_clock_stretch_timeout(0U));
+  CHECK(i2c_regs.clk_stretch==0U);
+  CHECK_FALSE(i2c_regs.set_clock_stretch_timeout(~0U));
+  CHECK(i2c_regs.clk_stretch==0U);
+  CHECK_FALSE(i2c_regs.set_clock_stretch_timeout(i2c_regs.clkt_tout_mask+1));
+  CHECK(i2c_regs.clk_stretch==0U);
+}

@@ -78,6 +78,11 @@ namespace dibase { namespace rpi {
                                         ///< line with documented 32768 maximum
                                         ///< divider value rather than 
                                         ///< documented DIV field bits 15:0)
+        , del_redl_mask       = 0xFFFFU ///< DEL register REDL field mask value
+        , del_fedl_mask   = 0xFFFF0000U ///< DEL register FEDL field mask value
+        , del_fedl_bit        =   0x10U ///< DEL register FEDL field start bit number
+        , del_max             = 0xFFFFU ///< DEL register REDL & FEDL fields' maximum value
+        , clkt_tout_mask      = 0xFFFFU ///< CLKT register TOUT field mask value
         };
 
       /// @brief Physical address of start of BCM2835 BSC0 control registers
@@ -474,6 +479,105 @@ namespace dibase { namespace rpi {
               return false;
             }
           clk_div = divisor&clk_divisor_mask;
+          return true;
+        }
+
+      /// @brief Return the bit-read delay after SCL rising edge (DEL:REDL)
+      ///
+      /// The returned value is the DEL register REDL field value which is
+      /// the delay in core clock cycles after SCL rising edge before reading
+      /// a data bit from SDA.   
+      ///
+      /// @returns SCL Rising Edge delay before writing a bit of data [0,65535]
+        register_t get_read_delay()
+        {
+          return data_delay&del_redl_mask;
+        }
+      
+      /// @brief Return the bit-write delay after SCL falling edge (DEL:FEDL)
+      ///
+      /// The returned value is the DEL register FEDL field value which is
+      /// the delay in core clock cycles after SCL falling edge before writing
+      /// a data bit to SDA.
+      ///
+      /// @returns SCL Falling Edge delay before reading a bit of data [0,65535]
+        register_t get_write_delay()
+        {
+          return (data_delay&del_fedl_mask)>>del_fedl_bit;
+        }
+
+      /// @brief Set the bit-read delay after SCL rising edge (DEL:REDL)
+      ///
+      /// The delay parameter sets the DEL register REDL field value which is
+      /// the delay in core clock cycles after SCL rising edge before reading
+      /// a data bit from SDA.   
+      ///
+      /// @param[in] delay  SCL Rising Edge delay before writing a bit of
+      ///                   data [0,65535]
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as delay out of range
+        bool set_read_delay(register_t delay)
+        {
+          if (delay>del_max)
+            {
+              return false;
+            }
+          data_delay = (data_delay&~del_redl_mask) | delay;
+          return true;
+        }
+      
+      /// @brief Set the bit-write delay after SCL falling edge (DEL:FEDL)
+      ///
+      /// The delay parameter sets the DEL register FEDL field value which is
+      /// the delay in core clock cycles after SCL falling edge before writing
+      /// a data bit to SDA.
+      ///
+      /// @param[in] delay  SCL Falling Edge delay before reading a bit of
+      ///                   data [0,65535]
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as delay out of range
+        bool set_write_delay(register_t delay)
+        {
+          if (delay>del_max)
+            {
+              return false;
+            }
+          data_delay = (data_delay&~del_fedl_mask) | (delay<<del_fedl_bit);
+          return true;
+        }
+
+      /// @brief Return the clock stretch time-out value (CLKT:TOUT)
+      ///
+      /// The returned value is the CLKT register TOUT field value which
+      /// specifies how long the master waits, in SCL clock cycles, for a
+      /// slave device to stretch the clock (by keeping SCL low after master
+      /// sets it high) before deciding the slave has hung. A zero value 
+      /// indicates the feature is disabled
+      ///
+      /// @returns SCL clocks clock-stretch value [0,65535]
+        register_t get_clock_stretch_timeout()
+        {
+          return clk_stretch&clkt_tout_mask;
+        }
+
+      /// @brief Set the clock stretch time-out value (CLKT:TOUT)
+      ///
+      /// The clks parameter sets the CLKT register TOUT field value which
+      /// specifies how long the master waits, in SCL clock cycles, for a
+      /// slave device to stretch the clock (by keeping SCL low after master
+      /// sets it high) before deciding the slave has hung. A zero value 
+      /// disables the feature.
+      ///
+      /// @param[in] clks  SCL clocks clock-stretch value [0,65535]
+      /// @returns  true if operation performed,
+      ///           false if operation not performed as delay out of range
+        bool set_clock_stretch_timeout(register_t clks)
+        {
+          if (clks>clkt_tout_mask)
+            {
+              return false;
+            }
+          clk_stretch = clks;
           return true;
         }
       };

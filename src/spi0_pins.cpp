@@ -30,7 +30,7 @@ namespace dibase { namespace rpi {
           {
             throw std::invalid_argument
                   { "spi0_pins::spi0_pins: Pin does not support "
-                    "requested SPI0 special function"
+                    "requested SPI0 special function."
                   };
           } 
         if (pin_fn_info.size()!=1)
@@ -196,10 +196,10 @@ namespace dibase { namespace rpi {
 
       if ( c.mode==spi0_mode::standard && !has_std_mode_support() )
         {
-          throw std::invalid_argument{ "spi0_pins::apply_cooverstaion: 3-wire "
+          throw std::invalid_argument{ "spi0_pins::start_converstaion: 3-wire "
                                        "SPI standard mode not supported as "
-                                       "the MISO lines has not allocated to a "
-                                       "GPIO pin"
+                                       "the MISO lines has not been allocated "
+                                       "to a GPIO pin"
                                      };
         }
 

@@ -489,7 +489,7 @@ namespace dibase { namespace rpi {
       /// a data bit from SDA.   
       ///
       /// @returns SCL Rising Edge delay before writing a bit of data [0,65535]
-        register_t get_read_delay()
+        register_t get_read_delay() volatile const
         {
           return data_delay&del_redl_mask;
         }
@@ -501,7 +501,7 @@ namespace dibase { namespace rpi {
       /// a data bit to SDA.
       ///
       /// @returns SCL Falling Edge delay before reading a bit of data [0,65535]
-        register_t get_write_delay()
+        register_t get_write_delay() volatile const
         {
           return (data_delay&del_fedl_mask)>>del_fedl_bit;
         }
@@ -516,7 +516,7 @@ namespace dibase { namespace rpi {
       ///                   data [0,65535]
       /// @returns  true if operation performed,
       ///           false if operation not performed as delay out of range
-        bool set_read_delay(register_t delay)
+        bool set_read_delay(register_t delay) volatile
         {
           if (delay>del_max)
             {
@@ -536,7 +536,7 @@ namespace dibase { namespace rpi {
       ///                   data [0,65535]
       /// @returns  true if operation performed,
       ///           false if operation not performed as delay out of range
-        bool set_write_delay(register_t delay)
+        bool set_write_delay(register_t delay) volatile
         {
           if (delay>del_max)
             {
@@ -555,7 +555,7 @@ namespace dibase { namespace rpi {
       /// indicates the feature is disabled
       ///
       /// @returns SCL clocks clock-stretch value [0,65535]
-        register_t get_clock_stretch_timeout()
+        register_t get_clock_stretch_timeout() volatile const
         {
           return clk_stretch&clkt_tout_mask;
         }
@@ -571,7 +571,7 @@ namespace dibase { namespace rpi {
       /// @param[in] clks  SCL clocks clock-stretch value [0,65535]
       /// @returns  true if operation performed,
       ///           false if operation not performed as delay out of range
-        bool set_clock_stretch_timeout(register_t clks)
+        bool set_clock_stretch_timeout(register_t clks) volatile
         {
           if (clks>clkt_tout_mask)
             {

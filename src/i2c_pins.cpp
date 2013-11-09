@@ -47,6 +47,85 @@ namespace dibase { namespace rpi {
           }
         return pin_fn_info[0];
       }
+
+      void construct_common
+      ( pin_id        sda_pin
+      , pin_id        scl_pin
+      , int           bsc_num   
+      , hertz         f
+      , std::uint16_t tout
+      , std::uint16_t fedl
+      , std::uint16_t redl
+      , hertz         fc
+      , gpio_pin_fn   sda_alt_fn
+      , gpio_pin_fn   scl_alt_fn
+      )
+      {
+        using internal::i2c_registers;
+        i2c_registers ctx_builder;
+        ctx_builder.control = 0U;
+        ctx_builder.clk_div = 0U;
+        ctx_builder.data_delay = 0U;
+        ctx_builder.clk_stretch = 0U;
+
+        register_t cdiv{fc.count()/f.count()};
+        if (!ctx_builder.set_clock_divider(cdiv))
+          {
+            throw std::out_of_range( "i2c_pins::i2c_pins: f parameter "
+                                     "not in the range [fc/32768,fc/2]."
+                                   );
+          }
+        if (redl>(cdiv/2))
+          {
+            throw std::out_of_range( "i2c_pins::i2c_pins: redl parameter "
+                                     "exceeds (fc/f)/2 (CDIV/2)."
+                                   );          
+          }
+        if (fedl>(cdiv/2))
+          {
+            throw std::out_of_range( "i2c_pins::i2c_pins: fedl parameter "
+                                     "exceeds (fc/f)/2 (CDIV/2)."
+                                   );          
+          }
+        ctx_builder.set_read_delay(redl);
+        ctx_builder.set_write_delay(fedl);
+        ctx_builder.set_clock_stretch_timeout(tout);
+        ctx_builder.set_enable(true);
+        ctx_builder.clear_fifo();
+        if (i2c_ctrl::instance().alloc.is_in_use(bsc_num))
+          {
+            throw bad_peripheral_alloc( "i2c_pins::i2c_pins: BSC peripheral is "
+                                        "already being used locally."
+                                      );
+          }
+        i2c_ctrl::instance().alloc.allocate(bsc_num);
+        int pin_alloc_count{0};
+        try
+        {
+          gpio_ctrl::instance().alloc.allocate(sda_pin); // CAN THROW
+          ++pin_alloc_count;
+          gpio_ctrl::instance().alloc.allocate(scl_pin); // CAN THROW
+          ++pin_alloc_count;
+        }
+        catch (...)
+        { // Oops - failed to complete resource acquisition and initialisation;
+        // Release resources allocated so far and re-throw
+          if (pin_alloc_count==1)
+            {
+              gpio_ctrl::instance().alloc.deallocate(sda_pin);
+            }
+          i2c_ctrl::instance().alloc.deallocate(bsc_num);
+          throw;
+        }
+        
+        gpio_ctrl::instance().regs->set_pin_function(sda_pin, sda_alt_fn);
+        gpio_ctrl::instance().regs->set_pin_function(scl_pin, scl_alt_fn);
+
+        i2c_ctrl::instance().regs(bsc_num)->clk_div = ctx_builder.clk_div;
+        i2c_ctrl::instance().regs(bsc_num)->data_delay = ctx_builder.data_delay;
+        i2c_ctrl::instance().regs(bsc_num)->clk_stretch = ctx_builder.clk_stretch;
+        i2c_ctrl::instance().regs(bsc_num)->control = ctx_builder.control;
+      }
     }
 
     constexpr auto sda_idx(0U);
@@ -91,81 +170,22 @@ namespace dibase { namespace rpi {
                   "SDA and SCL functions for the same BSC peripheral."
                 };
         }
+      unsigned bsc_num{alt_fn_info[sda_idx].special_fn()==gpio_special_fn::sda0?0:1};
 
-      using internal::i2c_registers;
-      i2c_registers ctx_builder;
-      ctx_builder.control = 0U;
-      ctx_builder.clk_div = 0U;
-      ctx_builder.data_delay = 0U;
-      ctx_builder.clk_stretch = 0U;
-
-      register_t cdiv{fc.count()/f.count()};
-      if (!ctx_builder.set_clock_divider(cdiv))
-        {
-          throw std::out_of_range( "i2c_pins::i2c_pins: f parameter "
-                                   "not in the range [fc/32768,fc/2]."
-                                 );
-        }
-      if (redl>(cdiv/2))
-        {
-          throw std::out_of_range( "i2c_pins::i2c_pins: redl parameter "
-                                   "exceeds (fc/f)/2 (CDIV/2)."
-                                 );          
-        }
-      if (fedl>(cdiv/2))
-        {
-          throw std::out_of_range( "i2c_pins::i2c_pins: fedl parameter "
-                                   "exceeds (fc/f)/2 (CDIV/2)."
-                                 );          
-        }
-      ctx_builder.set_read_delay(redl);
-      ctx_builder.set_write_delay(fedl);
-      ctx_builder.set_clock_stretch_timeout(tout);
-      ctx_builder.set_enable(true);
-      ctx_builder.clear_fifo();
-      unsigned idx{alt_fn_info[sda_idx].special_fn()==gpio_special_fn::sda0?0:1};
-      if (i2c_ctrl::instance().alloc.is_in_use(idx))
-        {
-          throw bad_peripheral_alloc( "i2c_pins::i2c_pins: BSC peripheral is "
-                                      "already being used locally."
-                                    );
-        }
-      i2c_ctrl::instance().alloc.allocate(idx);
-      try
-      {
-        gpio_ctrl::instance().alloc.allocate(sda_pin); // CAN THROW
-        pins[sda_idx] = sda_pin;
-        gpio_ctrl::instance().alloc.allocate(scl_pin); // CAN THROW
-        pins[scl_idx] = scl_pin;
-      }
-      catch (...)
-      { // Oops - failed to complete resource acquisition and initialisation;
-      // Release resources allocated so far and re-throw
-        if (pins[sda_idx]!=pin_not_used)
-          {
-            gpio_ctrl::instance().alloc.deallocate(pin_id(pins[sda_idx]));
-          }
-        i2c_ctrl::instance().alloc.deallocate(idx);
-        throw;
-      }
+      construct_common( sda_pin, scl_pin, bsc_num, f, tout, fedl, redl, fc
+                      , alt_fn_info[sda_idx].alt_fn()
+                      , alt_fn_info[scl_idx].alt_fn()
+                      );
       
-      gpio_ctrl::instance().regs->set_pin_function( pin_id(pins[sda_idx])
-                                                  , alt_fn_info[sda_idx].alt_fn()
-                                                  );
-      gpio_ctrl::instance().regs->set_pin_function( pin_id(pins[scl_idx])
-                                                  , alt_fn_info[scl_idx].alt_fn()
-                                                  );
-      bsc_idx = idx;
-      i2c_ctrl::instance().regs(idx)->clk_div = ctx_builder.clk_div;
-      i2c_ctrl::instance().regs(idx)->data_delay = ctx_builder.data_delay;
-      i2c_ctrl::instance().regs(idx)->clk_stretch = ctx_builder.clk_stretch;
-      i2c_ctrl::instance().regs(idx)->control = ctx_builder.control;
+      bsc_idx = bsc_num;
+      pins[sda_idx] = sda_pin;
+      pins[scl_idx] = scl_pin;
     }
 
     i2c_pins::i2c_pins
     ( pin_id        sda_pin
     , pin_id        scl_pin
-    , int           bsc_idx   
+    , int           bsc_num   
     , hertz         f
     , std::uint16_t tout
     , std::uint16_t fedl
@@ -173,6 +193,33 @@ namespace dibase { namespace rpi {
     , hertz         fc
     )
     {
+      pins.fill(pin_id(pin_not_used)); 
+    
+      if (bsc_num!=0 && bsc_num!=1)
+        {
+          throw std::invalid_argument
+                { "i2c_pins::i2c_pins: bsc_num parameter is not 0 or 1." };
+        }
+ 
+      gpio_special_fn sda_fn
+                      {bsc_num==0?gpio_special_fn::sda0:gpio_special_fn::sda1};
+      gpio_special_fn scl_fn
+                      {bsc_num==0?gpio_special_fn::scl0:gpio_special_fn::scl1};
+
+    // Get each pin's alt function for its BSC/I2C special function.
+    // Note: any of these can throw - but nothing allocated yet so OK
+      descriptor alt_fn_info[number_of_pins];
+      alt_fn_info[sda_idx] = get_alt_fn_descriptor(sda_pin, {sda_fn});
+      alt_fn_info[scl_idx] = get_alt_fn_descriptor(scl_pin, {scl_fn});
+
+      construct_common( sda_pin, scl_pin, bsc_num, f, tout, fedl, redl, fc
+                      , alt_fn_info[sda_idx].alt_fn()
+                      , alt_fn_info[scl_idx].alt_fn()
+                      );
+
+      bsc_idx = bsc_num;
+      pins[sda_idx] = sda_pin;
+      pins[scl_idx] = scl_pin;
     }
 
     i2c_pins::~i2c_pins()

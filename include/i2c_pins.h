@@ -164,7 +164,7 @@ namespace dibase { namespace rpi {
     ///                     line
     /// @param[in] scl_pin  GPIO pin id number of the I2C/BSC SCL (serial clock)
     ///                     line
-    /// @param[in] bsc_idx  BSC peripheral index number specifying BSC0 or BSC1
+    /// @param[in] bsc_num  BSC peripheral number specifying BSC0 or BSC1
     ///                     In the range [0,1]; 0 to use BSC0, 1 to use BSC1.
     /// @param[in] f        Frequency of the I2C/BSC clock SCL in the range 
     ///                     [fc/2, fc/32768]. Non-integral values of fc/f
@@ -198,7 +198,7 @@ namespace dibase { namespace rpi {
     ///         peripheral are already in use.
       i2c_pins( pin_id        sda_pin
               , pin_id        scl_pin
-              , int           bsc_idx   
+              , int           bsc_num   
               , hertz         f     = i2c_pins_default_frequency
               , std::uint16_t tout  = default_tout
               , std::uint16_t fedl  = default_fedl

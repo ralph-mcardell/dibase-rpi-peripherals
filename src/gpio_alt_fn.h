@@ -150,6 +150,10 @@ namespace dibase { namespace rpi {
         ///         gpio_pin_fn::input or gpio_pin_fn::output.
           descriptor(pin_id p, gpio_pin_fn a, gpio_special_fn s);
 
+        /// Default construct: Allows arrays (built in and std::array) of
+        /// descriptor objects.
+          descriptor() : pin_{0U} {}
+
         /// @brief Return the value of the descriptor's pin_id
         /// @returns pin_id value descriptor created with.
           pin_id pin() const { return pin_; }

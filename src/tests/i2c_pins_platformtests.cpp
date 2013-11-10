@@ -64,7 +64,57 @@ TEST_CASE( "Platform-tests/i2c_pins/0000/create & destroy good, implied BSC peri
   CHECK_FALSE(i2c_ctrl::instance().regs(1)->get_enable());
 }
 
-TEST_CASE( "Platform-tests/i2c_pins/0010/create & destroy good, explicit BSC peripheral"
+TEST_CASE( "Platform-tests/i2c_pins/0010/create good - fedl maximum value"
+         , "Creating i2c_pins with a fedl parameter value that is exactly "
+           "half the computed CDIV(fc/f) value is OK"
+         )
+{
+  i2c_pins iis(pin_id(0),pin_id(1),i2c_pins_default_frequency,default_tout,1250);
+  CHECK(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK(i2c_ctrl::instance().regs(0)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0020/create good - redl maximum value"
+         , "Creating i2c_pins with a redl parameter value that is exactly "
+           "half the computed CDIV(fc/f) value is OK"
+         )
+{
+  i2c_pins iis( pin_id(0), pin_id(1)
+              , i2c_pins_default_frequency, default_tout, default_fedl, 1250);
+  CHECK(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK(i2c_ctrl::instance().regs(0)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0030/create good - clock frequency minimum"
+         , "Creating i2c_pins with a f parameter value that is exactly "
+           "fc/32768 is OK"
+         )
+{
+// Note: +1 to round up as 250,000,000 / 32768 is not a whole number.
+  i2c_pins iis(pin_id(0),pin_id(1),hertz((rpi_apb_core_frequency.count()/32768)+1));
+  CHECK(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK(i2c_ctrl::instance().regs(0)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0045/create good - clock frequency maximum"
+         , "Creating i2c_pins with a f parameter value that is exactly "
+           "fc/32768 is OK"
+         )
+{
+  i2c_pins iis(pin_id(0),pin_id(1),hertz(rpi_apb_core_frequency.count()/2),0,0,0);
+  CHECK(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK(i2c_ctrl::instance().regs(0)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0100/create & destroy good, explicit BSC peripheral"
          , "Creating i2c_pins from a good set of parameters, with BSC0|1 "
            "explicitly passed leaves object in the expected state"
          )
@@ -107,7 +157,7 @@ TEST_CASE( "Platform-tests/i2c_pins/0010/create & destroy good, explicit BSC per
   CHECK_FALSE(i2c_ctrl::instance().regs(1)->get_enable());
 }
 
-TEST_CASE( "Platform-tests/i2c_pins/0020/create bad - no expected alt-fn"
+TEST_CASE( "Platform-tests/i2c_pins/0110/create bad - no expected alt-fn"
          , "Creating i2c_pins from SDA/SCL pin parameter values that do not "
            "have the required alternative function fails"
          )
@@ -130,7 +180,7 @@ TEST_CASE( "Platform-tests/i2c_pins/0020/create bad - no expected alt-fn"
   CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
 }
 
-TEST_CASE( "Platform-tests/i2c_pins/0030/create bad - too many expected alt-fn"
+TEST_CASE( "Platform-tests/i2c_pins/0120/create bad - too many expected alt-fn"
          , "Creating i2c_pins from pin parameter values having more than one "
            "possible candidate for the required alternative function fails"
          )
@@ -147,7 +197,7 @@ TEST_CASE( "Platform-tests/i2c_pins/0030/create bad - too many expected alt-fn"
   CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
 }
 
-TEST_CASE( "Platform-tests/i2c_pins/0040/create bad - invalid explicit BSC number"
+TEST_CASE( "Platform-tests/i2c_pins/0130/create bad - invalid explicit BSC number"
          , "Creating i2c_pins from a BSC number other than 0 or 1 fails"
          )
 {
@@ -158,7 +208,7 @@ TEST_CASE( "Platform-tests/i2c_pins/0040/create bad - invalid explicit BSC numbe
   CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
 }
 
-TEST_CASE( "Platform-tests/i2c_pins/0050/create bad - conflicting SDA/SCL BSC peripheral"
+TEST_CASE( "Platform-tests/i2c_pins/0140/create bad - conflicting SDA/SCL BSC peripheral"
          , "Creating i2c_pins from pins supporting SDA and SCL functions for "
            "different BSC peripherals fails"
          )
@@ -179,7 +229,7 @@ TEST_CASE( "Platform-tests/i2c_pins/0050/create bad - conflicting SDA/SCL BSC pe
   CHECK_FALSE(i2c_ctrl::instance().regs(1)->get_enable());
 }
 
-TEST_CASE( "Platform-tests/i2c_pins/0060/create bad - fedl out of range"
+TEST_CASE( "Platform-tests/i2c_pins/0150/create bad - fedl out of range"
          , "Creating i2c_pins with a fedl parameter value that is more than "
            "half the computed CDIV(fc/f) value fails"
          )
@@ -197,7 +247,7 @@ TEST_CASE( "Platform-tests/i2c_pins/0060/create bad - fedl out of range"
   CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
 }
 
-TEST_CASE( "Platform-tests/i2c_pins/0070/create bad - redl out of range"
+TEST_CASE( "Platform-tests/i2c_pins/0160/create bad - redl out of range"
          , "Creating i2c_pins with a redl parameter value that is more than "
            "half the computed CDIV(fc/f) value fails"
          )
@@ -215,14 +265,31 @@ TEST_CASE( "Platform-tests/i2c_pins/0070/create bad - redl out of range"
   CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
 }
 
-TEST_CASE( "Platform-tests/i2c_pins/0080/create bad - clock frequency too low"
+TEST_CASE( "Platform-tests/i2c_pins/0170/create bad - clock frequency too low"
          , "Creating i2c_pins with a f parameter value that is less than "
            "fc/32768 fails"
          )
 {
-  REQUIRE_THROWS_AS(  (i2c_pins ( pin_id(0),pin_id(1)
-                                , (rpi_apb_core_frequency.count()/32768U)-1U
-                                )
+  REQUIRE_THROWS_AS((i2c_pins( pin_id(0),pin_id(1)
+                             , hertz((rpi_apb_core_frequency.count()/32768U)-1U)
+                             )
+                      )
+                   , std::out_of_range
+                   );
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0175/create bad - clock frequency too high"
+         , "Creating i2c_pins with a f parameter value that is less than "
+           "fc/32768 fails"
+         )
+{
+  REQUIRE_THROWS_AS((i2c_pins( pin_id(0),pin_id(1)
+                             , hertz((rpi_apb_core_frequency.count()/2)+1U)
+                             )
                       )
                    , std::out_of_range
                    );

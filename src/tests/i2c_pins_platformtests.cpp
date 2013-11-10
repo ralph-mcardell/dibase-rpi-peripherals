@@ -64,7 +64,7 @@ TEST_CASE( "Platform-tests/i2c_pins/0000/create & destroy good, implied BSC peri
   CHECK_FALSE(i2c_ctrl::instance().regs(1)->get_enable());
 }
 
-TEST_CASE( "Platform-tests/i2c_pins/0020/create & destroy good, explicit BSC peripheral"
+TEST_CASE( "Platform-tests/i2c_pins/0010/create & destroy good, explicit BSC peripheral"
          , "Creating i2c_pins from a good set of parameters, with BSC0|1 "
            "explicitly passed leaves object in the expected state"
          )
@@ -105,4 +105,129 @@ TEST_CASE( "Platform-tests/i2c_pins/0020/create & destroy good, explicit BSC per
   CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(3)));
   CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(1));
   CHECK_FALSE(i2c_ctrl::instance().regs(1)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0020/create bad - no expected alt-fn"
+         , "Creating i2c_pins from SDA/SCL pin parameter values that do not "
+           "have the required alternative function fails"
+         )
+{
+  REQUIRE_THROWS_AS((i2c_pins(pin_id(1),pin_id(1))), std::invalid_argument);
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+  REQUIRE_THROWS_AS((i2c_pins(pin_id(1),pin_id(1),0)), std::invalid_argument);
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+  REQUIRE_THROWS_AS((i2c_pins(pin_id(0),pin_id(0))), std::invalid_argument);
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+  REQUIRE_THROWS_AS((i2c_pins(pin_id(0),pin_id(0),0)), std::invalid_argument);
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0030/create bad - too many expected alt-fn"
+         , "Creating i2c_pins from pin parameter values having more than one "
+           "possible candidate for the required alternative function fails"
+         )
+{
+  REQUIRE_THROWS_AS((i2c_pins(pin_id(44),pin_id(1))), std::range_error);
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(44)));
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+  REQUIRE_THROWS_AS((i2c_pins(pin_id(0),pin_id(45))), std::range_error);
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(45)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0040/create bad - invalid explicit BSC number"
+         , "Creating i2c_pins from a BSC number other than 0 or 1 fails"
+         )
+{
+  REQUIRE_THROWS_AS((i2c_pins(pin_id(0),pin_id(1),2)), std::out_of_range);
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0050/create bad - conflicting SDA/SCL BSC peripheral"
+         , "Creating i2c_pins from pins supporting SDA and SCL functions for "
+           "different BSC peripherals fails"
+         )
+{
+  REQUIRE_THROWS_AS((i2c_pins(pin_id(0),pin_id(3))), std::invalid_argument);
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(3)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(1));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+  CHECK_FALSE(i2c_ctrl::instance().regs(1)->get_enable());
+  REQUIRE_THROWS_AS((i2c_pins(pin_id(2),pin_id(1))), std::invalid_argument);
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(2)));
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(1));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+  CHECK_FALSE(i2c_ctrl::instance().regs(1)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0060/create bad - fedl out of range"
+         , "Creating i2c_pins with a fedl parameter value that is more than "
+           "half the computed CDIV(fc/f) value fails"
+         )
+{
+  REQUIRE_THROWS_AS(  (i2c_pins ( pin_id(0),pin_id(1),i2c_pins_default_frequency
+                                , default_tout
+                                , 1251
+                                )
+                      )
+                   , std::out_of_range
+                   );
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0070/create bad - redl out of range"
+         , "Creating i2c_pins with a redl parameter value that is more than "
+           "half the computed CDIV(fc/f) value fails"
+         )
+{
+  REQUIRE_THROWS_AS(  (i2c_pins ( pin_id(0),pin_id(1),i2c_pins_default_frequency
+                                , default_tout, default_fedl
+                                , 1251
+                                )
+                      )
+                   , std::out_of_range
+                   );
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0080/create bad - clock frequency too low"
+         , "Creating i2c_pins with a f parameter value that is less than "
+           "fc/32768 fails"
+         )
+{
+  REQUIRE_THROWS_AS(  (i2c_pins ( pin_id(0),pin_id(1)
+                                , (rpi_apb_core_frequency.count()/32768U)-1U
+                                )
+                      )
+                   , std::out_of_range
+                   );
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
+  CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
+  CHECK_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+  CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_enable());
 }

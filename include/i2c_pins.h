@@ -193,7 +193,7 @@ namespace dibase { namespace rpi {
     /// @throws std::range_error if any pin supports the same BSC function
     ///         by more than one alternative function -- should not occur.
     /// @throws std::out_of_range if the f, fedl or redl parameters are not
-    ///         in range. 
+    ///         in range or bsc_num is not 0 or 1.
     /// @throws bad_peripheral_alloc if either any of the pins or the BSC
     ///         peripheral are already in use.
       i2c_pins( pin_id        sda_pin

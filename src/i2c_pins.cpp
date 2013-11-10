@@ -197,7 +197,7 @@ namespace dibase { namespace rpi {
     
       if (bsc_num!=0 && bsc_num!=1)
         {
-          throw std::invalid_argument
+          throw std::out_of_range
                 { "i2c_pins::i2c_pins: bsc_num parameter is not 0 or 1." };
         }
  
@@ -230,6 +230,5 @@ namespace dibase { namespace rpi {
       gpio_ctrl::instance().alloc.deallocate(pin_id(pins[sda_idx]));
       gpio_ctrl::instance().alloc.deallocate(pin_id(pins[scl_idx]));
     }
-
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

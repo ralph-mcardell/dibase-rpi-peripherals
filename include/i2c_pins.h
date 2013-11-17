@@ -218,6 +218,65 @@ namespace dibase { namespace rpi {
       i2c_pins& operator=(i2c_pins const &) = delete;
       i2c_pins(i2c_pins &&) = delete;
       i2c_pins& operator=(i2c_pins &&) = delete;
+
+    /// @brief Query whether the I2C/BSC peripheral is busy with data transfer
+    /// @returns true if data transfer is ongoing (C:TA field is 1),
+    ///          false if no data transfer is ongoing (C:TA field is 0)
+      bool is_busy() const;
+
+    /// @brief Query whether there is no data to write from the FIFO.
+    ///
+    /// @returns true if there is no data to write from the FIFO
+    ///          false if the FIFO still contains data to write
+      bool write_fifo_is_empty() const;
+
+    /// @brief Query whether there is room for more data FIFO.
+    ///
+    /// Note:  When the FIFO is empty no further serial data will be
+    ///         transmitted until some data is written to the FIFO.
+    ///
+    /// @returns true if there is space to write data into the FIFO
+    ///          false if the FIFO is full.
+      bool write_fifo_has_space() const;
+
+    /// @brief Query whether the FIFO is approaching being empty while writing
+    ///        data and needs more data written to it.
+    ///
+    /// Note: It is unknown if the 'nearing being empty' value is 25% full as
+    ///       the inverse of the SPI0 device's read nearing full value of
+    ///       75% as it is never mentioned in the documentation
+    ///
+    /// @returns  true if the FIFO is nearing being empty while writing.
+    ///           false otherwise.
+      bool write_fifo_needs_writing() const;
+
+    /// @brief Query whether there is no room for read data in the FIFO.
+    ///
+    /// Note:  When the FIFO is full and cannot accept any more
+    ///        incoming data no further serial data will be received until
+    ///        some data is read out from the FIFO.
+    ///
+    /// @returns true if the receive FIFO is full.
+    ///          false if the receive FIFO still has room for more read data
+      bool read_fifo_is_full() const;
+
+    /// @brief Query whether there is any data to be read from the FIFO.
+    ///
+    /// @returns  true if there is data available to read data from the
+    ///           FIFO.
+    ///           false if the FIFO is empty.
+      bool read_fifo_has_data() const;
+
+    /// @brief Query whether the FIFO is approaching being full while reading
+    ///        data and needs reading.
+    ///
+    /// Note: It is unknown if the 'nearing being full' value is 75% full as
+    ///       for the SPI0 peripheral as it is never mentioned in the
+    ///       documentation
+    ///
+    /// @returns  true if the FIFO is nearing being full while reading.
+    ///           false otherwise.
+      bool read_fifo_needs_reading() const;
     };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

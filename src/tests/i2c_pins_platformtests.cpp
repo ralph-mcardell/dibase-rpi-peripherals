@@ -39,6 +39,7 @@ TEST_CASE( "Platform-tests/i2c_pins/0000/create & destroy good, implied BSC peri
     CHECK(i2c_ctrl::instance().regs(0)->get_enable());
     CHECK_FALSE(i2c_ctrl::instance().regs(0)->get_transfer_active());
     CHECK(i2c_ctrl::instance().regs(0)->get_tx_fifo_empty());
+    CHECK(i2c_ctrl::instance().regs(0)->get_transfer_type()==i2c_transfer_type::write);
   }
   CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(0)));
   CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(1)));
@@ -57,6 +58,7 @@ TEST_CASE( "Platform-tests/i2c_pins/0000/create & destroy good, implied BSC peri
     CHECK(i2c_ctrl::instance().regs(1)->get_enable());
     CHECK_FALSE(i2c_ctrl::instance().regs(1)->get_transfer_active());
     CHECK(i2c_ctrl::instance().regs(1)->get_tx_fifo_empty());
+    CHECK(i2c_ctrl::instance().regs(0)->get_transfer_type()==i2c_transfer_type::write);
   }
   CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(2)));
   CHECK_FALSE(gpio_ctrl::instance().alloc.is_in_use(pin_id(3)));
@@ -357,4 +359,77 @@ TEST_CASE( "Platform-tests/i2c_pins/0190/create bad - I2C/BSC peripheral in use"
 
   i2c_ctrl::instance().alloc.deallocate(0);
   REQUIRE_FALSE(i2c_ctrl::instance().alloc.is_in_use(0));
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0200/Created not busy"
+         , "A just created i2c_pins object is not busy"
+         )
+{
+  i2c_pins iic(pin_id(0),pin_id(1)); // SDA0, SCL0 => BSC0
+  CHECK_FALSE( iic.is_busy() );
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0210/Created write empty"
+         , "A just created i2c_pins object BSC FIFO is empty"
+         )
+{
+  i2c_pins iic(pin_id(0),pin_id(1)); // SDA0, SCL0 => BSC0
+  CHECK( iic.write_fifo_is_empty() );
+  CHECK( iic.write_fifo_has_space() );
+  CHECK_FALSE( iic.write_fifo_needs_writing() ); // only set during transaction
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0220/FIFO write not empty"
+         , "Writing data to a BSC FIFO, i2c_pins object reports FIFO not empty"
+         )
+{
+  i2c_pins iic(pin_id(0),pin_id(1)); // SDA0, SCL0 => BSC0
+  i2c_ctrl::instance().regs(0)->transmit_fifo_write('x');
+  CHECK_FALSE( iic.write_fifo_is_empty() );
+  CHECK( iic.write_fifo_has_space() );
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0230/FIFO write and fill"
+         , "Writing data to fill a BSC FIFO, i2c_pins object reports FIFO not "
+           "empty and has no space"
+         )
+{
+  i2c_pins iic(pin_id(0),pin_id(1)); // SDA0, SCL0 => BSC0
+  i2c_ctrl::instance().regs(0)->transmit_fifo_write('x');
+  CHECK_FALSE( iic.write_fifo_is_empty() );
+  for (int i=0; i<15; ++i)
+    {
+      i2c_ctrl::instance().regs(0)->transmit_fifo_write('x');    
+    }
+  CHECK_FALSE( iic.write_fifo_is_empty() );
+  CHECK_FALSE( iic.write_fifo_has_space() );
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0240/Created: read not full, no data"
+         , "A just created i2c_pins object BSC FIFO has no read data so is "
+           "reported as not full, has no data and does not need reading"
+         )
+{
+  i2c_pins iic(pin_id(0),pin_id(1)); // SDA0, SCL0 => BSC0
+  CHECK_FALSE( iic.read_fifo_has_data() );
+  CHECK_FALSE( iic.read_fifo_is_full() );
+  CHECK_FALSE( iic.read_fifo_needs_reading() ); 
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0240/Set for read: read not full, no data"
+         , "A just created i2c_pins object, with C register READ field set "
+           "with no read data reports FIFO as not full, having no data and "
+           "not need reading"
+         )
+{
+  i2c_pins iic(pin_id(0),pin_id(1)); // SDA0, SCL0 => BSC0
+  i2c_ctrl::instance().regs(0)->set_transfer_type(i2c_transfer_type::read);
+  REQUIRE(i2c_ctrl::instance().regs(0)->get_transfer_type()==i2c_transfer_type::read);
+
+  CHECK_FALSE( iic.read_fifo_has_data() );
+  CHECK_FALSE( iic.read_fifo_is_full() );
+  CHECK_FALSE( iic.read_fifo_needs_reading() );
+
+  i2c_ctrl::instance().regs(0)->set_transfer_type(i2c_transfer_type::write);
+  CHECK(i2c_ctrl::instance().regs(0)->get_transfer_type()==i2c_transfer_type::write);
 }

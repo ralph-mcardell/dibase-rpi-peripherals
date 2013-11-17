@@ -128,9 +128,53 @@ namespace dibase { namespace rpi {
       }
     }
 
+    bool i2c_pins::is_busy() const
+    {
+      return i2c_ctrl::instance().regs(bsc_idx)->get_transfer_active();
+    }
+
+    bool i2c_pins::write_fifo_is_empty() const
+    {
+      return i2c_ctrl::instance().regs(bsc_idx)->get_tx_fifo_empty();
+    }
+
+    bool i2c_pins::write_fifo_has_space() const
+    {
+      return i2c_ctrl::instance().regs(bsc_idx)->get_tx_fifo_not_full();
+    }
+ 
+    bool i2c_pins::write_fifo_needs_writing() const
+    {
+      return i2c_ctrl::instance().regs(bsc_idx)->get_tx_fifo_needs_writing();
+    }
+
+    bool i2c_pins::read_fifo_is_full() const
+    {
+      return i2c_ctrl::instance().regs(bsc_idx)->get_rx_fifo_full();
+    }
+
+    bool i2c_pins::read_fifo_has_data() const
+    {
+      return i2c_ctrl::instance().regs(bsc_idx)->get_rx_fifo_not_empty();
+    }
+
+    bool i2c_pins::read_fifo_needs_reading() const
+    {
+      return i2c_ctrl::instance().regs(bsc_idx)->get_rx_fifo_needs_reading();
+    }
+
     constexpr auto sda_idx(0U);
     constexpr auto scl_idx(1U);
     constexpr pin_id_int_t pin_not_used{53U};
+
+    i2c_pins::~i2c_pins()
+    {
+      i2c_ctrl::instance().regs(bsc_idx)->clear_fifo(); // also aborts transfer
+      i2c_ctrl::instance().regs(bsc_idx)->set_enable(false);
+      i2c_ctrl::instance().alloc.deallocate(bsc_idx);
+      gpio_ctrl::instance().alloc.deallocate(pin_id(pins[sda_idx]));
+      gpio_ctrl::instance().alloc.deallocate(pin_id(pins[scl_idx]));
+    }
 
     i2c_pins::i2c_pins
     ( pin_id        sda_pin
@@ -220,15 +264,6 @@ namespace dibase { namespace rpi {
       bsc_idx = bsc_num;
       pins[sda_idx] = sda_pin;
       pins[scl_idx] = scl_pin;
-    }
-
-    i2c_pins::~i2c_pins()
-    {
-      i2c_ctrl::instance().regs(bsc_idx)->clear_fifo(); // also aborts transfer
-      i2c_ctrl::instance().regs(bsc_idx)->set_enable(false);
-      i2c_ctrl::instance().alloc.deallocate(bsc_idx);
-      gpio_ctrl::instance().alloc.deallocate(pin_id(pins[sda_idx]));
-      gpio_ctrl::instance().alloc.deallocate(pin_id(pins[scl_idx]));
     }
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

@@ -416,7 +416,7 @@ TEST_CASE( "Platform-tests/i2c_pins/0240/Created: read not full, no data"
   CHECK_FALSE( iic.read_fifo_needs_reading() ); 
 }
 
-TEST_CASE( "Platform-tests/i2c_pins/0240/Set for read: read not full, no data"
+TEST_CASE( "Platform-tests/i2c_pins/0250/Set for read: read not full, no data"
          , "A just created i2c_pins object, with C register READ field set "
            "with no read data reports FIFO as not full, having no data and "
            "not need reading"

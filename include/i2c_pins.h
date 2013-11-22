@@ -33,7 +33,7 @@ namespace dibase { namespace rpi {
     /// frequency. Note: 100KHz is the maximum frequency for I2C standard mode
     ///
     /// Note: not a class static as in that case g++ thinks storage required
-    ///       causing ld to complain when storage (i.ew. definition) not found!
+    ///       causing ld to complain when storage (i.e. definition) not found!
     ///
       constexpr hertz  i2c_pins_default_frequency = hertz{100000};
 
@@ -63,6 +63,13 @@ namespace dibase { namespace rpi {
       std::size_t                               bsc_idx; // 0 or 1
 
     public:
+    /// @brief Error state enumeration
+      enum state
+      { goodbit = 0         ///< No BSC errors
+      , timeoutbit = 1      ///< Slave stretched clock beyond the set time out
+      , noackowledgebit = 2 ///< Slave did not acknowledge its address
+      };
+
     /// @brief Default value for constructor tout parameters, the BSC/I2C bus
     /// clock stretch time-out value.
       constexpr static std::uint16_t default_tout = 0x40U;
@@ -219,6 +226,101 @@ namespace dibase { namespace rpi {
       i2c_pins(i2c_pins &&) = delete;
       i2c_pins& operator=(i2c_pins &&) = delete;
 
+    /// @brief Start a write transaction to the specified slave device and
+    /// write initial bytes from a buffer to the FIFO for transmission to the
+    /// slave.
+    ///
+    /// @param[in] addrs  Slave address [0,127]. Note: values [0,7],[120,127]
+    ///                   have special meanings in the I2C specification.
+    /// @param[in] dlen   Number of bytes to be written for transaction [0,65535].
+    /// @param[in] data   Pointer to data bytes to be written. Pass nullptr if
+    ///                   to write nothing to FIFO initially.
+    /// @param[in] count  Maximum number of bytes to write in this call
+    /// @returns  Number of bytes actually written to the FIFO.
+    ///           Less than count if FIFO fills.
+    /// @throws std::out_of_range if the addrs or dlen parameters are not
+    ///         in the allowed range of value.
+    /// @throws std::logic_error if there is already a transaction in progress.
+      std::size_t start_write
+      ( std::uint32_t addrs
+      , std::uint32_t dlen
+      , std::uint8_t const * pdata
+      , std::size_t count
+      );
+
+    /// @brief Write bytes from buffer to the FIFO for transmission to the
+    /// slave addressed in a currently active write operation
+    ///
+    /// @param[in] data   Pointer to data bytes to be written
+    /// @param[in] count  Maximum number of bytes to write
+    /// @returns  Number of bytes actually written. Less than count if FIFO
+    ///           fills. Zero if FIFO full or not currently in an active write
+    ///           transaction.
+      std::size_t write
+      ( std::uint8_t const * pdata
+      , std::size_t count
+      );
+
+    /// @brief Start a read transaction to the specified slave device.
+    ///
+    /// Note: Initially the FIFO will be empty as no data will have been
+    /// received yet, hence there is no facility to read data from the FIFO
+    /// when starting a read transaction.
+    ///
+    /// @param[in] addrs  Slave address [0,127]. Note: values [0,7],[120,127]
+    ///                   have special meanings in the I2C specification.
+    /// @param[in] dlen   Number of bytes to be received from slave [0,65535].
+    /// @throws std::out_of_range if the addrs or dlen parameters are not
+    ///         in the allowed range of value.
+    /// @throws std::logic_error if there is already a transaction in progress.
+      void start_read
+      ( std::uint32_t addrs
+      , std::uint32_t dlen
+      );
+
+    /// @brief Start a read transaction following the write of a single byte 
+    /// to the specified slave device.
+    ///
+    /// Provides support for read following write of a single byte using I2C
+    /// repeated start. The most common requirement is for a single byte to
+    /// be written to provide extended slave address information (I2C 10-bit
+    /// addressing), a slave register value that is to be read or a command
+    /// code that results in data to read.
+    ///
+    /// Note #1: It is not clear that the BCM2835 BSC masters support more
+    /// general I2C repeated start transaction sequences.
+    ///
+    /// Note #2: Initially the FIFO will be empty as no data will have been
+    /// received yet, hence there is no facility to read data from the FIFO
+    /// when starting a read transaction.
+    ///
+    /// @param[in] addrs  Slave address [0,127]. Note: values [0,7],[120,127]
+    ///                   have special meanings in the I2C specification.
+    /// @param[in] desc   Single byte that will be written to slave immediately
+    ///                   before setting up the BSC peripheral to read data.
+    /// @param[in] dlen   Number of bytes to be received from slave [0,65535].
+    /// @throws std::out_of_range if the addrs or dlen parameters are not
+    ///         in the allowed range of value.
+    /// @throws std::logic_error if there is already a transaction in progress.
+      void start_read
+      ( std::uint32_t addrs
+      , std::uint8_t desc
+      , std::uint32_t dlen
+      );
+
+    /// @brief Read bytes received from the slave addressed in a currently
+    /// active read operation from the FIFO into a buffer
+    ///
+    /// @param[out] data  Data buffer to receive read values
+    /// @param[in] count  Maximum number of bytes to read
+    /// @returns  Number of bytes actually read. Less than count if FIFO
+    ///           empties. Zero if FIFO empty or not currently in an active
+    ///           read transaction.
+      std::size_t read
+      ( std::uint8_t * pdata
+      , std::size_t count
+      );
+
     /// @brief Query whether the I2C/BSC peripheral is busy with data transfer
     /// @returns true if data transfer is ongoing (C:TA field is 1),
     ///          false if no data transfer is ongoing (C:TA field is 0)
@@ -277,6 +379,39 @@ namespace dibase { namespace rpi {
     /// @returns  true if the FIFO is nearing being full while reading.
     ///           false otherwise.
       bool read_fifo_needs_reading() const;
+
+    /// @brief Return the current appropriate error state flags
+    /// @returns i2c_pins::goodbit if there are no errors or one or both
+    ///          i2c_pins::timeoutbit, i2c_pins::noackowledgebit.
+      int error_state();
+
+    /// @brief Clear all set error states
+    /// @post good() is true.
+      void clear();
+
+    /// @brief Clear a specific error state
+    /// @param statebit state enumeration indicating which error state to clear
+    ///                 i2c_pins::timeoutbit or i2c_pins::noackowledgebit.
+    ///                 i2c_pins::goodbit is ignored.
+      void clear(state statebit);
+
+    /// @brief Query whether communication state is good
+    /// @returns true if there are no errors
+      bool good() { return error_state()==goodbit; }
+
+    /// @brief Query whether there has been any clock stretch time out errors.
+    /// @returns true if a slave stretched the clock beyond the set time out
+      bool clock_timeout() { return error_state()&timeoutbit; }
+
+    /// @brief Query whether any slave has failed to acknowledge its address
+    /// @returns true is a slave has failed to acknowledge its address.
+      bool no_acknowledge() { return error_state()&noackowledgebit; }
+
+    /// @brief Abort an in progress transaction.
+    /// @post The FIFO is cleared
+    /// @post Transfers are not active
+    /// @post Transfers are done
+      void abort();
     };
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

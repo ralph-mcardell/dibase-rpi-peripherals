@@ -10,6 +10,8 @@
 #include "gpio_ctrl.h"
 #include "i2c_ctrl.h"
 #include "periexcept.h"
+#include <chrono>
+#include <thread>
 
 namespace dibase { namespace rpi {
   namespace peripherals
@@ -162,7 +164,44 @@ namespace dibase { namespace rpi {
     {
       return i2c_ctrl::instance().regs(bsc_idx)->get_rx_fifo_needs_reading();
     }
+    
+    int i2c_pins::error_state()
+    {
+      int state{goodbit};
+      if (i2c_ctrl::instance().regs(bsc_idx)->get_clock_timeout())
+        {
+          state = timeoutbit;
+        }
+      if (i2c_ctrl::instance().regs(bsc_idx)->get_slave_ack_error())
+        {
+          state |= noackowledgebit;
+        }
+      return state;
+    }
 
+    void i2c_pins::clear()
+    {
+      i2c_ctrl::instance().regs(bsc_idx)->clear_clock_timeout();
+      i2c_ctrl::instance().regs(bsc_idx)->clear_slave_ack_error();
+    }
+
+    void i2c_pins::clear(state statebit)
+    {
+      if (statebit==timeoutbit)
+        {
+          i2c_ctrl::instance().regs(bsc_idx)->clear_clock_timeout();
+        }
+      if (statebit==noackowledgebit)
+        {
+          i2c_ctrl::instance().regs(bsc_idx)->clear_slave_ack_error();
+        }
+    }
+
+    void i2c_pins::abort()
+    {
+      i2c_ctrl::instance().regs(bsc_idx)->clear_fifo();
+    }
+ 
     constexpr auto sda_idx(0U);
     constexpr auto scl_idx(1U);
     constexpr pin_id_int_t pin_not_used{53U};
@@ -264,6 +303,163 @@ namespace dibase { namespace rpi {
       bsc_idx = bsc_num;
       pins[sda_idx] = sda_pin;
       pins[scl_idx] = scl_pin;
+    }
+
+    using internal::i2c_transfer_type;
+
+    std::size_t i2c_pins::start_write
+    ( std::uint32_t addrs
+    , std::uint32_t dlen
+    , std::uint8_t const * pdata
+    , std::size_t count
+    )
+    {
+      if (is_busy())
+        {
+          throw std::logic_error
+                  { "i2c_pins::start_write: Unable to start write transaction,"
+                    " BSC/I2C peripheral is busy with an ongoing transaction." 
+                  };
+        }
+      if (!i2c_ctrl::instance().regs(bsc_idx)->set_slave_address(addrs))
+        {
+            throw std::out_of_range
+                    { "i2c_pins::start_write: "
+                      "Slave address not in the range [0,127]." 
+                    };
+        }
+      if (!i2c_ctrl::instance().regs(bsc_idx)->set_data_length(dlen))
+        {
+            throw std::out_of_range
+                    { "i2c_pins::start_write: Transaction "
+                      "data length not in the range [0,65535]." 
+                    };
+        }
+      std::size_t bytes_written{0U};
+      i2c_ctrl::instance().regs(bsc_idx)->set_transfer_type
+                                          (i2c_transfer_type::write);
+      i2c_ctrl::instance().regs(bsc_idx)->clear_transfer_done();
+      if (pdata && count)
+        {
+          while (count-- && write_fifo_has_space() && bytes_written < dlen)
+            {
+              i2c_ctrl::instance().regs(bsc_idx)->transmit_fifo_write(*pdata++);
+              ++bytes_written;
+            }
+        }
+      i2c_ctrl::instance().regs(bsc_idx)->start_transfer();
+      return bytes_written;
+    }
+
+    std::size_t i2c_pins::write
+    ( std::uint8_t const * pdata
+    , std::size_t count
+    )
+    {
+      std::size_t bytes_written{0U};
+      if (is_busy())
+        {
+          while (count-- && write_fifo_has_space())
+            {
+              i2c_ctrl::instance().regs(bsc_idx)->transmit_fifo_write(*pdata++);
+              ++bytes_written;
+            }
+        }
+      return bytes_written;
+    }
+
+    void i2c_pins::start_read
+    ( std::uint32_t addrs
+    , std::uint32_t dlen
+    )
+    {
+      if (is_busy())
+        {
+          throw std::logic_error
+                  { "i2c_pins::start_read: Unable to start read transaction,"
+                    " BSC/I2C peripheral is busy with an ongoing transaction." 
+                  };
+        }
+      if (!i2c_ctrl::instance().regs(bsc_idx)->set_slave_address(addrs))
+        {
+            throw std::out_of_range
+                    { "i2c_pins::start_read: "
+                      "Slave address not in the range [0,127]." 
+                    };
+        }
+      if (!i2c_ctrl::instance().regs(bsc_idx)->set_data_length(dlen))
+        {
+            throw std::out_of_range
+                    { "i2c_pins::start_read: Transaction "
+                      "data length not in the range [0,65535]." 
+                    };
+        }
+      i2c_ctrl::instance().regs(bsc_idx)->set_transfer_type
+                                          (i2c_transfer_type::read);
+      i2c_ctrl::instance().regs(bsc_idx)->clear_transfer_done();
+      i2c_ctrl::instance().regs(bsc_idx)->start_transfer();
+    }
+
+    void i2c_pins::start_read
+    ( std::uint32_t addrs
+    , std::uint8_t desc
+    , std::uint32_t dlen
+    )
+    {
+      using internal::i2c_registers;
+
+      if (is_busy())
+        {
+          throw std::logic_error
+                  { "i2c_pins::start_read: Unable to start read transaction,"
+                    " BSC/I2C peripheral is busy with an ongoing transaction." 
+                  };
+        }
+      if (dlen>i2c_registers::dlen_mask)
+        {
+            throw std::out_of_range
+                    { "i2c_pins::start_read: Transaction "
+                      "data length not in the range [0,65535]." 
+                    };
+        }
+      if (!i2c_ctrl::instance().regs(bsc_idx)->set_slave_address(addrs))
+        {
+            throw std::out_of_range
+                    { "i2c_pins::start_read: "
+                      "Slave address not in the range [0,127]." 
+                    };
+        }
+      i2c_ctrl::instance().regs(bsc_idx)->set_data_length(1U);
+      i2c_ctrl::instance().regs(bsc_idx)->set_transfer_type
+                                          (i2c_transfer_type::write);
+      i2c_ctrl::instance().regs(bsc_idx)->transmit_fifo_write(desc);
+      i2c_ctrl::instance().regs(bsc_idx)->clear_transfer_done();
+      i2c_ctrl::instance().regs(bsc_idx)->start_transfer();
+      while (!is_busy())
+        {
+          std::this_thread::sleep_for(std::chrono::microseconds(1));
+        }
+      i2c_ctrl::instance().regs(bsc_idx)->set_data_length(dlen);
+      i2c_ctrl::instance().regs(bsc_idx)->set_transfer_type
+                                          (i2c_transfer_type::read);
+      i2c_ctrl::instance().regs(bsc_idx)->start_transfer();
+    }
+
+    std::size_t i2c_pins::read
+    ( std::uint8_t * pdata
+    , std::size_t count
+    )
+    {
+      std::size_t bytes_read{0U};
+      if (is_busy() || read_fifo_has_data())
+        {
+          while (count-- && read_fifo_has_data())
+            {
+              *pdata++ = i2c_ctrl::instance().regs(bsc_idx)->receive_fifo_read();
+              ++bytes_read;
+            }
+        }
+      return bytes_read;
     }
   } // namespace peripherals closed
 }} // namespaces rpi and dibase closed

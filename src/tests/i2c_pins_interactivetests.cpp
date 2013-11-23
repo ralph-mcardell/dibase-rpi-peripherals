@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <sched.h>
 #include <string.h>
+#include <random>
 
 using namespace dibase::rpi::peripherals;
 using namespace dibase::rpi::peripherals::internal;
@@ -41,6 +42,17 @@ namespace
     }
   };
 
+  class random_byte
+  {
+    std::random_device  rnd_dev;
+
+  public:
+    std::uint8_t operator()()
+    {
+      return rnd_dev();
+    }
+  };
+  
 // Slave device values, change as required:
   constexpr std::uint8_t  slave_address{0x50};
   constexpr hertz         sclk_frequency{kilohertz{400}};
@@ -184,4 +196,53 @@ TEST_CASE( "Interactive_tests/i2c_pins/0000/write_read_test, no repeated start"
     {
       CHECK(read_buffer[v]==write_buffer[v]);
     }
+}
+
+TEST_CASE( "Interactive_tests/i2c_pins/0020/write_random_read_test, repeated start"
+         , "Write data to a memory device then read it back using random read "
+           "and repeated start"
+         )
+{
+  welcome();
+  std::cout << "\nI2C write-random-read test: repeated start:\n";
+
+  std::string dummy;
+  std::cout << "Press <Enter> to continue..." << std::endl;
+  std::getline(std::cin, dummy);
+ 
+  random_byte value_generator;
+  std::uint8_t addrs{value_generator()};
+  std::uint8_t written_value{value_generator()};
+
+  std::cout << "   Writing " << int(written_value) 
+            << " to address " << int(addrs) 
+            << std::endl;
+  
+  i2c_pins iic(pin_id(0),pin_id(1),sclk_frequency);
+  iic.clear();
+  CHECK(iic.good());
+
+  std::uint8_t write_buffer[2] = {addrs, written_value};
+
+  std::size_t xfer_cnt
+              = iic.start_write(slave_address,2, write_buffer,2);
+  CHECK(xfer_cnt==2);
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(5));
+  CHECK_FALSE(iic.is_busy()); // should have sent the address & value bytes
+  
+  std::uint8_t read_value;
+  CHECK(iic.start_read(slave_address, addrs, 1));
+
+  one_shot_timer read_timeout{std::chrono::seconds(1)};
+  while (!iic.read_fifo_has_data() && !read_timeout)
+    {
+      std::this_thread::sleep_for(std::chrono::microseconds(50));
+    }
+  REQUIRE(!read_timeout);
+  std::uint8_t read_count{iic.read(&read_value, 1)};
+  CHECK(read_count==1);
+  CHECK(read_value==written_value);
+  CHECK_FALSE(iic.read_fifo_has_data());
+  CHECK_FALSE(iic.is_busy());
 }

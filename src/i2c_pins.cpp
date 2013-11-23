@@ -24,6 +24,14 @@ namespace dibase { namespace rpi {
 
     namespace
     {
+    // Repeated starts need to wait for the initial single byte write to start
+    // before continuing and it is conceivable that this might be missed if the
+    // process is swapped out at the wrong moment. To prevent infinite looping
+    // a loop count maximum is imposed.
+    // At 400KHz SCLK this count has been found to be in single decimal digit
+    // range, with a 10kHz SCLK it may be up to around 150.
+      std::uint32_t repeat_start_write_start_wait_count_max{10000U};
+
       descriptor get_alt_fn_descriptor
       ( pin_id pin
       , std::initializer_list<gpio_special_fn> special_fns
@@ -400,7 +408,7 @@ namespace dibase { namespace rpi {
       i2c_ctrl::instance().regs(bsc_idx)->start_transfer();
     }
 
-    void i2c_pins::start_read
+    bool i2c_pins::start_read
     ( std::uint32_t addrs
     , std::uint8_t desc
     , std::uint32_t dlen
@@ -432,17 +440,23 @@ namespace dibase { namespace rpi {
       i2c_ctrl::instance().regs(bsc_idx)->set_data_length(1U);
       i2c_ctrl::instance().regs(bsc_idx)->set_transfer_type
                                           (i2c_transfer_type::write);
-      i2c_ctrl::instance().regs(bsc_idx)->transmit_fifo_write(desc);
       i2c_ctrl::instance().regs(bsc_idx)->clear_transfer_done();
+      i2c_ctrl::instance().regs(bsc_idx)->transmit_fifo_write(desc);
       i2c_ctrl::instance().regs(bsc_idx)->start_transfer();
+      
+      uint32_t count{0U};
       while (!is_busy())
         {
-          std::this_thread::sleep_for(std::chrono::microseconds(1));
+          if (++count>repeat_start_write_start_wait_count_max)
+            {
+              return false;
+            }
         }
       i2c_ctrl::instance().regs(bsc_idx)->set_data_length(dlen);
       i2c_ctrl::instance().regs(bsc_idx)->set_transfer_type
                                           (i2c_transfer_type::read);
       i2c_ctrl::instance().regs(bsc_idx)->start_transfer();
+      return true;
     }
 
     std::size_t i2c_pins::read

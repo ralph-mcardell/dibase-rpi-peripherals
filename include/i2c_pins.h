@@ -299,10 +299,14 @@ namespace dibase { namespace rpi {
     /// @param[in] desc   Single byte that will be written to slave immediately
     ///                   before setting up the BSC peripheral to read data.
     /// @param[in] dlen   Number of bytes to be received from slave [0,65535].
+    /// @return true if repeated start write then read transition OK., false
+    ///         if start of write transaction missed for some reason, in which
+    ///         case read transaction not started and the request should be
+    ///         resubmitted.
     /// @throws std::out_of_range if the addrs or dlen parameters are not
     ///         in the allowed range of value.
     /// @throws std::logic_error if there is already a transaction in progress.
-      void start_read
+      bool start_read
       ( std::uint32_t addrs
       , std::uint8_t desc
       , std::uint32_t dlen

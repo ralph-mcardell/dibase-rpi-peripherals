@@ -25,6 +25,22 @@ using namespace dibase::rpi::peripherals::internal;
 
 namespace
 {
+
+  class one_shot_timer
+  {
+    std::chrono::system_clock::time_point t_end;
+
+  public:
+    one_shot_timer(std::chrono::system_clock::duration t)
+    : t_end{std::chrono::system_clock::now()+t}
+    {}
+ 
+    operator void*() 
+    {
+      return reinterpret_cast<void*>(t_end<std::chrono::system_clock::now());
+    }
+  };
+
 // Slave device values, change as required:
   constexpr std::uint8_t  slave_address{0x50};
   constexpr hertz         sclk_frequency{kilohertz{400}};
@@ -82,8 +98,8 @@ TEST_CASE( "Interactive_tests/i2c_pins/0000/write_read_test, no repeated start"
          )
 {
   welcome();
-  std::cout << "\nI2C write-read test, using address auto increment wrap "
-               "and no repeated start:\n";
+  std::cout << "\nI2C write-read test: address auto increment wrap, "
+               "no repeated start:\n";
   std::uint8_t write_buffer[wrap_length] = {};
   std::uint8_t read_buffer[wrap_length] = {};
   for (int v=0; v!=wrap_length; ++v)
@@ -102,11 +118,6 @@ TEST_CASE( "Interactive_tests/i2c_pins/0000/write_read_test, no repeated start"
 
   std::uint8_t * xfer_ptr(write_buffer);
   std::size_t remaining_cnt{wrap_length};
-
-// Note: Write progress output as problems can result in test getting stuck
-//       (i.e. hanging), and it is good to know approximately where!
-  std::cout << "   Starting write..." << std::endl;
-
   std::size_t xfer_cnt
               = iic.start_write(slave_address,wrap_length+1, &zero,1);
   CHECK(xfer_cnt==1);
@@ -114,9 +125,8 @@ TEST_CASE( "Interactive_tests/i2c_pins/0000/write_read_test, no repeated start"
   std::this_thread::sleep_for(std::chrono::microseconds(50));
   CHECK(iic.is_busy());
 
-  std::cout << "   Writing data..." << std::endl;
-
-  while (remaining_cnt)
+  one_shot_timer write_timeout{std::chrono::seconds(2)};
+  while (remaining_cnt && !write_timeout)
     {
       CHECK_FALSE(iic.no_acknowledge());
       CHECK_FALSE(iic.clock_timeout());
@@ -134,24 +144,22 @@ TEST_CASE( "Interactive_tests/i2c_pins/0000/write_read_test, no repeated start"
           std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
     }
-
-  std::cout << "   Waiting for FIFO to clear..." << std::endl;
-
-  while (!iic.write_fifo_is_empty())
+  REQUIRE(!write_timeout);
+   
+  one_shot_timer fifo_clear_timeout{std::chrono::seconds(1)};
+  while (!iic.write_fifo_is_empty() && !fifo_clear_timeout)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
   REQUIRE_FALSE(iic.is_busy());
-
-  std::cout << "   Starting read..." << std::endl;
+  REQUIRE(!fifo_clear_timeout);
 
   iic.start_read(slave_address,wrap_length);
   remaining_cnt = wrap_length;
   xfer_ptr = read_buffer;
 
-  std::cout << "   Reading data..." << std::endl;
-
-  while (remaining_cnt)
+  one_shot_timer read_timeout{std::chrono::seconds(2)};
+  while (remaining_cnt && !read_timeout)
     {
       CHECK_FALSE(iic.no_acknowledge());
       CHECK_FALSE(iic.clock_timeout());
@@ -170,8 +178,7 @@ TEST_CASE( "Interactive_tests/i2c_pins/0000/write_read_test, no repeated start"
     }
 
   CHECK_FALSE(iic.is_busy());
-
-  std::cout << "   Checking read data..." << std::endl;
+  REQUIRE(!read_timeout);
 
   for (int v=0; v!=wrap_length; ++v)
     {

@@ -4,7 +4,7 @@
 ///        type definitions.
 ///
 /// The BCM2835 supports 3 I2C style serial interfaces called BSC (for
-/// Broadcom Serial Controller) in the Broadcom documentation. The peripheral
+/// Broadcom Serial Controller) in the Broadcom documentation. The peripherals
 /// are known as BSC0, BSC1 and BSC2. Only BSC0 and BSC1 are for general use
 /// (BSC2 is used by the HDMI interface). Each BSC peripheral requires 2 GPIO
 /// lines for the I2C SCL (serial clock) and SDA (serial data) lines.
@@ -32,8 +32,10 @@ namespace dibase { namespace rpi {
     /// @brief Default value for constructor f parameters - BSC/I2C bus clock
     /// frequency. Note: 100KHz is the maximum frequency for I2C standard mode
     ///
-    /// Note: not a class static as in that case g++ thinks storage required
-    ///       causing ld to complain when storage (i.e. definition) not found!
+    /// @note
+    /// Note: not a class static as in that case \c g++ thinks storage required
+    ///       causing \c ld to complain when storage (i.e. the definition) is
+    ///       not found!
     ///
       constexpr hertz  i2c_pins_default_frequency = hertz{100000};
 
@@ -46,11 +48,11 @@ namespace dibase { namespace rpi {
   /// in question are not used. However additional support for optionally
   /// specifying which BSC peripheral to use is provided.
   ///
-  /// A i2c_pins object is constructed with the pin pair to use, and optionally
+  /// A i2c_pins object is constructed with the pin pair to use, optionally
   /// which BSC peripheral to use in the case of the ambiguity mentioned above,
-  /// I2C bus frequency and timing parameters, which have defaults.
+  /// and I2C bus frequency and timing parameters, which have defaults.
   ///
-  /// Assuming the parameters are sane, the GPIO pins are available and the BSC
+  /// If the parameters are sane, the GPIO pins are available and the BSC
   /// peripheral is not already in use locally within the same process then the
   /// BSC peripheral is set-up as per the parameters, with the GPIO pins and
   /// BSC peripheral marked as in use. Note that no attempt is made to see if
@@ -70,35 +72,36 @@ namespace dibase { namespace rpi {
       , noackowledgebit = 2 ///< Slave did not acknowledge its address
       };
 
-    /// @brief Default value for constructor tout parameters, the BSC/I2C bus
-    /// clock stretch time-out value.
+    /// @brief Default value for constructor \c tout parameters, the BSC/I2C
+    /// bus clock stretch time-out value.
       constexpr static std::uint16_t default_tout = 0x40U;
 
-    /// @brief Default value for constructor fedl parameters, the BSC/I2C bus
-    /// SCL falling edge delay before transmitting next data bit
+    /// @brief Default value for constructor \c fedl parameters, the BSC/I2C
+    /// bus SCL falling edge delay before transmitting next data bit
       constexpr static std::uint16_t default_fedl = 0x30U;
 
-    /// @brief Default value for constructor redl parameters, the BSC/I2C bus
-    /// SCL rising edge delay before reading next data bit
+    /// @brief Default value for constructor \c redl parameters, the BSC/I2C
+    /// bus SCL rising edge delay before reading next data bit
       constexpr static std::uint16_t default_redl = 0x30U;
 
     /// @brief Construct from GPIO pin pair and BSC parameters.
     ///
-    /// Note: This constructor should _not_ be used if either pin is ambiguous
-    /// with respect to which BSC peripheral should be used.
+    /// @note
+    /// \e Note: This constructor should _not_ be used if either pin is
+    /// ambiguous with respect to which BSC peripheral should be used.
     ///
     /// Creates an i2c_pins object from a pair of GPIO pins values and
     /// optionally BSC frequency and timing values. The pair of GPIO pins
     /// specified _must_ both support a function for exactly _one_ ( 1 ) BSC
     /// peripheral.
     ///
-    /// @post the GPIO pins indicated by the sda_pin and scl_pin parameters
-    ///       will be allocated as in use within the process and outside the
-    ///       process if such a GPIO pin allocator is used.
-    /// @post the BSC peripheral associated with the GPIO pins is marked
+    /// @post The GPIO pins indicated by the \c sda_pin and \c scl_pin
+    ///       parameters will be allocated as in use within the process and
+    ///       outside the process if such a GPIO pin allocator is used.
+    /// @post The BSC peripheral associated with the GPIO pins is marked
     ///       as allocated and in use within the process only.
-    /// @post The GPIO pins with be set to be used with the appropriate BSC
-    ///       peripheral
+    /// @post The GPIO pins will be set to be used with the appropriate BSC
+    ///       peripheral.
     /// @post The BSC device will have its clock frequency and timings set
     ///       according to the relevant parameters.
     /// @param[in] sda_pin  GPIO pin id number of the I2C/BSC SDA (serial data)
@@ -106,8 +109,8 @@ namespace dibase { namespace rpi {
     /// @param[in] scl_pin  GPIO pin id number of the I2C/BSC SCL (serial clock)
     ///                     line
     /// @param[in] f        Frequency of the I2C/BSC clock SCL in the range 
-    ///                     [fc/2, fc/32768]. Non-integral values of fc/f
-    ///                     rounded down so actual frequency may be higher.
+    ///                     [fc/2, fc/32768]. Non-integral values of fc/f are
+    ///                     rounded down so the actual frequency may be higher.
     ///                     Defaults to 100KHz.
     /// @param[in] tout     Clock stretch time-out in SCL cycles in the range
     ///                     [0,65535], 0 indicates feature is disabled. The
@@ -124,7 +127,7 @@ namespace dibase { namespace rpi {
     ///                     fc/(2*f). Defaults to 0x30 (48) core clock cycles.
     /// @param[in] fc       APB core frequency \ref frequency type. Should be
     ///                     fixed for a given board boot configuration.
-    ///                     Defaults to rpi_apb_core_frequency.
+    ///                     Defaults to \ref rpi_apb_core_frequency.
     ///
     /// @throws std::invalid_argument if either requested pin does not support
     ///         the required special function or their functions are for
@@ -133,9 +136,9 @@ namespace dibase { namespace rpi {
     ///         by more than one alternative function -- use the constructor
     ///         taking an integer index indicating which BSC peripheral
     ///         explicitly as a 3rd parameter.
-    /// @throws std::out_of_range if the f, fedl or redl parameters are not
-    ///         in range. 
-    /// @throws bad_peripheral_alloc if either any of the pins or the BSC
+    /// @throws std::out_of_range if the \c f, \c fedl or \c redl parameters
+    ///         are not in range. 
+    /// @throws bad_peripheral_alloc if either of the pins or the BSC
     ///         peripheral are already in use.
       i2c_pins( pin_id        sda_pin
               , pin_id        scl_pin
@@ -149,22 +152,21 @@ namespace dibase { namespace rpi {
     /// @brief Construct from GPIO pin pair, BSC peripheral index and BSC
     ///        parameters
     ///
-    /// Note: Use this constructor if either pin is ambiguous with respect to
-    /// which BSC peripheral should be used.
+    /// @note
+    /// \e Note: Use this constructor if either pin is ambiguous with respect
+    /// to which BSC peripheral should be used.
     ///
     /// Creates an i2c_pins object from a pair of GPIO pins values and an index
-    /// value that explicitly specifies whether BSC0 or BSC1 is to be used and
-    /// optionally BSC frequency and timing values. The pair of GPIO pins
-    /// specified _must_ both support a function for exactly _one_ ( 1 ) BSC
-    /// peripheral.
+    /// value explicitly specifying whether BSC0 or BSC1 is to be used, along 
+    /// with optional BSC frequency and timing values.
     ///
-    /// @post the GPIO pins indicated by the sda_pin and scl_pin parameters
-    ///       will be allocated as in use within the process and outside the
-    ///       process if such a GPIO pin allocator is used.
-    /// @post the BSC peripheral associated with the GPIO pins is marked
+    /// @post The GPIO pins indicated by the \c sda_pin and \c scl_pin
+    ///       parameters will be allocated as in use within the process and
+    ///       outside the process if such a GPIO pin allocator is used.
+    /// @post The BSC peripheral associated with the GPIO pins is marked
     ///       as allocated and in use within the process only.
-    /// @post The GPIO pins with be set to be used with the appropriate BSC
-    ///       peripheral
+    /// @post The GPIO pins will be set to be used with the appropriate BSC
+    ///       peripheral.
     /// @post The BSC device will have its clock frequency and timings set
     ///       according to the relevant parameters.
     /// @param[in] sda_pin  GPIO pin id number of the I2C/BSC SDA (serial data)
@@ -174,8 +176,8 @@ namespace dibase { namespace rpi {
     /// @param[in] bsc_num  BSC peripheral number specifying BSC0 or BSC1
     ///                     In the range [0,1]; 0 to use BSC0, 1 to use BSC1.
     /// @param[in] f        Frequency of the I2C/BSC clock SCL in the range 
-    ///                     [fc/2, fc/32768]. Non-integral values of fc/f
-    ///                     rounded down so actual frequency may be higher.
+    ///                     [fc/2, fc/32768]. Non-integral values of fc/f are
+    ///                     rounded down so the actual frequency may be higher.
     ///                     Defaults to 100KHz.
     /// @param[in] tout     Clock stretch time-out in SCL cycles in the range
     ///                     [0,65535], 0 indicates feature is disabled. The
@@ -199,9 +201,9 @@ namespace dibase { namespace rpi {
     ///         different BSC peripherals.
     /// @throws std::range_error if any pin supports the same BSC function
     ///         by more than one alternative function -- should not occur.
-    /// @throws std::out_of_range if the f, fedl or redl parameters are not
-    ///         in range or bsc_num is not 0 or 1.
-    /// @throws bad_peripheral_alloc if either any of the pins or the BSC
+    /// @throws std::out_of_range if the \c f, \c fedl or \c redl parameters
+    ///         are not in range or \c bsc_num is not 0 or 1.
+    /// @throws bad_peripheral_alloc if either of the pins or the BSC
     ///         peripheral are already in use.
       i2c_pins( pin_id        sda_pin
               , pin_id        scl_pin
@@ -215,8 +217,8 @@ namespace dibase { namespace rpi {
 
     /// @brief Destroy: Clear data, abort any transfer, free GPIO pins & BSC
     /// peripheral.
-    /// @post The FIFO is cleared, any in progress transfer is aborted
-    /// @post The BSC peripheral is disabled
+    /// @post The FIFO is cleared, any in progress transfer is aborted.
+    /// @post The BSC peripheral is disabled.
     /// @post The BSC peripheral is marked as free.
     /// @post The pins allocated during construction are marked as free.
       ~i2c_pins();
@@ -230,16 +232,17 @@ namespace dibase { namespace rpi {
     /// write initial bytes from a buffer to the FIFO for transmission to the
     /// slave.
     ///
-    /// @param[in] addrs  Slave address [0,127]. Note: values [0,7],[120,127]
-    ///                   have special meanings in the I2C specification.
-    /// @param[in] dlen   Number of bytes to be written for transaction [0,65535].
-    /// @param[in] pdata  Pointer to data bytes to be written. Pass nullptr if
-    ///                   to write nothing to FIFO initially.
+    /// @param[in] addrs  Slave address [0,127]. Note that values [0,7] and
+    ///                   [120,127] have special meanings in the I2C
+    ///                   specification.
+    /// @param[in] dlen   Number of bytes to be written [0,65535].
+    /// @param[in] pdata  Pointer to data bytes to write. Pass \c nullptr to
+    ///                   write nothing to the FIFO initially.
     /// @param[in] count  Maximum number of bytes to write in this call
     /// @returns  Number of bytes actually written to the FIFO.
     ///           Less than count if FIFO fills.
-    /// @throws std::out_of_range if the addrs or dlen parameters are not
-    ///         in the allowed range of value.
+    /// @throws std::out_of_range if the \c addrs or \c dlen parameters are not
+    ///         in the allowed range of values.
     /// @throws std::logic_error if there is already a transaction in progress.
       std::size_t start_write
       ( std::uint32_t addrs
@@ -253,7 +256,7 @@ namespace dibase { namespace rpi {
     ///
     /// @param[in] pdata  Pointer to data bytes to be written
     /// @param[in] count  Maximum number of bytes to write
-    /// @returns  Number of bytes actually written. Less than count if FIFO
+    /// @returns  Number of bytes actually written. Less than \c count if FIFO
     ///           fills. Zero if FIFO full or not currently in an active write
     ///           transaction.
       std::size_t write
@@ -263,15 +266,17 @@ namespace dibase { namespace rpi {
 
     /// @brief Start a read transaction to the specified slave device.
     ///
-    /// Note: Initially the FIFO will be empty as no data will have been
+    /// @note
+    /// \e Note: Initially the FIFO will be empty as no data will have been
     /// received yet, hence there is no facility to read data from the FIFO
     /// when starting a read transaction.
     ///
-    /// @param[in] addrs  Slave address [0,127]. Note: values [0,7],[120,127]
-    ///                   have special meanings in the I2C specification.
+    /// @param[in] addrs  Slave address [0,127]. Note that values [0,7] and
+    ///                   [120,127] have special meanings in the I2C
+    ///                   specification.
     /// @param[in] dlen   Number of bytes to be received from slave [0,65535].
-    /// @throws std::out_of_range if the addrs or dlen parameters are not
-    ///         in the allowed range of value.
+    /// @throws std::out_of_range if the \c addrs or \c dlen parameters are not
+    ///         in the allowed range of values.
     /// @throws std::logic_error if there is already a transaction in progress.
       void start_read
       ( std::uint32_t addrs
@@ -287,15 +292,18 @@ namespace dibase { namespace rpi {
     /// addressing), a slave register value that is to be read or a command
     /// code that results in data to read.
     ///
-    /// Note #1: It is not clear that the BCM2835 BSC masters support more
+    /// @note
+    /// \e Note #1: It is not clear that the BCM2835 BSC masters support more
     /// general I2C repeated start transaction sequences.
     ///
-    /// Note #2: Initially the FIFO will be empty as no data will have been
+    /// @note
+    /// \e Note #2: Initially the FIFO will be empty as no data will have been
     /// received yet, hence there is no facility to read data from the FIFO
     /// when starting a read transaction.
     ///
-    /// @param[in] addrs  Slave address [0,127]. Note: values [0,7],[120,127]
-    ///                   have special meanings in the I2C specification.
+    /// @param[in] addrs  Slave address [0,127]. Note that values [0,7] and
+    ///                   [120,127] have special meanings in the I2C
+    ///                   specification.
     /// @param[in] desc   Single byte that will be written to slave immediately
     ///                   before setting up the BSC peripheral to read data.
     /// @param[in] dlen   Number of bytes to be received from slave [0,65535].
@@ -304,7 +312,7 @@ namespace dibase { namespace rpi {
     ///         case read transaction not started and the request should be
     ///         resubmitted.
     /// @throws std::out_of_range if the addrs or dlen parameters are not
-    ///         in the allowed range of value.
+    ///         in the allowed range of values.
     /// @throws std::logic_error if there is already a transaction in progress.
       bool start_read
       ( std::uint32_t addrs
@@ -317,7 +325,7 @@ namespace dibase { namespace rpi {
     ///
     /// @param[out] pdata Data buffer to receive read values
     /// @param[in]  count Maximum number of bytes to read
-    /// @returns  Number of bytes actually read. Less than count if FIFO
+    /// @returns  Number of bytes actually read. Less than \c count if FIFO
     ///           empties. Zero if FIFO empty or not currently in an active
     ///           read transaction.
       std::size_t read
@@ -332,25 +340,27 @@ namespace dibase { namespace rpi {
 
     /// @brief Query whether there is no data to write from the FIFO.
     ///
-    /// @returns true if there is no data to write from the FIFO
+    /// @returns true if there is no data to write from the FIFO,
     ///          false if the FIFO still contains data to write
       bool write_fifo_is_empty() const;
 
-    /// @brief Query whether there is room for more data FIFO.
+    /// @brief Query whether there is room for more data in the FIFO.
     ///
-    /// Note:  When the FIFO is empty no further serial data will be
-    ///         transmitted until some data is written to the FIFO.
+    /// @note
+    /// \e Note:  When the FIFO is empty no further serial data will be
+    ///           transmitted until some data is written to the FIFO.
     ///
-    /// @returns true if there is space to write data into the FIFO
+    /// @returns true if there is space to write data into the FIFO,
     ///          false if the FIFO is full.
       bool write_fifo_has_space() const;
 
     /// @brief Query whether the FIFO is approaching being empty while writing
     ///        data and needs more data written to it.
     ///
-    /// Note: It is unknown if the 'nearing being empty' value is 25% full as
-    ///       the inverse of the SPI0 device's read nearing full value of
-    ///       75% as it is never mentioned in the documentation
+    /// @note
+    /// \e Note:  It is unknown if the 'nearing being empty' value is 25% full
+    ///           as the inverse of the SPI0 device's read nearing full value
+    ///           of 75% as it is never mentioned in the documentation
     ///
     /// @returns  true if the FIFO is nearing being empty while writing.
     ///           false otherwise.
@@ -358,9 +368,10 @@ namespace dibase { namespace rpi {
 
     /// @brief Query whether there is no room for read data in the FIFO.
     ///
-    /// Note:  When the FIFO is full and cannot accept any more
-    ///        incoming data no further serial data will be received until
-    ///        some data is read out from the FIFO.
+    /// @note
+    /// \e Note:  When the FIFO is full and cannot accept any more
+    ///           incoming data no further serial data will be received until
+    ///           some data is read out from the FIFO.
     ///
     /// @returns true if the receive FIFO is full.
     ///          false if the receive FIFO still has room for more read data
@@ -368,17 +379,17 @@ namespace dibase { namespace rpi {
 
     /// @brief Query whether there is any data to be read from the FIFO.
     ///
-    /// @returns  true if there is data available to read data from the
-    ///           FIFO.
+    /// @returns  true if there is data available to read from the FIFO.
     ///           false if the FIFO is empty.
       bool read_fifo_has_data() const;
 
     /// @brief Query whether the FIFO is approaching being full while reading
     ///        data and needs reading.
     ///
-    /// Note: It is unknown if the 'nearing being full' value is 75% full as
-    ///       for the SPI0 peripheral as it is never mentioned in the
-    ///       documentation
+    /// @note
+    /// \e Note:  It is unknown if the 'nearing being full' value is 75% full
+    ///           as for the SPI0 peripheral as it is never mentioned in the
+    ///           documentation
     ///
     /// @returns  true if the FIFO is nearing being full while reading.
     ///           false otherwise.
@@ -394,8 +405,8 @@ namespace dibase { namespace rpi {
       void clear();
 
     /// @brief Clear a specific error state
-    /// @param statebit state enumeration indicating which error state to clear
-    ///                 i2c_pins::timeoutbit or i2c_pins::noackowledgebit.
+    /// @param statebit indicates which error state to clear:
+    ///                 i2c_pins::timeoutbit or i2c_pins::noackowledgebit;
     ///                 i2c_pins::goodbit is ignored.
       void clear(state statebit);
 
@@ -412,9 +423,9 @@ namespace dibase { namespace rpi {
       bool no_acknowledge() { return error_state()&noackowledgebit; }
 
     /// @brief Abort an in progress transaction.
-    /// @post The FIFO is cleared
-    /// @post Transfers are not active
-    /// @post Transfers are done
+    /// @post The FIFO is cleared.
+    /// @post Transfers are not active.
+    /// @post Transfers are done.
       void abort();
     };
   } // namespace peripherals closed

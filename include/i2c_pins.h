@@ -233,7 +233,7 @@ namespace dibase { namespace rpi {
     /// @param[in] addrs  Slave address [0,127]. Note: values [0,7],[120,127]
     ///                   have special meanings in the I2C specification.
     /// @param[in] dlen   Number of bytes to be written for transaction [0,65535].
-    /// @param[in] data   Pointer to data bytes to be written. Pass nullptr if
+    /// @param[in] pdata  Pointer to data bytes to be written. Pass nullptr if
     ///                   to write nothing to FIFO initially.
     /// @param[in] count  Maximum number of bytes to write in this call
     /// @returns  Number of bytes actually written to the FIFO.
@@ -251,7 +251,7 @@ namespace dibase { namespace rpi {
     /// @brief Write bytes from buffer to the FIFO for transmission to the
     /// slave addressed in a currently active write operation
     ///
-    /// @param[in] data   Pointer to data bytes to be written
+    /// @param[in] pdata  Pointer to data bytes to be written
     /// @param[in] count  Maximum number of bytes to write
     /// @returns  Number of bytes actually written. Less than count if FIFO
     ///           fills. Zero if FIFO full or not currently in an active write
@@ -315,8 +315,8 @@ namespace dibase { namespace rpi {
     /// @brief Read bytes received from the slave addressed in a currently
     /// active read operation from the FIFO into a buffer
     ///
-    /// @param[out] data  Data buffer to receive read values
-    /// @param[in] count  Maximum number of bytes to read
+    /// @param[out] pdata Data buffer to receive read values
+    /// @param[in]  count Maximum number of bytes to read
     /// @returns  Number of bytes actually read. Less than count if FIFO
     ///           empties. Zero if FIFO empty or not currently in an active
     ///           read transaction.

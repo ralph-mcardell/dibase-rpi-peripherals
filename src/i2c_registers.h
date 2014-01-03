@@ -1,7 +1,7 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file i2c_registers.h 
 /// @brief \b Internal : low-level (GPIO) I2C control registers type definition.
-///        \i Note : Broadcom call BCM2835 I2C compliant peripherals BSC 
+///        \e Note : Broadcom call BCM2835 I2C compliant peripherals BSC 
 ///       (for Broadcom Serial Control - or Controller).
 ///
 /// The details here relate to the BCM2835 BSC master interfaces known as BSC0,
@@ -94,7 +94,7 @@ namespace dibase { namespace rpi {
                       bsc1_physical_address = peripheral_base_address+0x804000;
 
       /// @brief Physical address of start of BCM2835 BSC2 control registers
-      /// (\i Note: reserved for use with the HDMI interface)
+      /// (\e Note: reserved for use with the HDMI interface)
         constexpr static physical_address_t 
                       bsc2_physical_address = peripheral_base_address+0x805000;
 

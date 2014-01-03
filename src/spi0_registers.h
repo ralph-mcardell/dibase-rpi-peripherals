@@ -341,7 +341,7 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Set the chip select line value.
-      /// @param[in] chp_id Id of chip to select. In the range [0,2].
+      /// @param[in] chip_id  Id of chip to select. In the range [0,2].
       /// @returns  true if the operation was performed; false if it was not
       ///           because chip_id value was not in the range [0,2].
         bool set_chip_select(register_t chip_id) volatile

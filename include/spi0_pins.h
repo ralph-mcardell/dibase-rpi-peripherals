@@ -342,7 +342,7 @@ namespace dibase { namespace rpi {
     /// Write command  bytes using the single-byte overload of write with
     /// lossi_write_type==spi0_lossi_write::command.
     ///
-    /// @param[in] data   Pointer to data bytes to be written
+    /// @param[in] pdata  Pointer to data bytes to be written
     /// @param[in] count  Maximum number of bytes to write
     /// @returns  Number of bytes actually written. Less than count if FIFO
     ///           fills. Zero if FIFO full or communication mode is
@@ -380,7 +380,7 @@ namespace dibase { namespace rpi {
     /// In LoSSI mode data is send to the receive FIFO following the writing
     /// of a read command to a slave device (using \ref write).
     ///
-    /// @param[out] data  Data buffer to receive read values
+    /// @param[out] pdata Data buffer to receive read values
     /// @param[in] count  Maximum number of bytes to read
     /// @param[out] ppending_count 
     ///                   Only relevant for bidirectional mode. Defaults to

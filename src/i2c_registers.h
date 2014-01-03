@@ -1,14 +1,16 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file i2c_registers.h 
 /// @brief \b Internal : low-level (GPIO) I2C control registers type definition.
-///        \e Note : Broadcom call BCM2835 I2C compliant peripherals BSC 
-///       (for Broadcom Serial Control - or Controller).
+///
+/// @note
+/// \e Note : Broadcom call BCM2835 I2C compliant peripherals BSC 
+///          (for Broadcom Serial Control - or Controller).
 ///
 /// The details here relate to the BCM2835 BSC master interfaces known as BSC0,
 /// BSC1 and BSC2 (which is reserved for use with the HDMI interface).
 /// Refer to the
 /// <a href="http://www.raspberrypi.org/wp-content/uploads/2012/02/BCM2835-ARM-Peripherals.pdf">
-/// Broadcom BCM2835 ARM Peripherals Datasheet</a> Chapter 3 BSC for details.de.
+/// Broadcom BCM2835 ARM Peripherals Datasheet</a> Chapter 3 BSC for details.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
@@ -116,8 +118,8 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Return the currently set interrupt on done value
-      /// @returns  true if an interrupt is generated when DONE==true.
-      ///           false if no such interrupt is generated.
+      /// @returns  \c true if an interrupt is generated when DONE==\c true,
+      ///           \c false if no such interrupt is generated.
         bool get_interrupt_on_done() volatile const
         {
           return control & c_int_on_done_mask;
@@ -125,11 +127,11 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the currently set interrupt on TXW condition value
       ///
-      /// Note: TXW is short for Transmit FIFO needs Writing 
-      ///(approaching being full)
+      /// @note
+      /// TXW is short for Transmit FIFO needs Writing (approaching being full)
       ///
-      /// @returns  true if an interrupt is generated on TXW conditions.
-      ///           false if no such interrupt is generated.
+      /// @returns  \c true if an interrupt is generated on TXW conditions,
+      ///           \c false if no such interrupt is generated.
         bool get_interrupt_on_txw() volatile const
         {
           return control & c_int_on_txw_mask;
@@ -137,11 +139,11 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the currently set interrupt on RXR condition value
       ///
-      /// Note: RXR is short for Receive FIFO needs Reading 
-      ///(approaching being empty)
+      /// @note
+      /// RXR is short for Receive FIFO needs Reading (approaching being empty)
       ///
-      /// @returns  true if an interrupt is generated on RXR conditions.
-      ///           false if no such interrupt is generated.
+      /// @returns  \c true if an interrupt is generated on RXR conditions,
+      ///           \c false if no such interrupt is generated.
         bool get_interrupt_on_rxr() volatile const
         {
           return control & c_int_on_rxr_mask;
@@ -149,8 +151,8 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the BSC/I2C controller enable state
       ///
-      /// @returns  true if I2C/BSC controller is enabled.
-      ///           false if I2C/BSC controller is disabled.
+      /// @returns  \c true if I2C/BSC controller is enabled,
+      ///           \c false if I2C/BSC controller is disabled.
         bool get_enable() volatile const
         {
           return control & c_enable_mask;
@@ -165,10 +167,10 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Set generate interrupt on done state
-      /// @param[in]  generate Pass true to have interrupts generated when 
-      ///                      DONE is true (get_transfer_done()==true)
-      ///                      Pass false not to generate interrupts when DONE
-      ///                      is true
+      /// @param[in]  generate Pass \c true to have interrupts generated when 
+      ///                      DONE is \c true (get_transfer_done()==\c true)
+      ///                      Pass \c false not to generate interrupts when
+      ///                      DONE is \c true.
         void set_interrupt_on_done(bool generate) volatile
         {
           control = (control & ~c_int_on_done_mask) 
@@ -177,13 +179,14 @@ namespace dibase { namespace rpi {
 
       /// @brief Set generate interrupt on TXW condition
       ///
-      /// Note: TXW is short for Transmit FIFO needs Writing 
-      ///(approaching being full)
+      /// @note
+      /// TXW is short for Transmit FIFO needs Writing (approaching being full)
       ///
-      /// @param[in]  generate Pass true to have interrupts generated when 
-      ///                      TXW is true (get_tx_fifo_needs_writing()==true)
-      ///                      Pass false not to generate interrupts when TXW
-      ///                      is true
+      /// @param[in]  generate Pass \c true to have interrupts generated when 
+      ///                      TXW is \c true
+      ///                      (get_tx_fifo_needs_writing()==\c true).
+      ///                      Pass \c false not to generate interrupts when
+      ///                      TXW is \c true.
         void set_interrupt_on_txw(bool generate) volatile
         {
           control = (control & ~c_int_on_txw_mask) 
@@ -192,13 +195,14 @@ namespace dibase { namespace rpi {
 
       /// @brief Set generate interrupt on RXR condition
       ///
-      /// Note: RXR is short for Receive FIFO needs Reading 
-      ///(approaching being empty)
+      /// @note
+      /// RXR is short for Receive FIFO needs Reading (approaching being empty)
       ///
-      /// @param[in]  generate Pass true to have interrupts generated when 
-      ///                      RXR is true (get_rx_fifo_needs_reading()==true)
-      ///                      Pass false not to generate interrupts when RXR
-      ///                      is true
+      /// @param[in]  generate Pass \c true to have interrupts generated when 
+      ///                      RXR is \c true
+      ///                      (get_rx_fifo_needs_reading()==\c true).
+      ///                      Pass \c false not to generate interrupts when
+      ///                      RXR is \c true.
         void set_interrupt_on_rxr(bool generate) volatile
         {
           control = (control & ~c_int_on_rxr_mask) 
@@ -207,8 +211,8 @@ namespace dibase { namespace rpi {
 
       /// @brief Set enable/disable state if I2C/BSC controller
       ///
-      /// @param[in]  enable  Pass true to enable the controller, false to
-      ///                     disable the controller.
+      /// @param[in]  enable  Pass \c true to enable the controller, \c false
+      ///                     to disable the controller.
         void set_enable(bool enable) volatile
         {
           control = (control & ~c_enable_mask) 
@@ -228,8 +232,8 @@ namespace dibase { namespace rpi {
         }
 
       /// @brief Return the currently set transfer active value
-      /// @returns  true if transfer is active.
-      ///           false if transfer is not active.
+      /// @returns  \c true if transfer is active,
+      ///           \c false if transfer is not active.
         bool get_transfer_active() volatile const
         {
           return status & s_xfer_active_mask;
@@ -237,11 +241,12 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the currently set transfer done value
       ///
-      /// This bit field is cleared by clear_transfer_done, which writes a 1
+      /// @note
+      /// This bit field is cleared by clear_transfer_done(), which writes a 1
       /// to the S register DONE field.
       ///
-      /// @returns  true if transfer is complete
-      ///           false if transfer is in progress
+      /// @returns  \c true if transfer is complete,
+      ///           \c false if transfer is in progress
         bool get_transfer_done() volatile const
         {
           return status & s_xfer_done_mask;
@@ -249,12 +254,13 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the currently set FIFO need writing (TXW) flag value
       ///
-      /// Note: has meaning only when write is under way
+      /// @note
+      /// Has meaning only when a write transaction is in progress
       ///
-      /// Cleared by writing sufficient data to FIFO
+      /// Cleared by writing sufficient data to the FIFO
       ///
-      /// @returns  true if the FIFO near to being empty
-      ///           false if the FIFO still quite full
+      /// @returns  \c true if the FIFO near to being empty,
+      ///           \c false if the FIFO still quite full
         bool get_tx_fifo_needs_writing() volatile const
         {
           return status & s_xfer_txw_mask;
@@ -262,12 +268,13 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the currently set FIFO need reading (RXR) flag value
       ///
-      /// Note: has meaning only when read is under way
+      /// @note
+      /// Has meaning only when a read transaction is in progress
       ///
-      /// Cleared by reading sufficient data from FIFO
+      /// Cleared by reading sufficient data from the FIFO
       ///
-      /// @returns  true if the FIFO near to being full
-      ///           false if the FIFO still quite empty
+      /// @returns  \c true if the FIFO near to being full,
+      ///           \c false if the FIFO still quite empty
         bool get_rx_fifo_needs_reading() volatile const
         {
           return status & s_xfer_rxr_mask;
@@ -275,12 +282,13 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the currently set FIFO can accept data (TXD) flag value
       ///
-      /// Note: has meaning only when write is under way
+      /// @note
+      /// Has meaning only when a write transaction is in progress
       ///
-      /// Cleared when sufficient data clocked out of FIFO
+      /// Cleared when sufficient data clocked out of the FIFO
       ///
-      /// @returns  true if the FIFO can accept at least 1 byte
-      ///           false if the FIFO is full and cannot accept any more data
+      /// @returns  \c true if the FIFO can accept at least 1 byte
+      ///           \c false if the FIFO is full and cannot accept any more data
         bool get_tx_fifo_not_full() volatile const
         {
           return status & s_xfer_txd_mask;
@@ -288,12 +296,13 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the currently set FIFO contains data (RXD) flag value
       ///
-      /// Note: has meaning only when read is under way
+      /// @note
+      /// Has meaning only when a read transaction is in progress
       ///
-      /// Cleared by reading sufficient data from FIFO
+      /// Cleared by reading sufficient data from the FIFO
       ///
-      /// @returns  true if the FIFO contains at least 1 byte
-      ///           false if the FIFO empty
+      /// @returns  \c true if the FIFO contains at least 1 byte,
+      ///           \c false if the FIFO empty
         bool get_rx_fifo_not_empty() volatile const
         {
           return status & s_xfer_rxd_mask;
@@ -301,12 +310,13 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the currently set FIFO empty (TXE) flag value
       ///
-      /// Note: has meaning only when write is under way
+      /// @note
+      /// Has meaning only when a write transaction is in progress
       ///
-      /// Cleared when more data written to FIFO
+      /// Cleared when more data written to the FIFO
       ///
-      /// @returns  true if the FIFO contains no data to transmit
-      ///           false if the FIFO contains data to transmit
+      /// @returns  \c true if the FIFO contains no data to transmit,
+      ///           \c false if the FIFO contains data to transmit
         bool get_tx_fifo_empty() volatile const
         {
           return status & s_xfer_txe_mask;
@@ -314,12 +324,14 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the currently set FIFO full (RXF) flag value
       ///
-      /// Note: has meaning only when read is under way
+      /// @note
+      /// Has meaning only when a read transaction is in progress
       ///
-      /// Cleared by reading sufficient data from FIFO
+      /// Cleared by reading sufficient data from the FIFO
       ///
-      /// @returns  true if the FIFO full and no further data can be received
-      ///           false if the FIFO is not full
+      /// @returns  \c true if the FIFO is full and no further data can be
+      ///           received,
+      ///           \c false if the FIFO is not full
         bool get_rx_fifo_full() volatile const
         {
           return status & s_xfer_rxf_mask;
@@ -327,11 +339,12 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the value of the slave acknowledgement error (ERR) flag
       ///
-      /// Cleared by clear_slave_ack_error, which write 1 to the S register ERR
-      /// field.
+      /// @note
+      /// The ERR flag can be cleared by calling clear_slave_ack_error(),
+      /// which writes 1 to the S register ERR field.
       ///
-      /// @returns  true if a slave has not acknowledged its address
-      ///           false no errors detected
+      /// @returns  \c true if a slave has not acknowledged its address,
+      ///           \c false no errors detected
         bool get_slave_ack_error() volatile const
         {
           return status & s_ack_err_mask;
@@ -339,12 +352,13 @@ namespace dibase { namespace rpi {
 
       /// @brief Return the value of the clock stretch time out (CLKT) flag
       ///
-      /// Cleared by clear_clock_timeout, which write 1 to the S register CLKT
-      /// field.
+      /// @note
+      /// The CLKT flag can be cleared by calling clear_clock_timeout(),
+      /// which writes 1 to the S register CLKT field.
       ///
-      /// @returns  true if a slave has held the SCL signal low for longer than
-      ///           specified by the CLKT register.
-      ///           false no errors detected
+      /// @returns  \c true if a slave has held the SCL signal low for longer
+      ///           than specified by the CLKT register,
+      ///           \c false no errors detected
         bool get_clock_timeout() volatile const
         {
           return status & s_clk_timeout_mask;
@@ -352,7 +366,7 @@ namespace dibase { namespace rpi {
 
       /// @brief Clear transfer done state (S register DONE field==1).
       ///
-      /// Cleared by writing a 1 the S register DONE field.
+      /// Cleared by writing a 1 to the S register DONE field.
         void clear_transfer_done() volatile
         {
           status |= s_xfer_done_mask;
@@ -361,7 +375,7 @@ namespace dibase { namespace rpi {
       /// @brief Clear slave acknowledgement error state 
       ///(S register ERR field==1).
       ///
-      /// Cleared by writing a 1 the S register ERR field.
+      /// Cleared by writing a 1 to the S register ERR field.
         void clear_slave_ack_error() volatile
         {
           status |= s_ack_err_mask;
@@ -369,7 +383,7 @@ namespace dibase { namespace rpi {
 
       /// @brief Clear clock stretch time out state (S register CLKT field==1).
       ///
-      /// Cleared by writing a 1 the S register CLKT field.
+      /// Cleared by writing a 1 to the S register CLKT field.
         void clear_clock_timeout() volatile
         {
           status |= s_clk_timeout_mask;
@@ -377,28 +391,29 @@ namespace dibase { namespace rpi {
 
       /// @brief Get the bytes remaining in the current transfer.
       ///
-      /// If called when a transfer is in progress (get_transfer_active()==true)
-      /// the remaining bytes to transfer is returned. If called when a
-      /// transfer has just completed (get_transfer_done()==true), 0 is
-      /// returned. If called when both get_transfer_active() and
-      /// get_transfer_done() return false then the last value written to the
-      /// DELN register (e.g. by calling set_data_length()) is returned.
+      /// If called when a transfer is in progress
+      /// (get_transfer_active()==\c true) the remaining bytes to transfer is
+      /// returned. If called when a transfer has just completed
+      /// (get_transfer_done()==\c true), 0 is returned. If called when both
+      /// get_transfer_active() and get_transfer_done() return \c false then
+      /// the last value written to the DLEN register
+      /// (e.g. by calling set_data_length()) is returned.
       ///
-      /// @returns Bytes remaining on current I2C data transfer (0..65535)
+      /// @returns Bytes remaining on current I2C data transfer [0,65535]
         register_t get_data_length() volatile const
         {
           return data_length & dlen_mask;
         }
 
-      /// @brief Set the bytes for forthcoming I2C transfers.
+      /// @brief Set the number of bytes for forthcoming I2C transfers.
       ///
       /// Setting a data length value applies until changed, even over
       /// multiple transfers.
       ///
-      /// @param[in] len Data transfer byte length (0..65535)
-      /// @returns  true if len parameter value in the range [0,65535] 
-      ///           false if len parameter value out of range and nothing
-      ///           written to the DLEN register
+      /// @param[in] len Data transfer byte length [0,65535]
+      /// @returns  \c true if the \c len parameter value in the range [0,65535],
+      ///           \c false if the \c len parameter value out of range and
+      ///           nothing was written to the DLEN register.
         bool set_data_length(register_t len) volatile
         {
           if ( len > dlen_mask )
@@ -411,7 +426,7 @@ namespace dibase { namespace rpi {
 
       /// @brief Get current value of the slave address (A) register.
       ///
-      /// @returns I2C slave device address value in the A register (0..127)
+      /// @returns I2C slave device address value in the A register [0,127]
         register_t get_slave_address() volatile const
         {
           return slave_addrs & a_mask;
@@ -422,10 +437,10 @@ namespace dibase { namespace rpi {
       /// Setting an I2C slave device address continues to apply even over
       /// multiple transfers.
       ///
-      /// @param[in] addrs I2C slave device address to set (0..127)
-      /// @returns  true if addrs parameter value in the range [0,127] 
-      ///           false if addrs parameter value out of range and nothing
-      ///           written to the A register
+      /// @param[in] addrs I2C slave device address to set [0,127]
+      /// @returns  \c true if \c addrs parameter value in the range [0,127], 
+      ///           \c false if \c addrs parameter value out of range and
+      ///           nothing is written to the A register.
         bool set_slave_address(register_t addrs) volatile
         {
           if ( addrs > a_mask )
@@ -453,8 +468,9 @@ namespace dibase { namespace rpi {
 
       /// @brief Return currently set I2C/BSC master clock divisor value
       ///
-      /// Note: values will be even, in the range [0,32768]. A value of 
-      /// 32768 represented as a register value of 0
+      /// @note
+      /// Values will be even, in the range [0,32768]. A value of 
+      /// 32768 represented as a register value of 0.
       ///
       /// @returns BSC master clock register divisor (CDIV) 15-bit field value
         register_t get_clock_divider() volatile const
@@ -466,12 +482,13 @@ namespace dibase { namespace rpi {
       /// @brief Set I2C/BSC master clock divisor value. 
       /// Divides the system APB clock.
       ///
-      /// Note: Values should be even, in the range [2,32768]. Odd values will
+      /// @note
+      /// Values should be even, in the range [2,32768]. Odd values will
       /// be rounded down.
       ///
       /// @param[in] divisor  BSC master APB clock divisor value [2,32768]
-      /// @returns  true if operation performed,
-      ///           false if operation not performed as divisor out of range
+      /// @returns  \c true if operation performed,
+      ///           \c false if operation not performed as divisor out of range
         bool set_clock_divider(register_t divisor) volatile
         {
           if (clk_divisor_min>divisor || divisor>clk_divisor_max)
@@ -508,14 +525,14 @@ namespace dibase { namespace rpi {
 
       /// @brief Set the bit-read delay after SCL rising edge (DEL:REDL)
       ///
-      /// The delay parameter sets the DEL register REDL field value which is
-      /// the delay in core clock cycles after SCL rising edge before reading
-      /// a data bit from SDA.   
+      /// The \c delay parameter sets the DEL register REDL field value which
+      /// is the delay in core clock cycles after SCL rising edge before
+      /// reading a data bit from SDA.   
       ///
       /// @param[in] delay  SCL Rising Edge delay before writing a bit of
       ///                   data [0,65535]
-      /// @returns  true if operation performed,
-      ///           false if operation not performed as delay out of range
+      /// @returns  \c true if operation performed,
+      ///           \c false if operation not performed as delay out of range.
         bool set_read_delay(register_t delay) volatile
         {
           if (delay>del_max)
@@ -528,14 +545,14 @@ namespace dibase { namespace rpi {
       
       /// @brief Set the bit-write delay after SCL falling edge (DEL:FEDL)
       ///
-      /// The delay parameter sets the DEL register FEDL field value which is
-      /// the delay in core clock cycles after SCL falling edge before writing
-      /// a data bit to SDA.
+      /// The \c delay parameter sets the DEL register FEDL field value which
+      /// is the delay in core clock cycles after SCL falling edge before
+      /// writing a data bit to SDA.
       ///
       /// @param[in] delay  SCL Falling Edge delay before reading a bit of
       ///                   data [0,65535]
-      /// @returns  true if operation performed,
-      ///           false if operation not performed as delay out of range
+      /// @returns  \c true if operation performed,
+      ///           \c false if operation not performed as delay out of range.
         bool set_write_delay(register_t delay) volatile
         {
           if (delay>del_max)
@@ -552,9 +569,9 @@ namespace dibase { namespace rpi {
       /// specifies how long the master waits, in SCL clock cycles, for a
       /// slave device to stretch the clock (by keeping SCL low after master
       /// sets it high) before deciding the slave has hung. A zero value 
-      /// indicates the feature is disabled
+      /// indicates the feature is disabled.
       ///
-      /// @returns SCL clocks clock-stretch value [0,65535]
+      /// @returns Clock-stretch value [0,65535] in SCL ticks.
         register_t get_clock_stretch_timeout() volatile const
         {
           return clk_stretch&clkt_tout_mask;
@@ -562,15 +579,15 @@ namespace dibase { namespace rpi {
 
       /// @brief Set the clock stretch time-out value (CLKT:TOUT)
       ///
-      /// The clks parameter sets the CLKT register TOUT field value which
+      /// The \c clks parameter sets the CLKT register TOUT field value which
       /// specifies how long the master waits, in SCL clock cycles, for a
       /// slave device to stretch the clock (by keeping SCL low after master
       /// sets it high) before deciding the slave has hung. A zero value 
       /// disables the feature.
       ///
-      /// @param[in] clks  SCL clocks clock-stretch value [0,65535]
-      /// @returns  true if operation performed,
-      ///           false if operation not performed as delay out of range
+      /// @param[in] clks  Clock-stretch value [0,65535] in SCL ticks.
+      /// @returns  \c true if operation performed,
+      ///           \c false if operation not performed as delay out of range.
         bool set_clock_stretch_timeout(register_t clks) volatile
         {
           if (clks>clkt_tout_mask)

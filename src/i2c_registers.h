@@ -3,8 +3,8 @@
 /// @brief \b Internal : low-level (GPIO) I2C control registers type definition.
 ///
 /// @note
-/// \e Note : Broadcom call BCM2835 I2C compliant peripherals BSC 
-///          (for Broadcom Serial Control - or Controller).
+/// Broadcom call BCM2835 I2C compliant peripherals BSC (for Broadcom Serial
+/// Control - or Controller).
 ///
 /// The details here relate to the BCM2835 BSC master interfaces known as BSC0,
 /// BSC1 and BSC2 (which is reserved for use with the HDMI interface).
@@ -246,7 +246,7 @@ namespace dibase { namespace rpi {
       /// to the S register DONE field.
       ///
       /// @returns  \c true if transfer is complete,
-      ///           \c false if transfer is in progress
+      ///           \c false if transfer is in progress.
         bool get_transfer_done() volatile const
         {
           return status & s_xfer_done_mask;
@@ -260,7 +260,7 @@ namespace dibase { namespace rpi {
       /// Cleared by writing sufficient data to the FIFO
       ///
       /// @returns  \c true if the FIFO near to being empty,
-      ///           \c false if the FIFO still quite full
+      ///           \c false if the FIFO still quite full.
         bool get_tx_fifo_needs_writing() volatile const
         {
           return status & s_xfer_txw_mask;
@@ -274,7 +274,7 @@ namespace dibase { namespace rpi {
       /// Cleared by reading sufficient data from the FIFO
       ///
       /// @returns  \c true if the FIFO near to being full,
-      ///           \c false if the FIFO still quite empty
+      ///           \c false if the FIFO still quite empty.
         bool get_rx_fifo_needs_reading() volatile const
         {
           return status & s_xfer_rxr_mask;
@@ -288,7 +288,8 @@ namespace dibase { namespace rpi {
       /// Cleared when sufficient data clocked out of the FIFO
       ///
       /// @returns  \c true if the FIFO can accept at least 1 byte
-      ///           \c false if the FIFO is full and cannot accept any more data
+      ///           \c false if the FIFO is full and cannot accept any more
+      ///           data.
         bool get_tx_fifo_not_full() volatile const
         {
           return status & s_xfer_txd_mask;
@@ -302,7 +303,7 @@ namespace dibase { namespace rpi {
       /// Cleared by reading sufficient data from the FIFO
       ///
       /// @returns  \c true if the FIFO contains at least 1 byte,
-      ///           \c false if the FIFO empty
+      ///           \c false if the FIFO empty.
         bool get_rx_fifo_not_empty() volatile const
         {
           return status & s_xfer_rxd_mask;
@@ -316,7 +317,7 @@ namespace dibase { namespace rpi {
       /// Cleared when more data written to the FIFO
       ///
       /// @returns  \c true if the FIFO contains no data to transmit,
-      ///           \c false if the FIFO contains data to transmit
+      ///           \c false if the FIFO contains data to transmit.
         bool get_tx_fifo_empty() volatile const
         {
           return status & s_xfer_txe_mask;
@@ -331,7 +332,7 @@ namespace dibase { namespace rpi {
       ///
       /// @returns  \c true if the FIFO is full and no further data can be
       ///           received,
-      ///           \c false if the FIFO is not full
+      ///           \c false if the FIFO is not full.
         bool get_rx_fifo_full() volatile const
         {
           return status & s_xfer_rxf_mask;
@@ -344,7 +345,7 @@ namespace dibase { namespace rpi {
       /// which writes 1 to the S register ERR field.
       ///
       /// @returns  \c true if a slave has not acknowledged its address,
-      ///           \c false no errors detected
+      ///           \c false no errors detected.
         bool get_slave_ack_error() volatile const
         {
           return status & s_ack_err_mask;
@@ -358,7 +359,7 @@ namespace dibase { namespace rpi {
       ///
       /// @returns  \c true if a slave has held the SCL signal low for longer
       ///           than specified by the CLKT register,
-      ///           \c false no errors detected
+      ///           \c false no errors detected.
         bool get_clock_timeout() volatile const
         {
           return status & s_clk_timeout_mask;
@@ -399,7 +400,7 @@ namespace dibase { namespace rpi {
       /// the last value written to the DLEN register
       /// (e.g. by calling set_data_length()) is returned.
       ///
-      /// @returns Bytes remaining on current I2C data transfer [0,65535]
+      /// @returns Bytes remaining on current I2C data transfer [0,65535].
         register_t get_data_length() volatile const
         {
           return data_length & dlen_mask;
@@ -426,7 +427,7 @@ namespace dibase { namespace rpi {
 
       /// @brief Get current value of the slave address (A) register.
       ///
-      /// @returns I2C slave device address value in the A register [0,127]
+      /// @returns I2C slave device address value in the A register [0,127].
         register_t get_slave_address() volatile const
         {
           return slave_addrs & a_mask;
@@ -472,7 +473,7 @@ namespace dibase { namespace rpi {
       /// Values will be even, in the range [0,32768]. A value of 
       /// 32768 represented as a register value of 0.
       ///
-      /// @returns BSC master clock register divisor (CDIV) 15-bit field value
+      /// @returns BSC master clock register divisor (CDIV) 15-bit field value.
         register_t get_clock_divider() volatile const
         {
           register_t value{clk_div&clk_divisor_mask};
@@ -488,7 +489,7 @@ namespace dibase { namespace rpi {
       ///
       /// @param[in] divisor  BSC master APB clock divisor value [2,32768]
       /// @returns  \c true if operation performed,
-      ///           \c false if operation not performed as divisor out of range
+      ///           \c false if operation not performed as divisor out of range.
         bool set_clock_divider(register_t divisor) volatile
         {
           if (clk_divisor_min>divisor || divisor>clk_divisor_max)
@@ -505,7 +506,7 @@ namespace dibase { namespace rpi {
       /// the delay in core clock cycles after SCL rising edge before reading
       /// a data bit from SDA.   
       ///
-      /// @returns SCL Rising Edge delay before writing a bit of data [0,65535]
+      /// @returns SCL Rising Edge delay before writing a bit of data [0,65535].
         register_t get_read_delay() volatile const
         {
           return data_delay&del_redl_mask;
@@ -517,7 +518,8 @@ namespace dibase { namespace rpi {
       /// the delay in core clock cycles after SCL falling edge before writing
       /// a data bit to SDA.
       ///
-      /// @returns SCL Falling Edge delay before reading a bit of data [0,65535]
+      /// @returns SCL Falling Edge delay before reading a bit of data
+      ///          [0,65535].
         register_t get_write_delay() volatile const
         {
           return (data_delay&del_fedl_mask)>>del_fedl_bit;

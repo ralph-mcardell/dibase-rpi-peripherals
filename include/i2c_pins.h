@@ -30,12 +30,13 @@ namespace dibase { namespace rpi {
   {
 
     /// @brief Default value for constructor f parameters - BSC/I2C bus clock
-    /// frequency. Note: 100KHz is the maximum frequency for I2C standard mode
+    /// frequency. Note that 100KHz is the maximum frequency for I2C standard
+    /// mode.
     ///
     /// @note
-    /// Note: not a class static as in that case \c g++ thinks storage required
-    ///       causing \c ld to complain when storage (i.e. the definition) is
-    ///       not found!
+    /// Not a class static as in that case \c g++ thinks storage required
+    /// causing \c ld to complain when storage (i.e. the definition) is not
+    /// found!
     ///
       constexpr hertz  i2c_pins_default_frequency = hertz{100000};
 
@@ -87,8 +88,8 @@ namespace dibase { namespace rpi {
     /// @brief Construct from GPIO pin pair and BSC parameters.
     ///
     /// @note
-    /// \e Note: This constructor should _not_ be used if either pin is
-    /// ambiguous with respect to which BSC peripheral should be used.
+    /// This constructor should _not_ be used if either pin is ambiguous
+    /// with respect to which BSC peripheral should be used.
     ///
     /// Creates an i2c_pins object from a pair of GPIO pins values and
     /// optionally BSC frequency and timing values. The pair of GPIO pins
@@ -153,7 +154,7 @@ namespace dibase { namespace rpi {
     ///        parameters
     ///
     /// @note
-    /// \e Note: Use this constructor if either pin is ambiguous with respect
+    /// Use this constructor if either pin is ambiguous with respect
     /// to which BSC peripheral should be used.
     ///
     /// Creates an i2c_pins object from a pair of GPIO pins values and an index
@@ -267,7 +268,7 @@ namespace dibase { namespace rpi {
     /// @brief Start a read transaction to the specified slave device.
     ///
     /// @note
-    /// \e Note: Initially the FIFO will be empty as no data will have been
+    /// Initially the FIFO will be empty as no data will have been
     /// received yet, hence there is no facility to read data from the FIFO
     /// when starting a read transaction.
     ///
@@ -347,8 +348,8 @@ namespace dibase { namespace rpi {
     /// @brief Query whether there is room for more data in the FIFO.
     ///
     /// @note
-    /// \e Note:  When the FIFO is empty no further serial data will be
-    ///           transmitted until some data is written to the FIFO.
+    /// When the FIFO is empty no further serial data will be
+    /// transmitted until some data is written to the FIFO.
     ///
     /// @returns true if there is space to write data into the FIFO,
     ///          false if the FIFO is full.
@@ -358,9 +359,9 @@ namespace dibase { namespace rpi {
     ///        data and needs more data written to it.
     ///
     /// @note
-    /// \e Note:  It is unknown if the 'nearing being empty' value is 25% full
-    ///           as the inverse of the SPI0 device's read nearing full value
-    ///           of 75% as it is never mentioned in the documentation
+    /// It is unknown if the 'nearing being empty' value is 25% full as the 
+    /// inverse of the SPI0 device's read nearing full value of 75% as it is
+    /// never mentioned in the documentation
     ///
     /// @returns  true if the FIFO is nearing being empty while writing.
     ///           false otherwise.
@@ -369,9 +370,8 @@ namespace dibase { namespace rpi {
     /// @brief Query whether there is no room for read data in the FIFO.
     ///
     /// @note
-    /// \e Note:  When the FIFO is full and cannot accept any more
-    ///           incoming data no further serial data will be received until
-    ///           some data is read out from the FIFO.
+    /// When the FIFO is full and cannot accept any more incoming data no more
+    /// serial data will be received until some data is read out from the FIFO.
     ///
     /// @returns true if the receive FIFO is full.
     ///          false if the receive FIFO still has room for more read data
@@ -387,9 +387,8 @@ namespace dibase { namespace rpi {
     ///        data and needs reading.
     ///
     /// @note
-    /// \e Note:  It is unknown if the 'nearing being full' value is 75% full
-    ///           as for the SPI0 peripheral as it is never mentioned in the
-    ///           documentation
+    /// It is unknown if the 'nearing being full' value is 75% full as for the
+    /// SPI0 peripheral as it is never mentioned in the documentation
     ///
     /// @returns  true if the FIFO is nearing being full while reading.
     ///           false otherwise.

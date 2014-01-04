@@ -111,7 +111,7 @@ namespace dibase { namespace rpi {
     ///                     line
     /// @param[in] f        Frequency of the I2C/BSC clock SCL in the range 
     ///                     [\c fc/2, \c fc/32768]. Non-integral values of
-    ///                     \c fc/\cf are rounded down so the actual frequency
+    ///                     \c fc/\c f are rounded down so the actual frequency
     ///                     may be higher. Defaults to 100KHz.
     /// @param[in] tout     Clock stretch time-out in SCL cycles in the range
     ///                     [0,65535], 0 indicates feature is disabled. The
@@ -180,7 +180,7 @@ namespace dibase { namespace rpi {
     ///                     In the range [0,1]; 0 to use BSC0, 1 to use BSC1.
     /// @param[in] f        Frequency of the I2C/BSC clock SCL in the range 
     ///                     [\c fc/2, \c fc/32768]. Non-integral values of
-    ///                     \c fc/\cf are rounded down so the actual frequency
+    ///                     \c fc/\c f are rounded down so the actual frequency
     ///                     may be higher. Defaults to 100KHz.
     /// @param[in] tout     Clock stretch time-out in SCL cycles in the range
     ///                     [0,65535], 0 indicates feature is disabled. The

@@ -128,7 +128,7 @@ namespace dibase { namespace rpi {
       /// @brief Return the currently set interrupt on TXW condition value
       ///
       /// @note
-      /// TXW is short for Transmit FIFO needs Writing (approaching being full)
+      /// TXW is short for Transmit FIFO needs Writing (approaching being empty)
       ///
       /// @returns  \c true if an interrupt is generated on TXW conditions,
       ///           \c false if no such interrupt is generated.
@@ -140,7 +140,7 @@ namespace dibase { namespace rpi {
       /// @brief Return the currently set interrupt on RXR condition value
       ///
       /// @note
-      /// RXR is short for Receive FIFO needs Reading (approaching being empty)
+      /// RXR is short for Receive FIFO needs Reading (approaching being full)
       ///
       /// @returns  \c true if an interrupt is generated on RXR conditions,
       ///           \c false if no such interrupt is generated.
@@ -180,7 +180,7 @@ namespace dibase { namespace rpi {
       /// @brief Set generate interrupt on TXW condition
       ///
       /// @note
-      /// TXW is short for Transmit FIFO needs Writing (approaching being full)
+      /// TXW is short for Transmit FIFO needs Writing (approaching being empty)
       ///
       /// @param[in]  generate Pass \c true to have interrupts generated when 
       ///                      TXW is \c true
@@ -196,7 +196,7 @@ namespace dibase { namespace rpi {
       /// @brief Set generate interrupt on RXR condition
       ///
       /// @note
-      /// RXR is short for Receive FIFO needs Reading (approaching being empty)
+      /// RXR is short for Receive FIFO needs Reading (approaching being full)
       ///
       /// @param[in]  generate Pass \c true to have interrupts generated when 
       ///                      RXR is \c true
@@ -209,7 +209,7 @@ namespace dibase { namespace rpi {
                    | (generate<<c_int_on_rxr_bit);
         }
 
-      /// @brief Set enable/disable state if I2C/BSC controller
+      /// @brief Set enable/disable state of I2C/BSC controller
       ///
       /// @param[in]  enable  Pass \c true to enable the controller, \c false
       ///                     to disable the controller.
@@ -287,7 +287,7 @@ namespace dibase { namespace rpi {
       ///
       /// Cleared when sufficient data clocked out of the FIFO
       ///
-      /// @returns  \c true if the FIFO can accept at least 1 byte
+      /// @returns  \c true if the FIFO can accept at least 1 byte,
       ///           \c false if the FIFO is full and cannot accept any more
       ///           data.
         bool get_tx_fifo_not_full() volatile const
@@ -345,7 +345,7 @@ namespace dibase { namespace rpi {
       /// which writes 1 to the S register ERR field.
       ///
       /// @returns  \c true if a slave has not acknowledged its address,
-      ///           \c false no errors detected.
+      ///           \c false if no errors detected.
         bool get_slave_ack_error() volatile const
         {
           return status & s_ack_err_mask;
@@ -359,7 +359,7 @@ namespace dibase { namespace rpi {
       ///
       /// @returns  \c true if a slave has held the SCL signal low for longer
       ///           than specified by the CLKT register,
-      ///           \c false no errors detected.
+      ///           \c false if no errors detected.
         bool get_clock_timeout() volatile const
         {
           return status & s_clk_timeout_mask;

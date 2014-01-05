@@ -79,12 +79,12 @@ namespace dibase { namespace rpi {
                                         ///< (Low 15-bits of register only, in
                                         ///< line with documented 32768 maximum
                                         ///< divider value rather than 
-                                        ///< documented DIV field bits 15:0)
-        , del_redl_mask       = 0xFFFFU ///< DEL register REDL field mask value
-        , del_fedl_mask   = 0xFFFF0000U ///< DEL register FEDL field mask value
-        , del_fedl_bit        =   0x10U ///< DEL register FEDL field start bit number
-        , del_max             = 0xFFFFU ///< DEL register REDL & FEDL fields' maximum value
-        , clkt_tout_mask      = 0xFFFFU ///< CLKT register TOUT field mask value
+                                        ///< documented DIV field bits 15:0).
+        , del_redl_mask       = 0xFFFFU ///< DEL register REDL field mask value.
+        , del_fedl_mask   = 0xFFFF0000U ///< DEL register FEDL field mask value.
+        , del_fedl_bit        =   0x10U ///< DEL register FEDL field start bit number.
+        , del_max             = 0xFFFFU ///< DEL register REDL & FEDL fields' maximum value.
+        , clkt_tout_mask      = 0xFFFFU ///< CLKT register TOUT field mask value.
         };
 
       /// @brief Physical address of start of BCM2835 BSC0 control registers
@@ -104,7 +104,7 @@ namespace dibase { namespace rpi {
         register_t  status;       ///< BSC Master Status, S
         register_t  data_length;  ///< BSC Master Data Length, DLEN
         register_t  slave_addrs;  ///< BSC Master Slave Address, A
-        register_t  fifo;         ///< BSC Master TX and RX FIFOs, FIFO
+        register_t  fifo;         ///< BSC Master TX and RX FIFO, FIFO
         register_t  clk_div;      ///< BSC Master Clock Divider, DIV
         register_t  data_delay;   ///< BSC Master Data Delay, DEL
         register_t  clk_stretch;  ///< BSC Clock Stretch Time out, CLKT
@@ -351,7 +351,7 @@ namespace dibase { namespace rpi {
           return status & s_ack_err_mask;
         }
 
-      /// @brief Return the value of the clock stretch time out (CLKT) flag
+      /// @brief Return the value of the clock stretch time out (S:CLKT) flag
       ///
       /// @note
       /// The CLKT flag can be cleared by calling clear_clock_timeout(),
@@ -365,7 +365,7 @@ namespace dibase { namespace rpi {
           return status & s_clk_timeout_mask;
         }
 
-      /// @brief Clear transfer done state (S register DONE field==1).
+      /// @brief Clear transfer done state (S:DONE==1).
       ///
       /// Cleared by writing a 1 to the S register DONE field.
         void clear_transfer_done() volatile
@@ -373,8 +373,7 @@ namespace dibase { namespace rpi {
           status |= s_xfer_done_mask;
         }
 
-      /// @brief Clear slave acknowledgement error state 
-      ///(S register ERR field==1).
+      /// @brief Clear slave acknowledgement error state (S:ERR==1).
       ///
       /// Cleared by writing a 1 to the S register ERR field.
         void clear_slave_ack_error() volatile
@@ -382,7 +381,7 @@ namespace dibase { namespace rpi {
           status |= s_ack_err_mask;
         }
 
-      /// @brief Clear clock stretch time out state (S register CLKT field==1).
+      /// @brief Clear clock stretch time out state (S:CLKT==1).
       ///
       /// Cleared by writing a 1 to the S register CLKT field.
         void clear_clock_timeout() volatile
@@ -470,10 +469,11 @@ namespace dibase { namespace rpi {
       /// @brief Return currently set I2C/BSC master clock divisor value
       ///
       /// @note
-      /// Values will be even, in the range [0,32768]. A value of 
-      /// 32768 represented as a register value of 0.
+      /// Values will be even, in the range [2,32768]. A divisor value of 
+      /// 32768 is represented by a register value of 0.
       ///
-      /// @returns BSC master clock register divisor (CDIV) 15-bit field value.
+      /// @returns BSC master clock register divisor (CDIV) 15-bit field value,
+      ///          or 32768 if CDIV register value is 0.
         register_t get_clock_divider() volatile const
         {
           register_t value{clk_div&clk_divisor_mask};

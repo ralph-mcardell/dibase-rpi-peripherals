@@ -126,10 +126,10 @@ namespace dibase { namespace rpi {
 
   /// @brief SPI0 peripheral slave device context
   ///
-  /// spi0_slave_context objects contain context data for the SPI0
-  /// peripheral SPI master <-> SPI slave device that defines how to perform
-  /// raw communication with a specific slave device. A context is defined
-  /// from construction parameters which include:
+  /// spi0_slave_context objects contain information defining how the SPI0
+  /// peripheral SPI master performs raw communication with a specific SPI
+  /// slave device. A context is defined from construction parameters which
+  /// include:
   ///
   /// - the slave's chip select value (0 or 1)
   /// - the required SPI0 clock frequency
@@ -137,9 +137,9 @@ namespace dibase { namespace rpi {
   /// - the communication mode (standard 3-wire SPI, bidirectional 2-wire SPI, 
   ///   or LoSSI 2-wire, or none at all) (defaults to standard 3-wire SPI)
   /// - the APB core frequency - which is fixed for a specific board boot
-  ///   configuration and defaults to rpi_apb_core_frequency.
+  ///   configuration and defaults to \ref rpi_apb_core_frequency.
   ///
-  /// An spi0_slave_context's is applied to the SPI0 peripheral when starting
+  /// An spi0_slave_context is applied to the SPI0 peripheral when starting
   /// to converse with a slave chip via a spi0_pins object.
   ///
   /// Note that spi0_slave_context objects hold SPI0 peripheral register values
@@ -166,22 +166,24 @@ namespace dibase { namespace rpi {
     /// @param[in] cs     Chip select - which of the two chip enable lines
     ///                   should be asserted during an open conversation.
     /// @param[in] f      Required frequency of the SPI clock SCLK while
-    ///                   communicating [fc/2, fc/65536]. Non-integral values of
-    ///                   fc/f rounded down so actual frequency may be higher.
-    /// @param[in] mode   Communications mode. Defaults to spi_std: standard
-    ///                   SPI 3-wire mode.
-    /// @param[in] cpol   Clock polarity. Defaults to rest state low
+    ///                   communicating [\c fc/2, \c fc/65536]. Non-integral
+    ///                   values of \c fc/f rounded down so actual frequency
+    ///                   may be higher.
+    /// @param[in] mode   Communications mode. Defaults to spi0_mode::standard,
+    ///                   standard SPI 3-wire mode.
+    /// @param[in] cpol   Clock polarity. Defaults to rest state low.
     /// @param[in] cpha   Clock phase. Defaults to clock transition in middle
     ///                   of data bit.
     /// @param[in] ltoh   LoSSI mode hold delay (in APB core clock ticks) [1,15]
-    ///                   Only relevant for mode==spi0_mode::lossi.
+    ///                   Only relevant for \c mode == spi0_mode::lossi.
     ///                   Defaults to 1.
-    /// @param[in] fc     APB core frequency \ref frequency type. Should be
-    ///                   fixed for a given board boot configuration.
-    ///                   Defaults to rpi_apb_core_frequency.
+    /// @param[in] fc     APB core frequency. Should be fixed for a given board
+    ///                   boot configuration. Defaults to
+    ///                   \ref rpi_apb_core_frequency.
     ///
-    /// @throws std::invalid_argument if the cs parameter is invalid.
-    /// @throws std::out_of_range if the f or ltoh parameters are not in range.
+    /// @throws std::invalid_argument if the \c cs parameter is invalid.
+    /// @throws std::out_of_range if the \c f or \c ltoh parameters are not in
+    ///         range.
       spi0_slave_context
       ( spi0_slave cs
       , hertz f
@@ -206,7 +208,7 @@ namespace dibase { namespace rpi {
   /// required: MISO is not used so need not be allocated _if_ _all_ slave
   /// devices use a 2 wire protocol.
   ///
-  /// A spi0_pin object is constructed with a set of GPIO pin_ids to use for
+  /// A spi0_pins object is constructed with a set of GPIO pin_ids to use for
   /// SPI0 signal functions and values for each chip enable line indicating
   /// which state (low or high) indicates a slave device is enabled - which
   /// default to enable when low if not given explicitly.
@@ -218,8 +220,8 @@ namespace dibase { namespace rpi {
   /// Note that no attempt is made to see if the SPI0 peripheral is in use
   /// externally by other processes.
   ///
-  /// Once constructed spi0_slave_context may be used with the spi0_pins object
-  /// to allow communicating with slave devices.
+  /// Once constructed spi0_slave_context objects may be used with the
+  /// spi0_pins object to allow communicating with slave devices.
     class spi0_pins
     {
       constexpr static unsigned number_of_pins = 5U;
@@ -241,20 +243,20 @@ namespace dibase { namespace rpi {
     /// @brief Construct a spi0_pins object from a spi0_pin_set specialisation
     /// and slave chip select assertion polarity values.
     ///
-    /// @post The SPI0 peripheral is marked as in use
+    /// @post The SPI0 peripheral is marked as in use.
     /// @post The pins in the spi0_pin_set are marked as in use (note: does
     ///       not include a pin for the MISO SPI0 function if it has a value of
-    ///       spi0_pin_not_used.
+    ///       \ref spi0_pin_not_used.
     /// @post The object is not conversing with a slave device (is_conversing() 
-    ///       == false).
+    ///       == \c false).
     /// @post The SPI0 peripheral CS register has chip select polarity bits
     ///       set appropriately for the cspol0, cspol1 parameter values. 
     ///
-    /// @tparam CE0   spi0_pin_set CE0 template parameter
-    /// @tparam CE1   spi0_pin_set CE1 template parameter
-    /// @tparam SCLK  spi0_pin_set SCLK template parameter
-    /// @tparam MOSI  spi0_pin_set MOSI template parameter
-    /// @tparam MISO  spi0_pin_set MISO template parameter
+    /// @tparam CE0   spi0_pin_set CE0 template parameter.
+    /// @tparam CE1   spi0_pin_set CE1 template parameter.
+    /// @tparam SCLK  spi0_pin_set SCLK template parameter.
+    /// @tparam MOSI  spi0_pin_set MOSI template parameter.
+    /// @tparam MISO  spi0_pin_set MISO template parameter.
     ///
     /// @param[in] ps     spi0_pin_set specialisation specifying the set of
     ///                   GPIO pins to use for the various SPI0 functions.
@@ -288,7 +290,7 @@ namespace dibase { namespace rpi {
       }
 
     /// @brief Destroy: Stop any SPI0 conversation and de-allocate GPIO pins.
-    /// @post Any conversation is stopped (CS register TA field set to 0)
+    /// @post Any conversation is stopped (CS register TA field set to 0).
     /// @post The pins allocated during construction are marked as free.
     /// @post The SPI0 peripheral is marked as free.
       ~spi0_pins();
@@ -301,35 +303,35 @@ namespace dibase { namespace rpi {
     /// @brief Applies a spi0_slave_context, replacing any existing context and
     /// starts data transfers (CS register TA field == 1).
     ///
-    /// Note: passing a slave context with a communication mode of
-    ///       spi0_mode::none will stop communication by setting the Transfer
-    ///       Active field to false. No other changes to control fields for
-    ///       an applied slave context are made. In general it is simpler to
-    ///       call stop_conversing.
+    /// @note
+    /// Passing a slave context with a communication mode of spi0_mode::none
+    /// will stop communication by setting the Transfer Active field to false.
+    /// No other changes to control fields for an applied slave context are
+    /// made. In general it is simpler to call stop_conversing().
     ///
     /// @post The SPI0 data transfer context will be that represented by the
-    ///       object passed for the c parameter.
+    ///       object passed for the \c c parameter.
     ///
     /// @param  c   Conversation object specifying context for conversation.
     /// @throws std::invalid_argument if slave context is for 3-wire
     ///         standard mode and only 2-wire mode pins have been allocated
-    ///         (i.e. c.mode==spi0_mode::standard && !has_std_mode_support()).
+    ///         (i.e. \c c.mode==spi0_mode::standard && ! has_std_mode_support()).
       void  start_conversing(spi0_slave_context const & c);
 
     /// @brief Stop data transfers.
-    /// @post Transfer Active field is false, stopping further data transfer
+    /// @post Transfer Active field is \c false, stopping further data transfer
     ///       Communication mode is set to spi0_mode::none for the purposes of
     ///       reads and writes.
       void  stop_conversing();
 
     /// @brief Write a single byte to the transmit FIFO
-    /// @param[in] data Data byte to be written
+    /// @param[in] data Data byte to be written.
     /// @param[in] lossi_write_type 
     ///                 Only relevant if using LoSSI communication mode.
     ///                 Specifies whether this is a LoSSI command or parameter
     ///                 data write. Default to parameter data write.
-    /// @returns  true if byte written to transmit FIFO,
-    ///           false if it could not as FIFO full or communication mode is
+    /// @returns  \c true if byte written to transmit FIFO,
+    ///           \c false if it could not as FIFO full or communication mode is
     ///           spi0_mode::none and conversation is stopped.
       bool write
       ( std::uint8_t data
@@ -338,13 +340,14 @@ namespace dibase { namespace rpi {
 
     /// @brief Write bytes from buffer to the transmit FIFO
     ///
-    /// Note: For LoSSI mode only multiple parameter writes are supported.
+    /// @note
+    /// For LoSSI mode only multiple parameter writes are supported.
     /// Write command  bytes using the single-byte overload of write with
     /// lossi_write_type==spi0_lossi_write::command.
     ///
-    /// @param[in] pdata  Pointer to data bytes to be written
-    /// @param[in] count  Maximum number of bytes to write
-    /// @returns  Number of bytes actually written. Less than count if FIFO
+    /// @param[in] pdata  Pointer to data bytes to be written.
+    /// @param[in] count  Maximum number of bytes to write.
+    /// @returns  Number of bytes actually written. Less than \c count if FIFO
     ///           fills. Zero if FIFO full or communication mode is
     ///           spi0_mode::none and conversation is stopped.
       std::size_t write
@@ -354,43 +357,42 @@ namespace dibase { namespace rpi {
 
     /// @brief Read a single byte from the receive FIFO
     ///
+    /// @note
     /// When in bidirectional mode a read has to be initiated. This is done
     /// by calling read when there is no data in the receive FIFO. This sets
     /// the Read Enable bit in the CS register and writes junk to the FIFO
-    /// register initiate a read transaction and returns false. The data
+    /// register to initiate a read transaction and returns false. The data
     /// should appear in the receive FIFO some time later.
     ///
     /// In LoSSI mode data is send to the receive FIFO following the writing
     /// of a read command to a slave device (using \ref write).
     ///
-    /// @param[out] data Data byte to receive read value
-    /// @returns  true if byte read from receive FIFO,
-    ///           false if it could not as FIFO empty or communication mode is
-    ///           spi0_mode::none and conversation is stopped.
+    /// @param[out] data Data byte to receive read value.
+    /// @returns  \c true if byte read from receive FIFO,
+    ///           \c false if it could not as FIFO empty or communication mode
+    ///           is spi0_mode::none and conversation is stopped.
       bool read(std::uint8_t & data);
 
     /// @brief Read bytes from the receive FIFO into a buffer
     ///
+    /// @note
     /// When in bidirectional mode a read has to be initiated. This is done
     /// by calling read when there is no data in the receive FIFO. This sets
     /// the Read Enable bit in the CS register and writes junk to the FIFO
-    /// register initiate a read transaction and returns false. The data
+    /// register to initiate a read transaction and returns false. The data
     /// should appear in the receive FIFO some time later.
     ///
     /// In LoSSI mode data is send to the receive FIFO following the writing
     /// of a read command to a slave device (using \ref write).
     ///
-    /// @param[out] pdata Data buffer to receive read values
-    /// @param[in] count  Maximum number of bytes to read
+    /// @param[out] pdata Pointer to data buffer to receive read values.
+    /// @param[in] count  Maximum number of bytes to read.
     /// @param[out] ppending_count 
     ///                   Only relevant for bidirectional mode. Defaults to
-    ///                   nullptr. Pointer to std::size_t that will have the
+    ///                   \c nullptr. Pointer to std::size_t that will have the
     ///                   count of pending reads 'queued' up by performing
     ///                   writes of junk written to it.
-    /// @returns  true if byte read from receive FIFO,
-    ///           false if it could not as FIFO empty or communication mode is
-    ///           spi0_mode::none and conversation is stopped.
-    /// @returns  Number of bytes actually read. Less than count if FIFO
+    /// @returns  Number of bytes actually read. Less than \c count if FIFO
     ///           empties. Zero if FIFO empty or communication mode is
     ///           spi0_mode::none and conversation is stopped.
       std::size_t read
@@ -401,57 +403,59 @@ namespace dibase { namespace rpi {
 
     /// @brief Query whether there is an on going conversation.
     ///
-    /// Note that an ongoing conversation is one in which the communication
+    /// An ongoing conversation is one in which the communication
     /// mode is not spi0_mode::none. If there is an ongoing conversation then
     /// data transfers will be active (CS register TA field will be 1) .
     ///
-    /// @returns true if there is an ongoing SPI0 conversation, false if not.
+    /// @returns \c true if there is an ongoing SPI0 conversation, 
+    ///          \c false if not.
       bool is_conversing() const;
 
     /// @brief Query whether SPI standard 3-wire protocol is supported
     ///
-    /// Note that if created with an spi_pin_set specialisation that did not
+    /// If created with a spi_pin_set specialisation that did not
     /// include a value for a MISO pin to allocate and use then only 2
     /// wire protocols (SPI bidirectional and LoSSI modes) are supported.
-    /// @returns  true if standard 3-wire SPI supported,
-    ///           false if only 2-wire protocols supported
+    ///
+    /// @returns  \c true if standard 3-wire SPI supported,
+    ///           \c false if only 2-wire protocols supported.
       bool has_std_mode_support() const;
 
     /// @brief Query whether there is no data to write from the transmit FIFO.
     ///
-    /// @returns true if there is no data to write from the transmit FIFO
-    ///          false if the transmit FIFO still contains data to write
-    ///           _or_ if has_conversation()==false.
+    /// @returns \c true if there is no data to write from the transmit FIFO,
+    ///          \c false if the transmit FIFO still contains data to write
+    ///           _or_ if is_conversing()==\c false.
       bool write_fifo_is_empty() const;
 
     /// @brief Query whether there is room for more data in the transmit FIFO.
     ///
-    /// @returns true if there is space to write data into the transmit FIFO
-    ///          false if the transmit FIFO is full.
+    /// @returns \c true if there is space to write data into the transmit FIFO,
+    ///          \c false if the transmit FIFO is full.
       bool write_fifo_has_space() const;
 
     /// @brief Query whether there is no room for read data in the receive FIFO.
     ///
-    /// Note:  When the receive FIFO is full and cannot accept any more
-    ///        incoming data all serial read _and_ write transfers are
-    ///        suspended until some data is read out from the receive FIFO.
+    /// @note
+    /// When the receive FIFO is full and cannot accept any more
+    /// incoming data all serial read _and_ write transfers are
+    /// suspended until some data is read out from the receive FIFO.
     ///
-    /// @returns true if the receive FIFO is full.
-    ///          false if the receive FIFO still has room for more read data
+    /// @returns \c true if the receive FIFO is full,
+    ///          \c false if the receive FIFO still has room for more read data
       bool read_fifo_is_full() const;
 
     /// @brief Query whether there is any data to be read from the receive FIFO.
     ///
-    /// @returns  true if there is data available to read data from the
-    ///           receive FIFO.
-    ///           false if the receive FIFO is empty.
+    /// @returns  \c true if there is data available to read data from the
+    ///           receive FIFO, \c false if the receive FIFO is empty.
       bool read_fifo_has_data() const;
 
     /// @brief Query whether the receive FIFO is approaching being full and
     ///        needs reading.
     ///
-    /// @returns  true if the receive FIFO is at least 75% full.
-    ///           false if the receive FIFO is less than 75% full.
+    /// @returns  \c true if the receive FIFO is at least 75% full,
+    ///           \c false if the receive FIFO is less than 75% full.
       bool read_fifo_needs_reading() const;
     };
   } // namespace peripherals closed

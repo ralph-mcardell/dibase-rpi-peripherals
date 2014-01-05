@@ -111,7 +111,7 @@ namespace dibase { namespace rpi {
     ///                     line
     /// @param[in] f        Frequency of the I2C/BSC clock SCL in the range 
     ///                     [\c fc/2, \c fc/32768]. Non-integral values of
-    ///                     \c fc/\c f are rounded down so the actual frequency
+    ///                     \c fc/f are rounded down so the actual frequency
     ///                     may be higher. Defaults to 100KHz.
     /// @param[in] tout     Clock stretch time-out in SCL cycles in the range
     ///                     [0,65535], 0 indicates feature is disabled. The
@@ -180,7 +180,7 @@ namespace dibase { namespace rpi {
     ///                     In the range [0,1]; 0 to use BSC0, 1 to use BSC1.
     /// @param[in] f        Frequency of the I2C/BSC clock SCL in the range 
     ///                     [\c fc/2, \c fc/32768]. Non-integral values of
-    ///                     \c fc/\c f are rounded down so the actual frequency
+    ///                     \c fc/f are rounded down so the actual frequency
     ///                     may be higher. Defaults to 100KHz.
     /// @param[in] tout     Clock stretch time-out in SCL cycles in the range
     ///                     [0,65535], 0 indicates feature is disabled. The
@@ -208,7 +208,8 @@ namespace dibase { namespace rpi {
     ///         are not in range or \c bsc_num is not 0 or 1.
     /// @throws bad_peripheral_alloc if either of the pins or the BSC
     ///         peripheral are already in use.
-    /// @throws /e std::/e range_error Should not occur. If it does it is a bug. 
+    /// @throws !std::range_error <em>Should not occur. 
+    ///         If it does it is a bug.</em> 
       i2c_pins( pin_id        sda_pin
               , pin_id        scl_pin
               , int           bsc_num   
@@ -342,13 +343,13 @@ namespace dibase { namespace rpi {
     ///          \c false if no data transfer is ongoing (C:TA field is 0)
       bool is_busy() const;
 
-    /// @brief Query whether there is no data to write from the FIFO.
+    /// @brief Query whether there is no data to transmit from the FIFO.
     ///
-    /// @returns \c true if there is no data to write from the FIFO,
-    ///          \c false if the FIFO still contains data to write
+    /// @returns \c true if there is no data to transmit from the FIFO,
+    ///          \c false if the FIFO still contains data to transmit.
       bool write_fifo_is_empty() const;
 
-    /// @brief Query whether there is room for more data in the FIFO.
+    /// @brief Query whether there is room to write data into the FIFO.
     ///
     /// @note
     /// When the FIFO is empty no further serial data will be
@@ -358,26 +359,26 @@ namespace dibase { namespace rpi {
     ///          \c false if the FIFO is full.
       bool write_fifo_has_space() const;
 
-    /// @brief Query whether the FIFO is approaching being empty while writing
-    ///        data and needs more data written to it.
+    /// @brief Query whether the FIFO is approaching being empty while
+    ///        transmitting data and needs more data written into it.
     ///
     /// @note
     /// It is unknown if the 'nearing being empty' value is 25% full as the 
     /// inverse of the SPI0 device's read nearing full value of 75% as it is
     /// never mentioned in the documentation
     ///
-    /// @returns  \c true if the FIFO is nearing being empty while writing,
-    ///           \c false otherwise.
+    /// @returns  \c true if the FIFO is nearing being empty while transmitting
+    ///           data, \c false otherwise.
       bool write_fifo_needs_writing() const;
 
-    /// @brief Query whether there is no room for read data in the FIFO.
+    /// @brief Query whether there is no room for received data in the FIFO.
     ///
     /// @note
     /// When the FIFO is full and cannot accept any more incoming data no more
     /// serial data will be received until some data is read out from the FIFO.
     ///
-    /// @returns \c true if the receive FIFO is full,
-    ///          \c false if the receive FIFO still has room for more read data
+    /// @returns \c true if the FIFO is full,
+    ///          \c false if the FIFO still has room for received data
       bool read_fifo_is_full() const;
 
     /// @brief Query whether there is any data to be read from the FIFO.
@@ -386,15 +387,15 @@ namespace dibase { namespace rpi {
     ///           \c false if the FIFO is empty.
       bool read_fifo_has_data() const;
 
-    /// @brief Query whether the FIFO is approaching being full while reading
+    /// @brief Query whether the FIFO is approaching being full while receiving
     ///        data and needs reading.
     ///
     /// @note
     /// It is unknown if the 'nearing being full' value is 75% full as for the
     /// SPI0 peripheral as it is never mentioned in the documentation
     ///
-    /// @returns  \c true if the FIFO is nearing being full while reading,
-    ///           \c false otherwise.
+    /// @returns  \c true if the FIFO is nearing being full while receiving
+    ///           data, \c false otherwise.
       bool read_fifo_needs_reading() const;
 
     /// @brief Return the current appropriate error state flags

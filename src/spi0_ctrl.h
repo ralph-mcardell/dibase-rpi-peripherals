@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file spi0_ctrl.h 
-/// @brief \b Internal SPI0 control type & supporting definitions.
+/// @brief \b Internal : SPI0 control type & supporting definitions.
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
@@ -17,8 +17,8 @@ namespace dibase { namespace rpi {
     {
     /// @brief SPI0 control type. There is only 1 (yes it's a singleton!)
     ///
-    /// Maps BCM2708/2835 SPI0 registers into the requisite physical
-    /// memory mapped area, provides simple allocated flag for in-process SPI0
+    /// Maps BCM2708 / 2835 SPI0 registers into the requisite physical memory
+    /// mapped area and provides a simple allocated flag for in-process SPI0
     /// use tracking.
     ///
     /// Note that not only is there only one control area, the area controls
@@ -32,7 +32,7 @@ namespace dibase { namespace rpi {
         bool  allocated;
 
       /// @brief Singleton instance getter
-      /// @returns THE instance of the SPI0 control object.
+      /// @returns \e The instance of the SPI0 control object.
         static spi0_ctrl & instance();
 
       private:

@@ -1,8 +1,9 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file i2c_ctrl.h 
-/// @brief \b Internal GPIO I2C (BSC) control type & supporting definitions.
+/// @brief \b Internal : GPIO I2C (BSC) control type & supporting definitions.
 ///
-/// Note: Broadcom refers to its I2C supporting peripherals as BSC (Broadcom
+/// @note
+/// Broadcom refers to its I2C supporting peripherals as BSC (Broadcom 
 /// Serial Controllers).
 ///
 /// @copyright Copyright (c) Dibase Limited 2013
@@ -27,8 +28,8 @@ namespace dibase { namespace rpi {
     /// @brief I2C control type. There is only 1 (yes it's a singleton!)
     ///
     /// Maps BCM2708/2835 BSC peripherals' registers into the requisite physical
-    /// memory mapped area, provides simple allocator for in-process resource
-    /// use tracking.
+    /// memory mapped areas and provides a simple allocator for in-process
+    /// resource use tracking.
       struct i2c_ctrl
       {
       /// @brief Type alias for (smart) pointers to BSC master control blocks
@@ -36,12 +37,13 @@ namespace dibase { namespace rpi {
 
       /// @brief Function returning (smart) pointer to BSC control registers
       ///
-      /// Note: Register memory is only mapped into a process' memory on the
-      ///       first access request for a specific BSC master's registers.
+      /// @note
+      /// Register memory is only mapped into a process' memory on the
+      /// first access request for a specific BSC master's registers.
       ///
       /// @param[in] idx    Index of the BSC master peripheral to return 
-      ///                   pointer to control register block to: 0, 1 or 2.
-      ///                   The value is NOT range checked.
+      ///                   pointer to control register block to: 0, 1 or 2.<br>
+      ///                   N.B. The value is \e not range checked.
       /// @returns Smart pointer to mapped block of physical memory of
       ///          BSC (I2C) master control memory mapped registers.
         reg_ptr & regs(std::size_t idx);
@@ -50,7 +52,7 @@ namespace dibase { namespace rpi {
         simple_allocator<number_of_bsc_masters>  alloc;
 
       /// @brief Singleton instance getter
-      /// @returns THE instance of the I2C control object.
+      /// @returns \e The instance of the I2C control object.
         static i2c_ctrl & instance();
 
       private:

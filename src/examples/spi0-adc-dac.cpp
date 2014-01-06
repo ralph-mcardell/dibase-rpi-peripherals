@@ -1,6 +1,6 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file examples/spi0-adc-dac.cpp 
-/// @brief SPI0 excample: read from SPI ADC and write to SPI DAC
+/// @brief SPI0 example: read from SPI ADC and write to SPI DAC
 /// 
 /// Devices used are Microchip MCP3002 2 channel 10-bit Analogue to Digital
 /// Converter (ADC), and the MCP4802 Digital to Analogue  Converter (DAC)

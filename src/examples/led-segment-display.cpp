@@ -5,8 +5,6 @@
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
 
-// ##### W.I.P. #####
-
 #include "pin.h"
 
 #include <exception>    // for std::exception
@@ -14,9 +12,9 @@
 #include <thread>
 #include <chrono>
 
-/// @brief Class encapulating resources and operations on a 7 segment display
+/// @brief Class encapsulating resources and operations on a 7 segment display
 ///
-/// Uses 7 GPIO output pins - one per display segement - and can handle
+/// Uses 7 GPIO output pins - one per display segment - and can handle
 /// segments being on when output values are high or low as indicated by a
 /// flag passed during construction.
 ///
@@ -101,7 +99,7 @@ public:
   void show(unsigned int digit);
 };
 
-/// @brief Class encapulating dual 7-segment display multiplexing segment pins
+/// @brief Class encapsulating dual 7-segment display multiplexing segment pins
 ///
 /// Special treatment of 2-digit 7-segment display that multiplexes the
 /// segment state control pins for each digit onto a single set of 7 pins.
@@ -233,7 +231,7 @@ void multiplexed_dual_7_segment::show(unsigned value, unsigned max_time_ms)
     }
 }
 
-/// @brief Count switch presses & display on console and dual 7-segment disaply
+/// @brief Count switch presses & display on console and dual 7-segment display
 ///
 /// Thread function spawned from main. Repeats tasks until g_running detected
 /// as being false whereupon the function returns, terminating the thread.
@@ -242,7 +240,7 @@ void multiplexed_dual_7_segment::show(unsigned value, unsigned max_time_ms)
 /// in the process.
 ///
 /// Repeatedly waits for switch press-release, displaying current count on
-/// 7-segment display while waiting. Appropriate delays are used to debounce
+/// 7-segment display while waiting. Appropriate delays are used to de-bounce
 /// switch state changes while still being responsive. Upon receiving a switch
 /// press-release the count is incremented and displayed on the console before
 /// returning to waiting for switch activity or thread end request.
@@ -288,7 +286,7 @@ void count_switch_presses()
     }
   catch ( std::exception & e )
     {
-      std::cerr << "A problem occured. Description: " << e.what() << "\n";
+      std::cerr << "A problem occurred. Description: " << e.what() << "\n";
     }
 }
 

@@ -1,12 +1,10 @@
 // Project: Raspberry Pi BCM2708 / BCM2835 peripherals C++ library
 /// @file examples/leds_and_switches.cpp
-/// @brief GPIO oupput and input - assumed to be connected to LEDs and switches
+/// @brief GPIO output and input - assumed to be connected to LEDs and switches
 //
 /// @copyright Copyright (c) Dibase Limited 2013
 /// @author Ralph E. McArdell
 //
-
-// ##### W.I.P. #####
 
 #include "pin.h"
 
@@ -57,7 +55,7 @@ void count_switch_presses()
     }
   catch ( std::exception & e )
     {
-      std::cerr << "A problem occured. Description: " << e.what() << "\n";
+      std::cerr << "A problem occurred. Description: " << e.what() << "\n";
     }
 }
 

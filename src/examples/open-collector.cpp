@@ -6,8 +6,6 @@
 /// @author Ralph E. McArdell
 //
 
-// ##### Ongoing version. Will be updated when more facilities available #####
-
 #include "pin.h"
 
 #include <exception>    // for std::exception

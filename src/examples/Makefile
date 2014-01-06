@@ -14,7 +14,8 @@ SRC_FILES = open-collector.cpp\
             led-segment-display.cpp\
             pwm-motor.cpp\
             spi0-adc-dac.cpp\
-            pulse_counter.cpp
+            pulse_counter.cpp\
+            led-string-display.cpp
 DEP_FILES = $(SRC_FILES:%.cpp=%.d)
 
 # Executable target files have the name of the example source file less the 

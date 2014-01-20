@@ -135,6 +135,8 @@ namespace dibase { namespace rpi {
         i2c_ctrl::instance().regs(bsc_num)->data_delay = ctx_builder.data_delay;
         i2c_ctrl::instance().regs(bsc_num)->clk_stretch = ctx_builder.clk_stretch;
         i2c_ctrl::instance().regs(bsc_num)->control = ctx_builder.control;
+        i2c_ctrl::instance().regs(bsc_num)->clear_clock_timeout();
+        i2c_ctrl::instance().regs(bsc_num)->clear_slave_ack_error();
       }
     }
 
@@ -216,6 +218,7 @@ namespace dibase { namespace rpi {
 
     i2c_pins::~i2c_pins()
     {
+      clear(); // Clear any error conditions
       i2c_ctrl::instance().regs(bsc_idx)->clear_fifo(); // also aborts transfer
       i2c_ctrl::instance().regs(bsc_idx)->set_enable(false);
       i2c_ctrl::instance().alloc.deallocate(bsc_idx);

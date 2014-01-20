@@ -11,6 +11,8 @@
 #include "i2c_ctrl.h"
 #include "gpio_ctrl.h"
 #include "periexcept.h"
+#include <chrono>
+#include <thread>
 
 using namespace dibase::rpi::peripherals;
 using namespace dibase::rpi::peripherals::internal;
@@ -432,4 +434,72 @@ TEST_CASE( "Platform-tests/i2c_pins/0250/Set for read: read not full, no data"
 
   i2c_ctrl::instance().regs(0)->set_transfer_type(i2c_transfer_type::write);
   CHECK(i2c_ctrl::instance().regs(0)->get_transfer_type()==i2c_transfer_type::write);
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0300/Created no error"
+         , "A just created i2c_pins object is in a good state"
+         )
+{
+  i2c_pins iic(pin_id(0),pin_id(1)); // SDA0, SCL0 => BSC0
+  CHECK(iic.error_state()==i2c_pins::goodbit);
+  CHECK(iic.good());
+  CHECK_FALSE(iic.clock_timeout());
+  CHECK_FALSE(iic.no_acknowledge());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0310/Transaction with no slave no ack error"
+         , "Trying to communicate with a non-existent slave gives a "
+           "no_acknowledge error"
+         )
+{
+  i2c_pins iic(pin_id(0),pin_id(1)); // SDA0, SCL0 => BSC0
+  REQUIRE(iic.good());
+
+  std::uint8_t write_buffer[2] = {0, 111};
+
+  std::size_t xfer_cnt = iic.start_write(111,2, write_buffer,2);
+  CHECK(xfer_cnt==2);
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  
+  CHECK(iic.error_state()==i2c_pins::noackowledgebit);
+  CHECK(iic.no_acknowledge());
+  CHECK_FALSE(iic.good());
+  CHECK_FALSE(iic.clock_timeout());
+  iic.clear();
+  CHECK(iic.good());
+}
+
+TEST_CASE( "Platform-tests/i2c_pins/0320/Errors cleared OK"
+         , "clear clears all or specific error states"
+         )
+{
+  i2c_pins iic(pin_id(0),pin_id(1)); // SDA0, SCL0 => BSC0
+  REQUIRE(iic.good());
+
+  std::uint8_t write_buffer[2] = {0, 111};
+
+  std::size_t xfer_cnt = iic.start_write(111,2, write_buffer,2);
+  CHECK(xfer_cnt==2);
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  CHECK(iic.no_acknowledge());
+  iic.clear(); // clear all errors
+  CHECK(iic.good());
+
+  xfer_cnt = iic.start_write(111,2, write_buffer,2);
+  CHECK(xfer_cnt==2);
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  CHECK(iic.no_acknowledge());
+
+  iic.clear(i2c_pins::goodbit); // clear goodbit does nothing
+  CHECK(iic.no_acknowledge());
+
+  iic.clear(i2c_pins::timeoutbit); // clear not-set error bit does nothing
+  CHECK(iic.no_acknowledge());
+  CHECK(iic.error_state()==i2c_pins::noackowledgebit);
+
+  iic.clear(i2c_pins::noackowledgebit); // clear specific error
+  CHECK(iic.good());
+
+  iic.clear(i2c_pins::goodbit); // clear goodbit does nothing
+  CHECK(iic.good());
 }

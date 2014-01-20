@@ -246,3 +246,36 @@ TEST_CASE( "Interactive_tests/i2c_pins/0020/write_random_read_test, repeated sta
   CHECK_FALSE(iic.read_fifo_has_data());
   CHECK_FALSE(iic.is_busy());
 }
+
+TEST_CASE( "Interactive_tests/i2c_pins/0030/not busy after transaction abort "
+         , "Aborting a started transaction marks object as not busy"
+         )
+{
+  welcome();
+  std::cout << "\nI2C transaction abort test: start write transaction then"
+               " abort:\n";
+  std::string dummy;
+  std::cout << "Press <Enter> to continue..." << std::endl;
+  std::getline(std::cin, dummy);
+ 
+  i2c_pins iic(pin_id(0),pin_id(1),sclk_frequency);
+  iic.clear();
+  CHECK(iic.good());
+
+  std::uint8_t write_buffer[2] = {0, 111};
+
+  std::size_t xfer_cnt
+              = iic.start_write(slave_address,200, write_buffer,2);
+  CHECK(xfer_cnt==2);
+
+  one_shot_timer fifo_clear_timeout{std::chrono::seconds(1)};
+  while (!iic.write_fifo_is_empty() && !fifo_clear_timeout)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+  REQUIRE(!fifo_clear_timeout);
+  CHECK(iic.is_busy());
+  
+  iic.abort();
+  CHECK_FALSE(iic.is_busy());  
+}

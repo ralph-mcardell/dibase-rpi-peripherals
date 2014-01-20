@@ -367,26 +367,26 @@ namespace dibase { namespace rpi {
 
       /// @brief Clear transfer done state (S:DONE==1).
       ///
-      /// Cleared by writing a 1 to the S register DONE field.
+      /// Cleared by writing a 1 _only_ to the S register DONE field.
         void clear_transfer_done() volatile
         {
-          status |= s_xfer_done_mask;
+          status = s_xfer_done_mask;
         }
 
       /// @brief Clear slave acknowledgement error state (S:ERR==1).
       ///
-      /// Cleared by writing a 1 to the S register ERR field.
+      /// Cleared by writing a 1 _only_ to the S register ERR field.
         void clear_slave_ack_error() volatile
         {
-          status |= s_ack_err_mask;
+          status = s_ack_err_mask;
         }
 
       /// @brief Clear clock stretch time out state (S:CLKT==1).
       ///
-      /// Cleared by writing a 1 to the S register CLKT field.
+      /// Cleared by writing a 1 _only_ to the S register CLKT field.
         void clear_clock_timeout() volatile
         {
-          status |= s_clk_timeout_mask;
+          status = s_clk_timeout_mask;
         }
 
       /// @brief Get the bytes remaining in the current transfer.

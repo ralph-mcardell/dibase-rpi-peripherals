@@ -407,7 +407,7 @@ TEST_CASE( "Unit-tests/i2c_registers/0290/get_clock_timeout"
 }
 
 TEST_CASE( "Unit-tests/i2c_registers/0300/clear_transfer_done"
-         , "clear_transfer_done writes 1 to S register DONE field"
+         , "clear_transfer_done writes 1 only to S register DONE field"
          )
 {
   i2c_registers i2c_regs;
@@ -416,11 +416,11 @@ TEST_CASE( "Unit-tests/i2c_registers/0300/clear_transfer_done"
   CHECK(i2c_regs.status==i2c_regs.s_xfer_done_mask);
   i2c_regs.status=~i2c_regs.s_xfer_done_mask;
   i2c_regs.clear_transfer_done();
-  CHECK(i2c_regs.status==~0U);
+  CHECK(i2c_regs.status==i2c_regs.s_xfer_done_mask);
 }
 
 TEST_CASE( "Unit-tests/i2c_registers/0310/clear_slave_ack_error"
-         , "clear_slave_ack_error writes 1 to S register ERR field"
+         , "clear_slave_ack_error writes 1 only to S register ERR field"
          )
 {
   i2c_registers i2c_regs;
@@ -429,11 +429,11 @@ TEST_CASE( "Unit-tests/i2c_registers/0310/clear_slave_ack_error"
   CHECK(i2c_regs.status==i2c_regs.s_ack_err_mask);
   i2c_regs.status=~i2c_regs.s_ack_err_mask;
   i2c_regs.clear_slave_ack_error();
-  CHECK(i2c_regs.status==~0U);
+  CHECK(i2c_regs.status==i2c_regs.s_ack_err_mask);
 }
 
 TEST_CASE( "Unit-tests/i2c_registers/0320/clear_clock_timeout"
-         , "clear_clock_timeout writes 1 to S register CLKT field"
+         , "clear_clock_timeout writes 1 to only S register CLKT field"
          )
 {
   i2c_registers i2c_regs;
@@ -442,7 +442,7 @@ TEST_CASE( "Unit-tests/i2c_registers/0320/clear_clock_timeout"
   CHECK(i2c_regs.status==i2c_regs.s_clk_timeout_mask);
   i2c_regs.status=~i2c_regs.s_clk_timeout_mask;
   i2c_regs.clear_clock_timeout();
-  CHECK(i2c_regs.status==~0U);
+  CHECK(i2c_regs.status==i2c_regs.s_clk_timeout_mask);
 }
 
 TEST_CASE( "Unit-tests/i2c_registers/0400/get_data_length"

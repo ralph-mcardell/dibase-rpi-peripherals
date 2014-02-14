@@ -44,14 +44,14 @@ EXT_PACKAGES_DIR = $(ROOT_DIR)/thirdparty
 # Tools:
 # ------
 # C++ compiler
-CXX = g++
+CXX = $(CROSS_COMPILE)g++
 CC = $(CXX)
 
 # Library archiver
-AR = ar
+AR = $(CROSS_COMPILE)ar
 
 # Linker (use the g++ C++ driver so C++ libraries are included automatically)
-LD = g++
+LD = $(CROSS_COMPILE)g++
 
 # File delete command
 RM = rm

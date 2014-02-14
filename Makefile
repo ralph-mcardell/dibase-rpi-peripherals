@@ -24,6 +24,7 @@ include makeinclude.mak
 .PHONY: all dirs debug release test testcompilefail check tidy clean help
 
 export COMPILE_OPTS
+export CROSS_COMPILE
 
 all: debug release
 

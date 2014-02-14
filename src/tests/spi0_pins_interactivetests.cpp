@@ -23,6 +23,16 @@
 using namespace dibase::rpi::peripherals;
 using namespace dibase::rpi::peripherals::internal;
 
+//If compiler is v.4.7 or later assume we have a std::chrono::steady_clock
+// in the libstdc++ library
+#if (__GNUC__ > 4 || (__GNUC__==4 && __GNUC_MINOR__>=7))
+  typedef std::chrono::steady_clock test_clock;
+#else 
+// Earlier than g++4.7, assume we have a std::chrono::monotonic_clock
+// in the libstdc++ library
+  typedef  std::chrono::monotonic_clock test_clock;
+#endif
+
 namespace
 {
   auto const short_wait_time(std::chrono::microseconds(5U));
@@ -94,7 +104,7 @@ namespace
       {
         perf.hi_pri = set_hi_pri();
       }
-    auto const t_start(std::chrono::system_clock::now());
+    auto const t_start(test_clock::now());
     while ( !stop )
       {
         rcount_prev = perf.rcount;
@@ -113,7 +123,7 @@ namespace
         if (sp.read_fifo_is_full())   ++perf.rfcount;
         if (sp.read(data))            ++perf.rcount;
       }
-    auto t_elapsed((std::chrono::monotonic_clock::now()-t_start));
+    auto t_elapsed((test_clock::now()-t_start));
     perf.duration_ms = std::chrono::duration_cast
                         <std::chrono::milliseconds>(t_elapsed).count();
   }

@@ -8,6 +8,7 @@
 #include "catch.hpp"
 #include "pin_edge_event.h"
 #include "sysfs.h"
+#include <unistd.h>
 #include "periexcept.h"
 
 using namespace dibase::rpi::peripherals;

@@ -9,6 +9,7 @@
 #include "sysfs.h"
 #include "interactivetests_config.h"
 #include <iostream>
+#include <unistd.h>
 
 using namespace dibase::rpi::peripherals;
 using namespace dibase::rpi::peripherals::internal;

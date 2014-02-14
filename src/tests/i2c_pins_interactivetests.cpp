@@ -240,8 +240,8 @@ TEST_CASE( "Interactive_tests/i2c_pins/0020/write_random_read_test, repeated sta
       std::this_thread::sleep_for(std::chrono::microseconds(50));
     }
   REQUIRE(!read_timeout);
-  std::uint8_t read_count{iic.read(&read_value, 1)};
-  CHECK(read_count==1);
+  std::size_t read_count{iic.read(&read_value, 1U)};
+  CHECK(read_count==1U);
   CHECK(read_value==written_value);
   CHECK_FALSE(iic.read_fifo_has_data());
   CHECK_FALSE(iic.is_busy());

@@ -72,6 +72,8 @@ namespace dibase { namespace rpi {
       )
       {
         using internal::i2c_registers;
+        using internal::register_t;
+
         i2c_registers ctx_builder;
         ctx_builder.control = 0U;
         ctx_builder.clk_div = 0U;
@@ -264,7 +266,7 @@ namespace dibase { namespace rpi {
                   "SDA and SCL functions for the same BSC peripheral."
                 };
         }
-      unsigned bsc_num{alt_fn_info[sda_idx].special_fn()==gpio_special_fn::sda0?0:1};
+      unsigned bsc_num{alt_fn_info[sda_idx].special_fn()==gpio_special_fn::sda0?0U:1U};
 
       construct_common( sda_pin, scl_pin, bsc_num, f, tout, fedl, redl, fc
                       , alt_fn_info[sda_idx].alt_fn()

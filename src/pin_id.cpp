@@ -14,7 +14,7 @@ namespace dibase { namespace rpi {
   {
     namespace
     {
-      pin_id_int_t const noio{-1}; // indicates no GPIO on connector pin
+      pin_id_int_t const noio{~0U}; // indicates no GPIO on connector pin
     }
   // Note: connector pins start at 1 so pin 0 noio!
     pin_id_int_t const p1_gpio_pin_map[pinout_versions][p1_map_size] =

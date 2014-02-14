@@ -192,9 +192,9 @@ void seven_segment::show(unsigned digit)
     , /* 8: segments ABCDEFG */ 127U
     , /* 9: segments   ABDEG */ 111U
     };
-  unsigned const number_of_segments{7};
-  display_type const all_segments_mask{(1<<number_of_segments)-1};
-  unsigned const number_base{10};
+  unsigned const number_of_segments{7U};
+  display_type const all_segments_mask{(1U<<number_of_segments)-1U};
+  unsigned const number_base{10U};
   if ( digit >= number_base )
     {
       digit %= number_base;
@@ -204,9 +204,9 @@ void seven_segment::show(unsigned digit)
    {
       display_value = (~display_value)&all_segments_mask;
    }
-  for (std::size_t i=0;i<number_of_segments;++i)
+  for (std::size_t i=0U;i<number_of_segments;++i)
     {
-      display_type bit_i{1<<i};
+      display_type bit_i{1U<<i};
       segments[i]->put(display_value&bit_i);
     }
 }

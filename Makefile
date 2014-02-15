@@ -62,17 +62,20 @@ clean: dirs
 	-$(RM) $(BUILD_DIR)/release/*
 
 help:
-	@echo 'Usage: make [target]'
+	@echo 'Usage: make [COMPILE_OPTS=extra_opts] [CROSS_COMPILE=prefix] [target]'
 	@echo 'Targets:'
 	@echo '  all (default)   Build release and debug targets.'
 	@echo '  release         Build release library and example executables.'
 	@echo '  debug           Build debug library and example executables.'
 	@echo '  test            Build tests.'
 	@echo '  testcompilefail Build tests with COMPILE_FAIL_TESTS defined.'
-	@echo '  check           Build test and execute tests.'
+	@echo '  check           Build and execute tests.'
 	@echo '  clean           Remove final and intermediate targets.'
 	@echo '  tidy            Remove only intermediate targets such as .o files.'
 	@echo '  help            Print this help.'
+	@echo 'Variables:'
+	@echo '  COMPILE_OPTS    Value gives additional g++ compilation options.'
+	@echo '  CROSS_COMPILE   Value is build tools prefix for cross compilation.'
 
 # The following rules ensure we have the various end
 # and intermediate target directories available:

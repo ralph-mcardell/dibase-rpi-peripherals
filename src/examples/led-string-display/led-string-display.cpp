@@ -189,8 +189,6 @@ void do_light_show( led_sequences const & seqs )
     }
 }
 
-#include "config-file-tests.h"
-
 char const * default_config_file = "led-string-display.cfg";
 
 /// @brief Tell user how to quit, spawn worker thread, wait for user quit request
@@ -205,24 +203,18 @@ int main(int argc, char* argv[])
   if (argc>1)
     {
       std::string arg1(argv[1]);
-      if (arg1=="test")
-        {
-          do_config_tests();
-          return 0;
-        }
-       else if ( arg1=="/?" || arg1=="/h" || arg1=="/H"
+      if ( arg1=="/?" || arg1=="/h" || arg1=="/H"
               || arg1=="-h" || arg1=="-H"
               || arg1=="--help" || arg1=="--HELP"
                )
         {
           std::cout << argv[0] 
-                    << " {<pathname>} | {test} | {/? | /h | -h | --help}\n"
+                    << " {<pathname>} | {/? | /h | -h | --help}\n"
                        "   <pathname> Pathname of sequences configuration file. If no path is\n"
                        "              given then the current directory is searched. If no\n"
                        "              pathname is specified then a file named '"
                     << default_config_file << "'\n"
                        "              is looked for in the current directory.\n"
-                       "   test       Run built-in tests.\n"
                        "   /? /h -h   Print this help.\n"
                        "   --help"
                     << std::endl;

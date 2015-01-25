@@ -8,6 +8,6 @@
 #ifndef LED_STRING_DISPLAY_CONFIG_FILE_TESTS_H
 # define LED_STRING_DISPLAY_CONFIG_FILE_TESTS_H
 
-void do_config_tests();
+# error config-file-tests.h is no longer required.
 
 #endif // LED_STRING_DISPLAY_CONFIG_FILE_TESTS_H

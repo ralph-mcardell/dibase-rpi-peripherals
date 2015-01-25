@@ -11,8 +11,7 @@ include $(ROOT_DIR)/makeinclude.mak
 # Files and directories
 MAIN_SRC_FILE = led-string-display.cpp
 SRC_FILES = $(MAIN_SRC_FILE)\
-            config-file.cpp\
-            config-file-tests.cpp
+            config-file.cpp
 
 DEP_FILES = $(SRC_FILES:%.cpp=%.d)
 

@@ -40,10 +40,12 @@ release: dirs
 	$(MAKE) -C $(SRC_DIR)/examples BUILD_CONFIG=release
 
 test: dirs
-	$(MAKE) -C $(SRC_DIR)/tests BUILD_CONFIG=debug 
+	$(MAKE) -C $(SRC_DIR)/tests BUILD_CONFIG=debug
+	$(MAKE) -C $(SRC_DIR)/examples/led-string-display/tests BUILD_CONFIG=debug
 
 testcompilefail: dirs
 	$(MAKE) -C $(SRC_DIR)/tests BUILD_CONFIG=debug COMPILE_OPTS=-DCOMPILE_FAIL_TESTS
+	$(MAKE) -C $(SRC_DIR)/examples/led-string-display/tests BUILD_CONFIG=debug COMPILE_OPTS=-DCOMPILE_FAIL_TESTS
 
 check: dirs test
 	@echo 'To be done...'

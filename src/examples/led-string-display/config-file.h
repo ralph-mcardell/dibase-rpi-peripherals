@@ -62,7 +62,7 @@ namespace config_file
     union 
     {
       composite_field * c;
-      std::string s;
+      std::string * s;
       long        i;
       bool        b;
     };
@@ -70,7 +70,7 @@ namespace config_file
   public:
     field_value( std::string const & str )
     : type(field_type::text)
-    , s(str)
+    , s(new std::string(str))
     {
     }
 
@@ -98,7 +98,11 @@ namespace config_file
       {
       case field_type::boolean:   b = other.b; break;
       case field_type::integer:   i = other.i; break;
-      case field_type::text:      s = other.s; break;
+      case field_type::text:      
+      {
+        s = new std::string(*other.s);
+        break;
+      }
       case field_type::composite:
         {
           c = new composite_field(*other.c);
@@ -113,19 +117,23 @@ namespace config_file
         {
           delete c;
         }
+      else if (type==field_type::text)
+        {
+          delete s;
+        }
     }
 
-    std::string string()
+    std::string text() const
     {
       if (type==field_type::text)
       {
-        return s;
+        return *s;
       }
       throw std::logic_error
-            ("String field value requested for non-string field_value.");
+            ("Text field value requested for non-text field_value.");
     }
 
-    long integer()
+    long integer() const
     {
       if (type==field_type::integer)
       {
@@ -135,7 +143,7 @@ namespace config_file
             ("Integer field value requested for non-integer field_value.");
     }
 
-    bool boolean()
+    bool boolean() const
     {
       if (type==field_type::boolean)
       {
@@ -145,7 +153,7 @@ namespace config_file
             ("Boolean field value requested for non-boolean field_value.");
     }
 
-    composite_field composite()
+    composite_field composite() const
     {
       if (type==field_type::composite)
       {
@@ -170,7 +178,7 @@ namespace config_file
     , presence(p)
     {}
 
-    virtual field_value parse_field( std::istream & in ) = 0;
+    virtual field_value parse_field(std::istream & in) = 0;
     
     field_multiplicity get_multiplicity() { return this->multiplicity; }
     field_presence     get_presence()     { return this->presence; }
@@ -183,18 +191,23 @@ namespace config_file
     
     field_dictionary  fields;
     
-    field_parser * get_field(std::string const & name );
+    field_parser * get_field(std::string const & name);
 
   public:
     composite_field_parser(field_multiplicity m, field_presence p)
     : field_parser(m,p)
     {}
 
-    void add_field(std::string const & name, field_type type, field_multiplicity m, field_presence p);
+    void add_field
+    ( std::string const & name
+    , field_type type
+    , field_multiplicity m
+    , field_presence p
+    );
     
     composite_field_parser & get_composite_field(std::string const & name);
 
-    field_value parse_field( std::istream & in ); //override;
+    field_value parse_field(std::istream & in); //override;
   };
 }
 #endif // LED_STRING_DISPLAY_CONFIG_FILE_H

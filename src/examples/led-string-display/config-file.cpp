@@ -122,7 +122,7 @@ namespace config_file
 
   field_value boolean_field_parser::parse_field( std::istream & in )
   {
-    auto raw_value = simple_field_parser::parse_field(in).string();
+    auto raw_value = simple_field_parser::parse_field(in).text();
     bool value{false};
     if (  raw_value=="true" || raw_value=="TRUE"
        || raw_value=="yes" || raw_value=="YES"
@@ -157,7 +157,7 @@ namespace config_file
 
   field_value integer_field_parser::parse_field( std::istream & in )
   {
-    auto raw_value = simple_field_parser::parse_field(in).string();
+    auto raw_value = simple_field_parser::parse_field(in).text();
     return std::stol(raw_value);
   }
 
@@ -179,8 +179,8 @@ namespace config_file
   ( std::string const & name
   )
   {
-    composite_field_parser * cfpp( reinterpret_cast<composite_field_parser*>
-                                                    (this->get_field(name))
+    composite_field_parser * cfpp( dynamic_cast<composite_field_parser*>
+                                               (this->get_field(name))
                                  );
     if (!cfpp)
       {
@@ -200,6 +200,15 @@ namespace config_file
   , field_presence p
   )
   {
+    auto pos(this->fields.find(name));
+    if (pos!=this->fields.end())
+      {
+        std::string 
+                what("Configuration file composite field already has a field named '");
+        what += name;
+        what += "'.";
+        throw std::runtime_error(what);
+      }
     switch ( type )
     {
     case field_type::boolean:
@@ -253,7 +262,7 @@ namespace config_file
               {
                 std::string
                   what("Configuration file composite field: required field '");
-                what += token;
+                what += entry.first;
                 what += "' is missing.";
                 throw std::runtime_error(what);
               }

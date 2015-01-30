@@ -37,6 +37,48 @@ struct led_sequence
 /// @brief  Collection of LED lighting effect sequences
 typedef std::vector<led_sequence> led_sequences;
 
+/// @brief Read LED string sequences configuration from input stream
+///
+/// Defines a configuration file / stream format as a
+/// config_file::composite_field_parser with the following format:
+///
+///   {
+///     sequence # maybe repeated, required
+///     {
+///       rate_ms <integer interval between sequence state changes> # single, required
+///       initial_state # single, required
+///       {
+///         0 <boolean initial state of LED 0>  # single, required
+///         1 <boolean initial state of LED 1>  # single, required
+///         2 <boolean initial state of LED 2>  # single, required
+///         3 <boolean initial state of LED 3>  # single, required
+///         4 <boolean initial state of LED 4>  # single, required
+///         5 <boolean initial state of LED 5>  # single, required
+///         6 <boolean initial state of LED 6>  # single, required
+///         7 <boolean initial state of LED 7>  # single, required
+///       }
+///       delta # maybe repeated, optional
+///       {
+///         0 <boolean initial state of LED 0>  # single, optional
+///         1 <boolean initial state of LED 1>  # single, optional
+///         2 <boolean initial state of LED 2>  # single, optional
+///         3 <boolean initial state of LED 3>  # single, optional
+///         4 <boolean initial state of LED 4>  # single, optional
+///         5 <boolean initial state of LED 5>  # single, optional
+///         6 <boolean initial state of LED 6>  # single, optional
+///         7 <boolean initial state of LED 7>  # single, optional
+///       }
+///     }
+///   }
+///
+/// Attempts to read sequences configuration from passed input stream and uses
+/// returned fields to create and return a collection of led sequences that
+/// can be passed to do_light_show.
+///
+/// @param [in] in  Input stream to read LED sequences configuration from.
+/// @returns led_sequences collection of LED sequences.
+/// @throws std::runtime_error if in stream does not represent a valid
+///         configuration.
 led_sequences get_sequences_from_config_stream(std::istream & in)
 {
   using namespace config_file;
@@ -115,7 +157,9 @@ led_sequences get_sequences_from_config_stream(std::istream & in)
   return seqs;
 }
 
-// Apply a single set of LED state changes
+/// @brief Apply a single set of LED state changes
+/// @param delta  Set of changes to apply to state of LEDs
+/// @param leds   Pointer to array of pointers to LED opin objects.
 void apply(led_string_delta const & delta, opin ** leds)
 {
   for (auto & desc : delta)
@@ -132,6 +176,8 @@ void apply(led_string_delta const & delta, opin ** leds)
 ///    - apply sequences a number of times each
 ///      - switch sequence after each one completes a set number of times
 ///        - wrap from last to first sequence
+///
+/// @param seqs Collection of LED string sequence descriptions.
 void do_light_show( led_sequences const & seqs )
 {
   try
@@ -189,14 +235,18 @@ void do_light_show( led_sequences const & seqs )
     }
 }
 
+/// @brief Path name of default configuration file.
+/// Note: as it is a path name with no path sections the file will be looked
+///       for in the user's current directory.
 char const * default_config_file = "led-string-display.cfg";
 
-/// @brief Tell user how to quit, spawn worker thread, wait for user quit request
+/// @brief Handle command line arguments, read configuration, do work
 ///
-/// Runs main work on separate thread while main thread is waiting for console
-/// input from user, whereupon quit running request signalled by setting
-/// global g_running flag to false, and the worker thread is joined to wait
-/// for it to exit before returning.
+/// Processes command-line arguments and either prints help and quits or
+/// reads LED string sequences from a configuration file, runs main work on
+/// separate thread doing the LED sequence 'show' while main thread waits for
+/// console input from user, whereupon quit running request signalled and the 
+/// worker thread is joined to wait for it to exit before returning.
 int main(int argc, char* argv[])
 {
   std::string config_pathname(default_config_file);

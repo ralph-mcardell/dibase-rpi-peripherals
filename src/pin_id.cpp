@@ -18,12 +18,17 @@ namespace dibase { namespace rpi {
     }
   // Note: connector pins start at 1 so pin 0 noio!
     pin_id_int_t const p1_gpio_pin_map[pinout_versions][p1_map_size] =
-      { {noio,noio,noio,0,noio,1,noio,4,14,noio,15,17,18,21,noio,22,23,noio,24,10,noio,9,25,11,8,noio,7}
-      , {noio,noio,noio,2,noio,3,noio,4,14,noio,15,17,18,27,noio,22,23,noio,24,10,noio,9,25,11,8,noio,7}
+      { {noio,noio,noio,0,noio,1,noio,4,14,noio,15,17,18,21,noio,22,23,noio,24,10,noio,9,25,11,8,noio,7
+        ,noio,noio,noio,noio,noio,noio,noio,noio,noio,noio,noio,noio,noio,noio}
+      , {noio,noio,noio,2,noio,3,noio,4,14,noio,15,17,18,27,noio,22,23,noio,24,10,noio,9,25,11,8,noio,7
+        ,noio,noio,noio,noio,noio,noio,noio,noio,noio,noio,noio,noio,noio,noio}
+      , {noio,noio,noio,2,noio,3,noio,4,14,noio,15,17,18,27,noio,22,23,noio,24,10,noio,9,25,11,8,noio,7
+        ,noio,noio,5,noio,6,12,13,noio,19,16,26,20,noio,21}
       };
     pin_id_int_t const p5_gpio_pin_map[pinout_versions][p5_map_size] =
       { {noio,noio,noio,noio,noio,noio,noio,noio,noio}
       , {noio,noio,noio,  28,  29,  30,  31,noio,noio}
+      , {noio,noio,noio,noio,noio,noio,noio,noio,noio}
       };
 
     static pin_id_int_t do_lookup

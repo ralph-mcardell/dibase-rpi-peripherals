@@ -165,18 +165,43 @@ std::size_t const number_of_p1_gpio_pins{17};
 pin_id_int_t p1_v2_gpio_chip_ids[]
                         = { 2, 3, 4,14,15,17,18,27,22,23,24,10, 9,25,11, 8, 7 };
 
+// from Raspberry Pi B+ schematic...
+pin_id_int_t j8_gpio_pins[] 
+                        = { 3, 5, 7, 8,10,11,12,13,15,16,18,19,21,22,23,24,26 
+                          ,29,31,32,33,35,36,37,38,40};
+pin_id_int_t j8_v3_gpio_chip_ids[]
+                        = { 2, 3, 4,14,15,17,18,27,22,23,24,10, 9,25,11, 8, 7 
+                          , 5, 6,12,13,19,16,26,20,21};
+std::size_t const number_of_j8_gpio_pins{26};
+
 // from Raspberry Pi V1 schematic...
 // Note: includes extra non-GPIO pin slot for phantom pin 0
-pin_id_int_t p1_non_gpio_pins[] = { 0, 1, 2, 4, 6, 9, 14, 17, 20, 25 };
-std::size_t const number_of_p1_non_gpio_pins{10};
-TEST_CASE( "Unit_tests/pin_id/P1_V1_V2_map_size_pin_count"
-         , "Sum of GPIO and non-GPIO P1 pins should equal map size, pin count+1"
+// Note: P1/J8 is P1 for Models A & B revs. 1 & 2 and has only 26 pins so pins
+//       27, ..., 40 do not exist and are therefore non-GPIO pins.
+pin_id_int_t p1_non_gpio_pins[] = { 0, 1, 2, 4, 6, 9, 14, 17, 20, 25, 27, 28, 29
+                                  , 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40
+                                  };
+std::size_t const number_of_p1_non_gpio_pins{24};
+
+// from Raspberry Pi B+ schematic...
+// Note: includes extra non-GPIO pin slot for phantom pin 0
+pin_id_int_t j8_non_gpio_pins[] = { 0, 1, 2, 4, 6, 9, 14, 17, 20, 25
+                                  , 27, 28, 30, 34, 39
+                                  };
+std::size_t const number_of_j8_non_gpio_pins{15};
+
+TEST_CASE( "Unit_tests/pin_id/P1_V1_V2_J8 V3_map_size_pin_count"
+         , "Sum of GPIO and non-GPIO P1/J8 pins should equal map size, pin count+1"
          )
 {
   REQUIRE((sizeof(p1_gpio_pins)/sizeof(pin_id_int_t))==number_of_p1_gpio_pins);
   REQUIRE((sizeof(p1_non_gpio_pins)/sizeof(pin_id_int_t))==number_of_p1_non_gpio_pins);
+  REQUIRE((sizeof(j8_gpio_pins)/sizeof(pin_id_int_t))==number_of_j8_gpio_pins);
+  REQUIRE((sizeof(j8_non_gpio_pins)/sizeof(pin_id_int_t))==number_of_j8_non_gpio_pins);
   CHECK((number_of_p1_gpio_pins+number_of_p1_non_gpio_pins)==p1_map_size);
   CHECK((number_of_p1_gpio_pins+number_of_p1_non_gpio_pins-1)==p1_pin_count);
+  CHECK((number_of_j8_gpio_pins+number_of_j8_non_gpio_pins)==p1_map_size);
+  CHECK((number_of_j8_gpio_pins+number_of_j8_non_gpio_pins-1)==p1_pin_count);
 }
 // from Raspberry Pi V2 schematic...
 pin_id_int_t p5_gpio_pins[]         = {  3,  4,  5,  6 };
@@ -204,7 +229,7 @@ TEST_CASE( "Unit_tests/pin_id/P5_V1_V2_map_size_pin_count"
 }
 
 TEST_CASE( "Unit_tests/pin_id/rpi_version_mapped_pin_id_as_expected"
-         , "rpi_version_mapped_pin_id has expected values for valid versions"
+         , "p1/j8: rpi_version_mapped_pin_id has expected values for valid versions"
          )
 {
   test_rpi_version_init setup;
@@ -226,6 +251,16 @@ TEST_CASE( "Unit_tests/pin_id/rpi_version_mapped_pin_id_as_expected"
                                            , p1_map_size
                                            , pinout_versions
                                            )==p1_v2_gpio_chip_ids[pin_idx]
+            );
+    }
+  test_rpi_initialiser.test_rpi_board_version=3; 
+  for (std::size_t pin_idx=0; pin_idx!=number_of_j8_gpio_pins;++pin_idx)
+    {
+      CHECK( test_rpi_version_mapped_pin_id( j8_gpio_pins[pin_idx]
+                                           , &(p1_gpio_pin_map[0][0])
+                                           , p1_map_size
+                                           , pinout_versions
+                                           )==j8_v3_gpio_chip_ids[pin_idx]
             );
     }
 }
@@ -278,6 +313,11 @@ TEST_CASE( "Unit_tests/pin_id/good_p1_pin_arguments_produce_expected_pin-ids"
     {
       CHECK( p1_pin(p1_gpio_pins[pin_idx])==p1_v2_gpio_chip_ids[pin_idx] );
     }
+  test_rpi_initialiser.test_rpi_board_version=3; 
+  for (std::size_t pin_idx=0; pin_idx!=number_of_j8_gpio_pins;++pin_idx)
+    {
+      CHECK( j8_pin(j8_gpio_pins[pin_idx])==j8_v3_gpio_chip_ids[pin_idx] );
+    }
 }
 
 TEST_CASE( "Unit_tests/pin_id/bad_p1_pin_arguments_throws"
@@ -296,6 +336,11 @@ TEST_CASE( "Unit_tests/pin_id/bad_p1_pin_arguments_throws"
   for (std::size_t pin_idx=0; pin_idx!=number_of_p1_non_gpio_pins;++pin_idx)
     {
       REQUIRE_THROWS_AS((p1_pin(p1_non_gpio_pins[pin_idx])),std::invalid_argument);
+    }
+  test_rpi_initialiser.test_rpi_board_version=3; 
+  for (std::size_t pin_idx=0; pin_idx!=number_of_j8_non_gpio_pins;++pin_idx)
+    {
+      REQUIRE_THROWS_AS((j8_pin(j8_non_gpio_pins[pin_idx])),std::invalid_argument);
     }
   test_rpi_initialiser.test_rpi_board_version=pinout_versions+1;
   REQUIRE_THROWS_AS((p1_pin(p1_gpio_pins[0])),std::invalid_argument);
@@ -320,6 +365,11 @@ TEST_CASE( "Unit_tests/pin_id/bad_p5_pin_arguments_throws"
   test_rpi_version_init setup;
   test_rpi_initialiser.test_rpi_board_version=1;
   REQUIRE_THROWS_AS((p5_pin(p1_map_size)), std::invalid_argument);
+  for (std::size_t pin_num=0; pin_num!=p5_map_size;++pin_num)
+    {
+      REQUIRE_THROWS_AS((p5_pin(pin_num)),std::invalid_argument);
+    }
+  test_rpi_initialiser.test_rpi_board_version=3;
   for (std::size_t pin_num=0; pin_num!=p5_map_size;++pin_num)
     {
       REQUIRE_THROWS_AS((p5_pin(pin_num)),std::invalid_argument);
@@ -351,6 +401,9 @@ TEST_CASE( "Unit_tests/pin_id/scl_correct"
   test_rpi_initialiser.test_rpi_board_version=2;
   CHECK( pin_id(scl)==pin_id(3) );
   CHECK( pin_id(scl)==p1_pin(5) );
+  test_rpi_initialiser.test_rpi_board_version=3;
+  CHECK( pin_id(scl)==pin_id(3) );
+  CHECK( pin_id(scl)==p1_pin(5) );
 }
 
 TEST_CASE( "Unit_tests/pin_id/txd_correct"
@@ -369,6 +422,9 @@ TEST_CASE( "Unit_tests/pin_id/rxd_correct"
 {
   test_rpi_version_init setup;
   test_rpi_initialiser.test_rpi_board_version=2;
+  CHECK( pin_id(rxd)==pin_id(15) );
+  CHECK( pin_id(rxd)==p1_pin(10) );
+  test_rpi_initialiser.test_rpi_board_version=3;
   CHECK( pin_id(rxd)==pin_id(15) );
   CHECK( pin_id(rxd)==p1_pin(10) );
 }
@@ -391,6 +447,9 @@ TEST_CASE( "Unit_tests/pin_id/spi_miso_correct"
   test_rpi_initialiser.test_rpi_board_version=2;
   CHECK( pin_id(spi_miso)==pin_id(9) );
   CHECK( pin_id(spi_miso)==p1_pin(21) );
+  test_rpi_initialiser.test_rpi_board_version=3;
+  CHECK( pin_id(spi_miso)==pin_id(9) );
+  CHECK( pin_id(spi_miso)==p1_pin(21) );
 }
 
 TEST_CASE( "Unit_tests/pin_id/spi_sclk_correct"
@@ -409,6 +468,9 @@ TEST_CASE( "Unit_tests/pin_id/spi_ce0_n_correct"
 {
   test_rpi_version_init setup;
   test_rpi_initialiser.test_rpi_board_version=2;
+  CHECK( pin_id(spi_ce0_n)==pin_id(8) );
+  CHECK( pin_id(spi_ce0_n)==p1_pin(24) );
+  test_rpi_initialiser.test_rpi_board_version=3;
   CHECK( pin_id(spi_ce0_n)==pin_id(8) );
   CHECK( pin_id(spi_ce0_n)==p1_pin(24) );
 }
@@ -431,6 +493,9 @@ TEST_CASE( "Unit_tests/pin_id/gpio_gclk_correct"
   test_rpi_initialiser.test_rpi_board_version=2;
   CHECK( pin_id(gpio_gclk)==pin_id(4) );
   CHECK( pin_id(gpio_gclk)==p1_pin(7) );
+  test_rpi_initialiser.test_rpi_board_version=3;
+  CHECK( pin_id(gpio_gclk)==pin_id(4) );
+  CHECK( pin_id(gpio_gclk)==p1_pin(7) );
 }
 
 TEST_CASE( "Unit_tests/pin_id/gpio_gen0_correct"
@@ -449,6 +514,9 @@ TEST_CASE( "Unit_tests/pin_id/gpio_gen1_correct"
 {
   test_rpi_version_init setup;
   test_rpi_initialiser.test_rpi_board_version=2;
+  CHECK( pin_id(gpio_gen1)==pin_id(18) );
+  CHECK( pin_id(gpio_gen1)==p1_pin(12) );
+  test_rpi_initialiser.test_rpi_board_version=3;
   CHECK( pin_id(gpio_gen1)==pin_id(18) );
   CHECK( pin_id(gpio_gen1)==p1_pin(12) );
 }
@@ -471,6 +539,9 @@ TEST_CASE( "Unit_tests/pin_id/gpio_gen3_correct"
   test_rpi_initialiser.test_rpi_board_version=2;
   CHECK( pin_id(gpio_gen3)==pin_id(22) );
   CHECK( pin_id(gpio_gen3)==p1_pin(15) );
+  test_rpi_initialiser.test_rpi_board_version=3;
+  CHECK( pin_id(gpio_gen3)==pin_id(22) );
+  CHECK( pin_id(gpio_gen3)==p1_pin(15) );
 }
 
 TEST_CASE( "Unit_tests/pin_id/gpio_gen4_correct"
@@ -489,6 +560,9 @@ TEST_CASE( "Unit_tests/pin_id/gpio_gen5_correct"
 {
   test_rpi_version_init setup;
   test_rpi_initialiser.test_rpi_board_version=2;
+  CHECK( pin_id(gpio_gen5)==pin_id(24) );
+  CHECK( pin_id(gpio_gen5)==p1_pin(18) );
+  test_rpi_initialiser.test_rpi_board_version=3;
   CHECK( pin_id(gpio_gen5)==pin_id(24) );
   CHECK( pin_id(gpio_gen5)==p1_pin(18) );
 }

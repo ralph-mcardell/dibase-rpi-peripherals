@@ -122,10 +122,10 @@ namespace dibase { namespace rpi {
     };
 
   /// @brief Number of versions of Raspberry Pi connectors pin outs supported
-    std::size_t const pinout_versions{2};
+    std::size_t const pinout_versions{3};
 
   /// @brief Number of pins on Raspberry Pi P1 connector
-    std::size_t const p1_pin_count{26};
+    std::size_t const p1_pin_count{40};
 
   /// @brief Number of slots for Raspberry Pi P1 connector pin_id map.
   ///
@@ -163,6 +163,13 @@ namespace dibase { namespace rpi {
           )
       {}
     };
+
+  /// @brief A+ and B+ J8, P1 connector replacement
+  /// Raspberry Pi models A+ and B+ have and extended 40-pin GPIO connector now
+  /// named J8 rather than P1 but is backwards compatible with the original
+  /// V1, V2 P1 connector so the p1_pin mapping has been extended to cater
+  /// for both P1 and J8, hence j8_pin and p1_pin are synonymous.
+    typedef p1_pin j8_pin;
 
   /// @brief Number of pins on Raspberry Pi P5 connector (V2 boards onwards)
     std::size_t const p5_pin_count{8};

@@ -131,7 +131,9 @@
             fclose( info_file );
           }
         if (version>0&&version<=3) return 1;
-        else if (version>3&&version<=15) return 2;
+        else if (version>3&&version<=0xf) return 2;
+        else if (version==0x10 || version==0x12) return 3; // 0x10:B+, 0x12:A+
+        else if (version==0x11) return 4; // Compute module
         else
           {
             throw std::runtime_error( "rpi_init::init_major_version: Unable to "

@@ -8,7 +8,6 @@
 
 #include "sysfs.h"
 #include <string>
-#include <sstream>
 #include <fstream>
 #include <stdexcept>
 #include <system_error>
@@ -30,9 +29,9 @@ namespace dibase { namespace rpi {
         
         static std::string make_gpio_pin_dir_pathname(pin_id pin)
         {
-          std::ostringstream ostrstrm;
-          ostrstrm << gpio_pin_dir_basename << pin;
-          return ostrstrm.str();
+          std::string path{gpio_pin_dir_basename};
+          path += std::to_string(pin);
+          return path;
         }
 
         static bool write_pin_id_to_file( pin_id pin, char const * path)

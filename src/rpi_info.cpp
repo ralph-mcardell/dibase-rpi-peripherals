@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <cstdio>
 #include <cstring>
+#include <cctype>
 
  namespace dibase {
   namespace rpi
@@ -69,29 +70,26 @@
             int ch;
             while ( (ch=fgetc(file))!=EOF&&ch!='\n'&&!isdigit(ch) )
               ; // intentional do-nothing loop body
-            if ( isdigit(ch) )
+            char const * hex_digits("abcdef");
+            do
               {
-                version = ch-'0';
-                char const * hex_digits("abcdef");
-                while ( (ch=fgetc(file))&&isalnum(ch) )
+                if ( isdigit(ch) )
                   {
-                    if ( isdigit(ch) )
-                      {
-                        version *= 16;
-                        version += ch - '0';
-                      }
-                    else if ( char const * hexdigit_ptr = strchr(hex_digits, ch) )
-                      {
-                        version *= 16;
-                        version += 10 + (hexdigit_ptr-hex_digits);
-                      }
-                    else // oops something unexpected: return an invalid version
-                      {
-                        version = 0; 
-                        break;
-                      } 
+                    version *= 16;
+                    version += ch - '0';
                   }
+                else if ( char const * hexdigit_ptr = std::strchr(hex_digits, std::tolower(ch)) )
+                  {
+                    version *= 16;
+                    version += 10 + (hexdigit_ptr-hex_digits);
+                  }
+                else // oops something unexpected: return an invalid version
+                  {
+                    version = 0;
+                    break;
+                  } 
               }
+            while ( (ch=fgetc(file))&&isalnum(ch) );
           }
         return version;
       }

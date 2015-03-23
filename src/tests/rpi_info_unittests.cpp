@@ -18,7 +18,7 @@ namespace internal
 }
 }}
 
-std::size_t const test_rpi_board_version{3};
+std::size_t test_rpi_board_version{3};
 
 struct test_rpi_init : internal::rpi_init
 {
@@ -34,9 +34,10 @@ static test_rpi_init test_rpi_initialiser;
 
 struct test_init
 {
-  test_init()
+  test_init(std::size_t test_version)
   : original_pointer(internal::rpi_initialiser)
   {
+    test_rpi_board_version = test_version;
     internal::rpi_initialiser = &test_rpi_initialiser;
   }
   ~test_init()
@@ -51,8 +52,8 @@ TEST_CASE( "Unit_tests/rpi_info/major_version"
          , "rpi_info().major_version() returns a 1 based positive integer"
          )
 {
-  test_init setup;
-  REQUIRE(rpi_info().major_version()==test_rpi_board_version);
+  test_init setup(2);
+  REQUIRE(rpi_info().major_version()==2);
 }
 
 TEST_CASE( "Unit_tests/rpi_info/index_version"
@@ -60,6 +61,6 @@ TEST_CASE( "Unit_tests/rpi_info/index_version"
            "one less than major_version"
          )
 {
-  test_init setup;
-  REQUIRE(rpi_info().index_version()==(test_rpi_board_version-1));
+  test_init setup(0xd);
+  REQUIRE(rpi_info().index_version()==(0xc));
 }

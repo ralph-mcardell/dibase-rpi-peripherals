@@ -37,6 +37,7 @@ UNITTEST_SRC_FILE = gpio_registers_unittests.cpp\
                     i2c_registers_unittests.cpp\
                     pin_id_unittests.cpp\
                     rpi_info_unittests.cpp\
+                    rpi_revision_unittests.cpp\
                     pin_alloc_unittests.cpp\
                     gpio_alt_fn_unittests.cpp\
                     clockdefs_unittests.cpp\

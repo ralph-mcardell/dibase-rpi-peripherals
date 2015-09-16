@@ -122,7 +122,7 @@ TEST_CASE( "Interactive_tests/i2c_pins/0000/write_read_test, no repeated start"
   std::cout << "Press <Enter> to continue..." << std::endl;
   std::getline(std::cin, dummy);
  
-  i2c_pins iic(pin_id(0),pin_id(1),sclk_frequency);
+  i2c_pins iic(sda,scl,sclk_frequency);
   iic.clear();
   CHECK(iic.good());
 
@@ -218,7 +218,7 @@ TEST_CASE( "Interactive_tests/i2c_pins/0020/write_random_read_test, repeated sta
             << " to address " << int(addrs) 
             << std::endl;
   
-  i2c_pins iic(pin_id(0),pin_id(1),sclk_frequency);
+  i2c_pins iic(sda,scl,sclk_frequency);
   iic.clear();
   CHECK(iic.good());
 
@@ -240,8 +240,8 @@ TEST_CASE( "Interactive_tests/i2c_pins/0020/write_random_read_test, repeated sta
       std::this_thread::sleep_for(std::chrono::microseconds(50));
     }
   REQUIRE(!read_timeout);
-  std::size_t read_count{iic.read(&read_value, 1U)};
-  CHECK(read_count==1U);
+  std::uint8_t read_count{iic.read(&read_value, 1)};
+  CHECK(read_count==1);
   CHECK(read_value==written_value);
   CHECK_FALSE(iic.read_fifo_has_data());
   CHECK_FALSE(iic.is_busy());
@@ -258,7 +258,7 @@ TEST_CASE( "Interactive_tests/i2c_pins/0030/not busy after transaction abort "
   std::cout << "Press <Enter> to continue..." << std::endl;
   std::getline(std::cin, dummy);
  
-  i2c_pins iic(pin_id(0),pin_id(1),sclk_frequency);
+  i2c_pins iic(sda,scl,sclk_frequency);
   iic.clear();
   CHECK(iic.good());
 

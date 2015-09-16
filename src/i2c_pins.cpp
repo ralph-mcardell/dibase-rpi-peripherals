@@ -30,7 +30,7 @@ namespace dibase { namespace rpi {
     // a loop count maximum is imposed.
     // At 400KHz SCLK this count has been found to be in single decimal digit
     // range, with a 10kHz SCLK it may be up to around 150.
-      std::uint32_t repeat_start_write_start_wait_count_max{10000U};
+      std::uint32_t repeat_start_write_wait_count_max{10000U};
 
       descriptor get_alt_fn_descriptor
       ( pin_id pin
@@ -72,8 +72,6 @@ namespace dibase { namespace rpi {
       )
       {
         using internal::i2c_registers;
-        using internal::register_t;
-
         i2c_registers ctx_builder;
         ctx_builder.control = 0U;
         ctx_builder.clk_div = 0U;
@@ -266,7 +264,7 @@ namespace dibase { namespace rpi {
                   "SDA and SCL functions for the same BSC peripheral."
                 };
         }
-      unsigned bsc_num{alt_fn_info[sda_idx].special_fn()==gpio_special_fn::sda0?0U:1U};
+      unsigned bsc_num{alt_fn_info[sda_idx].special_fn()==gpio_special_fn::sda0?0:1};
 
       construct_common( sda_pin, scl_pin, bsc_num, f, tout, fedl, redl, fc
                       , alt_fn_info[sda_idx].alt_fn()
@@ -452,7 +450,7 @@ namespace dibase { namespace rpi {
       uint32_t count{0U};
       while (!is_busy())
         {
-          if (++count>repeat_start_write_start_wait_count_max)
+          if (++count>repeat_start_write_wait_count_max)
             {
               return false;
             }
@@ -461,6 +459,13 @@ namespace dibase { namespace rpi {
       i2c_ctrl::instance().regs(bsc_idx)->set_transfer_type
                                           (i2c_transfer_type::read);
       i2c_ctrl::instance().regs(bsc_idx)->start_transfer();
+      count = 0U;
+      // Must make sure desc fully written before attempting to read
+      // otherwise we might read it back unexpectedly
+      while (read_fifo_has_data()&&count<repeat_start_write_wait_count_max)
+        {
+          ++count;
+        }
       return true;
     }
 

@@ -135,7 +135,7 @@ namespace dibase { namespace rpi {
     typedef frequency<unsigned, std::mega>  i_megahertz;
 
   /// @brief Alias for (double) floating point /ref frequency type alias
-  /// Count of 1.0==1000Hz (ie. 1KHz)
+  /// Count of 1.0==1000Hz (i.e. 1KHz)
   /// @tparam Rep         double
   /// @tparam Multiplier  std::kilo - i.e. 1000:1
     typedef frequency<double, std::kilo>    f_kilohertz;
